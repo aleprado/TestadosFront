@@ -1,8 +1,6 @@
-// Importa los módulos necesarios si usas un entorno moderno de JavaScript
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+// Inicializa Firebase con un bucket específico
 
-// Configuración de Firebase
+// Firebase configuración
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_AUTH_DOMAIN",
@@ -13,25 +11,25 @@ const firebaseConfig = {
 };
 
 // Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
+const app = firebase.initializeApp(firebaseConfig);
+const storage = firebase.storage();
 
 // Función para subir archivos
-function uploadFile() {
+export function uploadFile() {
     const file = document.getElementById("fileInput").files[0];
-    const storageRef = ref(storage, 'uploads/' + file.name);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    const storageRef = storage.ref('uploads/' + file.name);
+    const uploadTask = storageRef.put(file);
 
-    uploadTask.on('state_changed', 
+    uploadTask.on('state_changed',
         (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             console.log('Upload is ' + progress + '% done');
-        }, 
+        },
         (error) => {
             console.error('Upload failed:', error);
-        }, 
+        },
         () => {
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
                 console.log('File available at', downloadURL);
             });
         }
