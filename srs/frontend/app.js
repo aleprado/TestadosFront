@@ -1,4 +1,6 @@
-// Inicializa Firebase con un bucket específico
+// Importa las funciones necesarias desde Firebase SDK
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
 // Firebase configuración
 const firebaseConfig = {
@@ -11,14 +13,14 @@ const firebaseConfig = {
 };
 
 // Inicializar Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const storage = firebase.storage();
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
 
 // Función para subir archivos
 export function uploadFile() {
     const file = document.getElementById("fileInput").files[0];
-    const storageRef = storage.ref('uploads/' + file.name);
-    const uploadTask = storageRef.put(file);
+    const storageRef = ref(storage, 'uploads/' + file.name);
+    const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on('state_changed',
         (snapshot) => {
@@ -29,7 +31,7 @@ export function uploadFile() {
             console.error('Upload failed:', error);
         },
         () => {
-            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                 console.log('File available at', downloadURL);
             });
         }
