@@ -22,7 +22,7 @@ jobs:
       run: npm install -g firebase-tools
 
     - name: Navigate to Firebase project directory
-      run: cd src/infra # Cambia esto si `firebase.json` está en una subcarpeta diferente
+      run: cd infra # Cambia esto si `firebase.json` está en una subcarpeta diferente
 
     - name: Deploy to Firebase
       env:
