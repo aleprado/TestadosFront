@@ -1,4 +1,3 @@
-// Importa las funciones necesarias desde Firebase SDK
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
@@ -17,7 +16,7 @@ const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 
 // Función para subir archivos
-export function uploadFile() {
+function uploadFile() {
     const file = document.getElementById("fileInput").files[0];
     const storageRef = ref(storage, 'uploads/' + file.name);
     const uploadTask = uploadBytesResumable(storageRef, file);
@@ -37,3 +36,6 @@ export function uploadFile() {
         }
     );
 }
+
+// Asocia la función al botón
+document.getElementById('uploadButton').addEventListener('click', uploadFile);
