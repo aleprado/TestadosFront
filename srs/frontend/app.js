@@ -18,7 +18,7 @@ const storage = getStorage(app);
 // Función para subir archivos
 export function uploadFile() {
     const file = document.getElementById("fileInput").files[0];
-    const storageRef = ref(storage, 'uploads/' + file.name);
+    const storageRef = ref(storage, file.name);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on('state_changed',
@@ -39,7 +39,7 @@ export function uploadFile() {
 
 // Función para listar archivos y mostrar enlaces de descarga
 export function listFiles() {
-    const listRef = ref(storage, 'uploads/');
+    const listRef = ref(storage, 'exportados/');
     const fileListContainer = document.getElementById("fileList");
 
     listAll(listRef)
