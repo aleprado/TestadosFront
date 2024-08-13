@@ -1,24 +1,37 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, listAll } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
-// Configuración de Firebase
-const firebaseConfig = {
+// Configuración de Firebase para el bucket de subida
+const firebaseConfigUpload = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_AUTH_DOMAIN",
     projectId: "YOUR_PROJECT_ID",
-    storageBucket: "testados-rutas",  // Aquí especificas tu bucket personalizado de GCP
+    storageBucket: "testados-rutas",  // Bucket para subir archivos
     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
     appId: "YOUR_APP_ID"
 };
 
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
+// Configuración de Firebase para el bucket de descarga
+const firebaseConfigDownload = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "testados-rutas-exportadas",  // Bucket para listar y descargar archivos
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
 
-// Función para subir archivos
+// Inicializar Firebase para los dos buckets
+const appUpload = initializeApp(firebaseConfigUpload, "uploadApp");
+const storageUpload = getStorage(appUpload);
+
+const appDownload = initializeApp(firebaseConfigDownload, "downloadApp");
+const storageDownload = getStorage(appDownload);
+
+// Función para subir archivos al bucket de subida
 export function uploadFile() {
     const file = document.getElementById("fileInput").files[0];
-    const storageRef = ref(storage, file.name);
+    const storageRef = ref(storageUpload, 'uploads/' + file.name);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on('state_changed',
@@ -37,9 +50,9 @@ export function uploadFile() {
     );
 }
 
-// Función para listar archivos y mostrar enlaces de descarga
+// Función para listar archivos y mostrar enlaces de descarga desde el bucket de descarga
 export function listFiles() {
-    const listRef = ref(storage, 'exportados/');
+    const listRef = ref(storageDownload, '');  // Listar archivos desde la raíz del bucket de descarga
     const fileListContainer = document.getElementById("fileList");
 
     listAll(listRef)
@@ -62,4 +75,6 @@ export function listFiles() {
 
 // Conectar funciones con botones
 document.getElementById('uploadButton').addEventListener('click', uploadFile);
-document.getElementById('listFilesButton').addEventListener('click', listFiles);
+
+// Listar los archivos automáticamente al cargar la página desde el bucket de descarga
+listFiles();
