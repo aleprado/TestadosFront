@@ -52,7 +52,7 @@ export function uploadFile() {
 
 // Función para listar archivos y mostrar enlaces de descarga desde el bucket de descarga
 export function listFiles() {
-    const listRef = ref(storageDownload, 'cliente 1/');  // Listar archivos desde la carpeta del cliente
+    const listRef = ref(storageDownload, 'Cliente 1/');  // Listar archivos desde la carpeta del cliente
     const fileListContainer = document.getElementById("fileList");
 
     listAll(listRef)
