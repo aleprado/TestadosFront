@@ -1,4 +1,4 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, listAll } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
 // Configuración de Firebase para el bucket de subida
@@ -52,7 +52,7 @@ export function uploadFile() {
 
 // Función para listar archivos y mostrar enlaces de descarga desde el bucket de descarga
 export function listFiles() {
-    const listRef = ref(storageDownload, '');  // Listar archivos desde la raíz del bucket de descarga
+    const listRef = ref(storageDownload, 'cliente 1/');  // Listar archivos desde la carpeta del cliente
     const fileListContainer = document.getElementById("fileList");
 
     listAll(listRef)
