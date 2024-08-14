@@ -31,7 +31,7 @@ const storageDownload = getStorage(appDownload);
 // Función para subir archivos al bucket de subida
 export function uploadFile() {
     const file = document.getElementById("fileInput").files[0];
-    const storageRef = ref(storageUpload, 'uploads/' + file.name);
+    const storageRef = ref(storageUpload, file.name);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on('state_changed',
