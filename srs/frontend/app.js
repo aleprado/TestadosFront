@@ -28,6 +28,10 @@ const storageUpload = getStorage(appUpload);
 const appDownload = initializeApp(firebaseConfigDownload, "downloadApp");
 const storageDownload = getStorage(appDownload);
 
+// Obtener el parámetro 'cliente' de la URL
+const urlParams = new URLSearchParams(window.location.search);
+const cliente = urlParams.get('cliente') || 'Cliente 1';  // Valor por defecto "Cliente 1" si no se proporciona
+
 // Función para subir archivos al bucket de subida
 export function uploadFile() {
     const fileInput = document.getElementById("fileInput");
@@ -39,7 +43,7 @@ export function uploadFile() {
     }
 
     const file = fileInput.files[0];
-    const storageRef = ref(storageUpload, file.name);
+    const storageRef = ref(storageUpload, `${cliente}/${file.name}`);  // Usar el cliente en la ruta
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on('state_changed',
@@ -65,7 +69,7 @@ export function listFiles() {
     const fileListContainer = document.getElementById("fileList");
     if (!fileListContainer) return;  // Si no existe el elemento, no se ejecuta
 
-    const listRef = ref(storageDownload, 'Cliente 1/');  // Listar archivos desde la carpeta del cliente
+    const listRef = ref(storageDownload, `${cliente}/`);  // Usar el cliente en la ruta
 
     listAll(listRef)
         .then((res) => {
