@@ -48,42 +48,43 @@ const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search);
 const cliente = urlParams.get('cliente') || 'Cliente 1';  // Valor por defecto "Cliente 1" si no se proporciona
 
-// Función para subir archivos al bucket de subida
-export function uploadFile() {
-    const fileInput = document.getElementById("fileInput");
-    if (!fileInput) return;  // Si no existe el elemento, no se ejecuta
+// Función para subir archivos al bucket de subida automáticamente al seleccionarlos
+const fileInput = document.getElementById("fileInput");
+if (fileInput) {
+    fileInput.addEventListener("change", function() {
+        if (!fileInput.files.length) return;  // Si no hay archivos seleccionados, salir
+        const file = fileInput.files[0];
+        const storageRef = ref(storageUpload, `${cliente}/${file.name}`);  // Usar el cliente en la ruta
+        const uploadTask = uploadBytesResumable(storageRef, file);
 
-    if (fileInput.files.length === 0) {
-        alert('Por favor, selecciona un archivo para subir.');
-        return;
-    }
-
-    const file = fileInput.files[0];
-    const storageRef = ref(storageUpload, `${cliente}/${file.name}`);  // Usar el cliente en la ruta
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on('state_changed',
-        (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log('Upload is ' + progress + '% done');
-        },
-        (error) => {
-            console.error('Upload failed:', error);
-            alert('Error al subir el archivo. Inténtalo de nuevo.');
-        },
-        () => {
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                console.log('File available at', downloadURL);
-                alert('Archivo subido con éxito. Disponible en: ' + downloadURL);
-            });
-        }
-    );
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+            },
+            (error) => {
+                console.error('Upload failed:', error);
+                alert('Error al subir el archivo. Inténtalo de nuevo.');
+            },
+            () => {
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    console.log('File available at', downloadURL);
+                    alert('Archivo subido con éxito. Disponible en: ' + downloadURL);
+                });
+            }
+        );
+    });
 }
 
 // Función para listar archivos y mostrar enlaces de descarga desde el bucket de descarga
 export function listFiles() {
     const fileListContainer = document.getElementById("fileList");
-    if (!fileListContainer) return;  // Si no existe el elemento, no se ejecuta
+    const loadingIndicator = document.getElementById("loadingIndicator");
+
+    if (!fileListContainer || !loadingIndicator) return;  // Si no existen los elementos, no se ejecuta
+
+    // Mostrar el indicador de carga
+    loadingIndicator.style.display = 'block';
 
     const listRef = ref(storageDownload, `${cliente}/`);  // Usar el cliente en la ruta
 
@@ -100,14 +101,14 @@ export function listFiles() {
                     fileListContainer.appendChild(document.createElement("br"));
                 });
             });
-        }).catch((error) => {
+        })
+        .catch((error) => {
             console.error("Error listing files:", error);
+        })
+        .finally(() => {
+            // Ocultar el indicador de carga después de completar la lectura
+            loadingIndicator.style.display = 'none';
         });
-}
-
-// Conectar funciones con botones solo si existen los elementos en la página
-if (document.getElementById('uploadButton')) {
-    document.getElementById('uploadButton').addEventListener('click', uploadFile);
 }
 
 // Listar los archivos automáticamente al cargar la página si es la página de descarga
@@ -122,25 +123,31 @@ const docRef = doc(db, "Rutas", cliente);
 
 // Función para cargar y mostrar los correos electrónicos actuales
 async function loadEmails() {
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-        const emails = docSnap.data().emails || [];
-        const emailList = document.getElementById('emailList');
-        emailList.innerHTML = '';  // Limpia la lista de correos
-        emails.forEach(email => {
-            const emailItem = document.createElement('div');
-            emailItem.textContent = email;
-            
-            // Botón para eliminar un email
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Eliminar';
-            deleteButton.onclick = () => removeEmail(email);
-            emailItem.appendChild(deleteButton);
+    try {
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const emails = docSnap.data().emails || [];
+            const emailList = document.getElementById('emailList');
+            emailList.innerHTML = '';  // Limpia la lista de correos
+            emails.forEach(email => {
+                const emailItem = document.createElement('div');
+                emailItem.textContent = email;
 
-            emailList.appendChild(emailItem);
-        });
-    } else {
-        console.log("No se encontró el documento del cliente.");
+                // Botón para eliminar un email
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Eliminar';
+                deleteButton.onclick = () => removeEmail(email);
+                emailItem.appendChild(deleteButton);
+
+                emailList.appendChild(emailItem);
+            });
+        } else {
+            console.log("No se encontró el documento del cliente.");
+            alert("No se encontraron datos para el cliente seleccionado.");
+        }
+    } catch (error) {
+        console.error("Error al cargar los correos electrónicos: ", error);
+        alert("Error al cargar los correos electrónicos.");
     }
 }
 
