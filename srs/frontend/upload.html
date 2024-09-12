@@ -8,9 +8,17 @@
 </head>
 <body>
     <div class="container">
-        <h1>Subir Rutas</h1>
+        <h1>Subir Archivos</h1>
+        <label class="upload-area" for="fileInput">Haz clic o arrastra un archivo aquí</label>
         <input type="file" id="fileInput">
-        <button id="uploadButton">Upload</button>
+        
+        <!-- Barra de progreso -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p id="progressText">0%</p>
+        </div>
     </div>
 
     <!-- Cargar tu archivo JavaScript como un módulo -->
