@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "srs/frontend",
+    "public": "public", // Carpeta donde se encuentran tus archivos HTML
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -8,8 +8,16 @@
     ],
     "rewrites": [
       {
-        "source": "**",
-        "destination": "/index.html"
+        "source": "/upload",
+        "destination": "/upload.html"
+      },
+      {
+        "source": "/download",
+        "destination": "/download.html"
+      },
+      {
+        "source": "/manage-users",
+        "destination": "/manage-users.html"
       }
     ]
   }
