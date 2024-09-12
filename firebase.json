@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "public", // Carpeta donde se encuentran tus archivos HTML
+    "public": "src/frontend",
     "ignore": [
       "firebase.json",
       "**/.*",
