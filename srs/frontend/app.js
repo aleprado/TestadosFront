@@ -164,7 +164,7 @@ async function loadEmails() {
 
 // Función para mostrar un correo electrónico por defecto
 function showDefaultEmail(emailList) {
-    const defaultEmail = "default@example.com";  // Correo electrónico por defecto
+    const defaultEmail = "ale.nesti@gmail.com";  // Correo electrónico por defecto
     const emailItem = document.createElement('div');
     emailItem.textContent = defaultEmail;
 
