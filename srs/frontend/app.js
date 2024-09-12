@@ -125,31 +125,52 @@ const docRef = doc(db, "Rutas", cliente);
 async function loadEmails() {
     try {
         const docSnap = await getDoc(docRef);
+        const emailList = document.getElementById('emailList');
+        emailList.innerHTML = '';  // Limpia la lista de correos
+
         if (docSnap.exists()) {
-            const emails = docSnap.data().emails || [];
-            const emailList = document.getElementById('emailList');
-            emailList.innerHTML = '';  // Limpia la lista de correos
-            emails.forEach(email => {
-                const emailItem = document.createElement('div');
-                emailItem.textContent = email;
+            const emails = docSnap.data().emails || [];  // Obtener el campo 'emails' del documento
 
-                // Botón para eliminar un email
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Eliminar';
-                deleteButton.onclick = () => removeEmail(email);
-                emailItem.appendChild(deleteButton);
+            if (emails.length === 0) {
+                // Mostrar un correo electrónico por defecto si la lista está vacía
+                showDefaultEmail(emailList);
+            } else {
+                // Iterar sobre los correos electrónicos y crear elementos para cada uno
+                emails.forEach(email => {
+                    const emailItem = document.createElement('div');
+                    emailItem.textContent = email;
 
-                emailList.appendChild(emailItem);
-            });
+                    // Botón para eliminar un email
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Eliminar';
+                    deleteButton.onclick = () => removeEmail(email);
+                    emailItem.appendChild(deleteButton);
+
+                    emailList.appendChild(emailItem);
+                });
+            }
         } else {
             console.log("No se encontró el documento del cliente.");
             alert("No se encontraron datos para el cliente seleccionado.");
+            showDefaultEmail(emailList);
         }
     } catch (error) {
         console.error("Error al cargar los correos electrónicos: ", error);
         alert("Error al cargar los correos electrónicos.");
+        const emailList = document.getElementById('emailList');
+        showDefaultEmail(emailList);
     }
 }
+
+// Función para mostrar un correo electrónico por defecto
+function showDefaultEmail(emailList) {
+    const defaultEmail = "default@example.com";  // Correo electrónico por defecto
+    const emailItem = document.createElement('div');
+    emailItem.textContent = defaultEmail;
+
+    emailList.appendChild(emailItem);
+}
+
 
 // Función para agregar un correo electrónico a Firestore
 async function addEmailToFirestore(email) {
