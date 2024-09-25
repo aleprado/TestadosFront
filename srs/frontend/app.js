@@ -71,23 +71,6 @@ function logout() {
     window.location.href = "login.html"; // Redirigir al login después de cerrar sesión
 }
 
-// Páginas existentes (protección de acceso)
-function protectPage() {
-    const username = checkLogin(); // Verificar si hay un usuario logueado
-    if (username) {
-        // Mostrar la página y pasar el username como parámetro a las funciones existentes
-        loadPageContent(username);
-    }
-}
-
-// Cargar la página correspondiente (en las páginas de rutas y gestión de usuarios)
-function loadPageContent(username) {
-    // Código para cargar la página con las funciones existentes
-    console.log("Usuario autenticado: ", username);
-    // Lógica existente de la página
-    // ...
-}
-
 // Función para subir archivos al bucket de subida automáticamente al seleccionarlos
 const fileInput = document.getElementById("fileInput");
 if (fileInput) {
@@ -157,6 +140,10 @@ if (document.getElementById('fileList')) {
 }
 
 // Funcionalidades para Firestore
+
+// Obtener el parámetro 'cliente' de la URL
+const urlParams = new URLSearchParams(window.location.search);
+const cliente = urlParams.get('cliente') || 'Cliente 1';  // Valor por defecto "Cliente 1" si no se proporciona
 
 // Referencia al documento del cliente en Firestore
 const docRef = doc(db, "Rutas", cliente);
@@ -235,4 +222,59 @@ async function removeEmail(email) {
         loadEmails();  // Recargar la lista de correos
     } catch (error) {
         console.error("Error al eliminar el email: ", error);
-        alert('Error al
+        alert('Error al eliminar el email.');
+    }
+}
+
+// Evento para manejar el clic en el botón de agregar
+if (document.getElementById('addEmailButton')) {
+    document.getElementById('addEmailButton').addEventListener('click', () => {
+        const email = document.getElementById('emailInput').value;
+        if (email) {
+            addEmailToFirestore(email);
+        } else {
+            alert('Por favor, ingresa un correo electrónico válido.');
+        }
+    });
+}
+
+// Cargar los correos electrónicos al iniciar la página
+if (document.getElementById('emailList')) {
+    loadEmails();
+}
+
+// Función para redirigir a las otras páginas pasando el nombre de usuario
+function goToPage(page) {
+    const username = localStorage.getItem("username");
+    if (username) {
+        window.location.href = `${page}.html?username=${encodeURIComponent(username)}`;
+    } else {
+        window.location.href = "login.html";
+    }
+}
+
+// Ejemplo de navegación desde el menú
+if (document.getElementById("uploadPageLink")) {
+    document.getElementById("uploadPageLink").addEventListener("click", function() {
+        goToPage("upload");
+    });
+}
+
+if (document.getElementById("downloadPageLink")) {
+    document.getElementById("downloadPageLink").addEventListener("click", function() {
+        goToPage("download");
+    });
+}
+
+if (document.getElementById("userManagementPageLink")) {
+    document.getElementById("userManagementPageLink").addEventListener("click", function() {
+        goToPage("user-management");
+    });
+}
+
+// Evento para cerrar sesión desde el menú
+if (document.getElementById("logoutButton")) {
+    document.getElementById("logoutButton").addEventListener("click", function() {
+        logout();
+    });
+}
