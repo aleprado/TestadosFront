@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "srs/frontend",
+    "public": "srs/frontend",  // Asegúrate de que este sea el directorio correcto para tu contenido de frontend
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -18,6 +18,14 @@
       {
         "source": "/manage-users",
         "destination": "/manage-users.html"
+      },
+      {
+        "source": "/menu",
+        "destination": "/menu.html"
+      },
+      {
+        "source": "/login",
+        "destination": "/login.html"
       }
     ]
   }
