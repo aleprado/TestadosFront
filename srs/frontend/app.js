@@ -44,9 +44,49 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Obtener el parámetro 'cliente' de la URL
-const urlParams = new URLSearchParams(window.location.search);
-const cliente = urlParams.get('cliente') || 'Cliente 1';  // Valor por defecto "Cliente 1" si no se proporciona
+// Verificar si el usuario está logueado
+function checkLogin() {
+    const username = localStorage.getItem("username");
+    if (!username) {
+        // Si no hay un usuario logueado, redirigir a la página de login
+        window.location.href = "login.html";
+    }
+    return username;
+}
+
+// Función para manejar el inicio de sesión
+function login(username, password) {
+    // Aquí puedes reemplazar esta validación simple con Firebase Auth o alguna otra lógica de autenticación
+    if (username === "testuser" && password === "password") {
+        localStorage.setItem("username", username);
+        window.location.href = "menu.html"; // Redirigir al menú si el login es correcto
+    } else {
+        alert("Credenciales incorrectas. Inténtalo de nuevo.");
+    }
+}
+
+// Función para cerrar sesión
+function logout() {
+    localStorage.removeItem("username");
+    window.location.href = "login.html"; // Redirigir al login después de cerrar sesión
+}
+
+// Páginas existentes (protección de acceso)
+function protectPage() {
+    const username = checkLogin(); // Verificar si hay un usuario logueado
+    if (username) {
+        // Mostrar la página y pasar el username como parámetro a las funciones existentes
+        loadPageContent(username);
+    }
+}
+
+// Cargar la página correspondiente (en las páginas de rutas y gestión de usuarios)
+function loadPageContent(username) {
+    // Código para cargar la página con las funciones existentes
+    console.log("Usuario autenticado: ", username);
+    // Lógica existente de la página
+    // ...
+}
 
 // Función para subir archivos al bucket de subida automáticamente al seleccionarlos
 const fileInput = document.getElementById("fileInput");
@@ -171,7 +211,6 @@ function showDefaultEmail(emailList) {
     emailList.appendChild(emailItem);
 }
 
-
 // Función para agregar un correo electrónico a Firestore
 async function addEmailToFirestore(email) {
     try {
@@ -196,23 +235,4 @@ async function removeEmail(email) {
         loadEmails();  // Recargar la lista de correos
     } catch (error) {
         console.error("Error al eliminar el email: ", error);
-        alert('Error al eliminar el email.');
-    }
-}
-
-// Evento para manejar el clic en el botón de agregar
-if (document.getElementById('addEmailButton')) {
-    document.getElementById('addEmailButton').addEventListener('click', () => {
-        const email = document.getElementById('emailInput').value;
-        if (email) {
-            addEmailToFirestore(email);
-        } else {
-            alert('Por favor, ingresa un correo electrónico válido.');
-        }
-    });
-}
-
-// Cargar los correos electrónicos al iniciar la página
-if (document.getElementById('emailList')) {
-    loadEmails();
-}
+        alert('Error al
