@@ -290,7 +290,7 @@ if (document.getElementById("downloadPageLink")) {
 
 if (document.getElementById("userManagementPageLink")) {
     document.getElementById("userManagementPageLink").addEventListener("click", function() {
-        goToPage("user-management");
+        goToPage("manage-users");
     });
 }
 
