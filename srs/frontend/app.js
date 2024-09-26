@@ -261,7 +261,7 @@ if (document.getElementById('emailList')) {
 function goToPage(page) {
     const username = localStorage.getItem("username");
     if (username) {
-        window.location.href = `${page}.html?username=${encodeURIComponent(username)}`;
+        window.location.href = `${page}.html?cliente=${encodeURIComponent(username)}`;
     } else {
         window.location.href = "login.html";
     }
