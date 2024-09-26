@@ -222,6 +222,7 @@ async function removeEmail(email) {
         loadEmails();  // Recargar la lista de correos
     } catch (error) {
         console.error("Error al eliminar el email: ", error);
+        // Prueba con un mensaje de alerta más básico para evitar caracteres problemáticos
         alert('Error al eliminar el email.');
     }
 }
