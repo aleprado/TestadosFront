@@ -79,18 +79,6 @@ function login(username, password) {
     }
 }
 
-// **Vincular el botón de inicio de sesión a la función login**
-document.getElementById("loginButton").addEventListener("click", function() {
-    const username = document.getElementById("usernameInput").value;
-    const password = document.getElementById("passwordInput").value;
-
-    if (username && password) {
-        login(username, password);
-    } else {
-        alert("Por favor ingrese un nombre de usuario y contraseña.");
-    }
-});
-
 // Función para cerrar sesión
 function logout() {
     localStorage.removeItem("username");
