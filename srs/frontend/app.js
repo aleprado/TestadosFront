@@ -54,6 +54,20 @@ function checkLogin() {
     return username;
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+    // Vincular el botón de inicio de sesión a la función login
+    document.getElementById("loginButton").addEventListener("click", function() {
+        const username = document.getElementById("usernameInput").value;
+        const password = document.getElementById("passwordInput").value;
+
+        if (username && password) {
+            login(username, password);
+        } else {
+            alert("Por favor ingrese un nombre de usuario y contraseña.");
+        }
+    });
+});
+
 // Función para manejar el inicio de sesión
 function login(username, password) {
     // Aquí puedes reemplazar esta validación simple con Firebase Auth o alguna otra lógica de autenticación
