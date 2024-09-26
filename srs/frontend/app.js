@@ -55,15 +55,23 @@ function checkLogin() {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
+    // Verificar si existe el botón 'Volver' en la página
+    const backButton = document.getElementById("backButton");
+    if (backButton) {
+        backButton.addEventListener("click", function() {
+            window.location.href = "menu.html";  // Redirigir al menú principal
+        });
+    }
+
     // Vincular el botón de inicio de sesión a la función login
     document.getElementById("loginButton").addEventListener("click", function() {
-        const username = document.getElementById("usernameInput").value;
+        const cliente = document.getElementById("usernameInput").value;
         const password = document.getElementById("passwordInput").value;
 
-        if (username && password) {
-            login(username, password);
+        if (cliente && password) {
+            login(cliente, password);
         } else {
-            alert("Por favor ingrese un nombre de usuario y contraseña.");
+            alert("Por favor ingrese un cliente y contraseña.");
         }
     });
 });
