@@ -48,10 +48,11 @@ const db = getFirestore(app);
 function checkLogin() {
     const username = localStorage.getItem("username");
     if (!username) {
-        // Si no hay un usuario logueado, redirigir a la página de login
+        // Redirigir al login si no hay un usuario logueado
         window.location.href = "login.html";
+        return null;
     }
-    return username;
+    return username; // Retornar el nombre de usuario logueado
 }
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -79,9 +80,9 @@ document.addEventListener("DOMContentLoaded", function() {
 // Función para manejar el inicio de sesión
 function login(username, password) {
     // Aquí puedes reemplazar esta validación simple con Firebase Auth o alguna otra lógica de autenticación
-    if (username === "testuser" && password === "password") {
+    if (password === "password") {
         localStorage.setItem("username", username);
-        window.location.href = "menu.html"; // Redirigir al menú si el login es correcto
+        window.location.href = "localidades.html"; // Redirigir al menú si el login es correcto
     } else {
         alert("Credenciales incorrectas. Inténtalo de nuevo.");
     }
@@ -120,6 +121,73 @@ if (fileInput) {
         );
     });
 }
+
+async function loadLocalidades() {
+    const username = checkLogin(); // Verifica el login y obtiene el username
+    if (!username) return;
+
+    const localidadesList = document.getElementById("localidadesList");
+    localidadesList.innerHTML = "Cargando localidades...";
+
+    const localidadesRef = db.collection("Clientes").doc(username).collection("Localidades");
+    const snapshot = await localidadesRef.get();
+
+    localidadesList.innerHTML = ""; // Limpiar la lista antes de agregar
+    snapshot.forEach(doc => {
+        const localidad = doc.id; // Usar el ID de la localidad
+        const listItem = document.createElement("li");
+        listItem.textContent = localidad;
+        listItem.onclick = () => {
+            window.location.href = `gestionar-rutas.html?localidad=${encodeURIComponent(localidad)}&username=${encodeURIComponent(username)}`;
+        };
+        localidadesList.appendChild(listItem);
+    });
+}
+
+if (window.location.pathname.includes("localidades.html")) {
+    loadLocalidades();
+}
+
+async function loadRutasYUsuarios() {
+    const params = new URLSearchParams(window.location.search);
+    const localidad = params.get("localidad");
+    const username = localStorage.getItem("username");
+
+    if (!username || !localidad) {
+        window.location.href = "localidades.html";
+        return;
+    }
+
+    const rutasRef = db.collection("Clientes").doc(username).collection("Localidades").doc(localidad);
+    const rutasDoc = await rutasRef.get();
+
+    const rutasList = document.getElementById("rutasList");
+    const usuariosList = document.getElementById("usuariosList");
+
+    if (rutasDoc.exists) {
+        const rutas = rutasDoc.data().rutas || [];
+        rutasList.innerHTML = "";
+        rutas.forEach(ruta => {
+            const listItem = document.createElement("li");
+            listItem.textContent = ruta;
+            rutasList.appendChild(listItem);
+        });
+    }
+
+    const usuariosRef = db.collection("Usuarios").where("rutas", "array-contains-any", rutasDoc.data().rutas || []);
+    const usuariosSnapshot = await usuariosRef.get();
+    usuariosList.innerHTML = "";
+    usuariosSnapshot.forEach(userDoc => {
+        const listItem = document.createElement("li");
+        listItem.textContent = userDoc.id; // Mostrar el ID del usuario
+        usuariosList.appendChild(listItem);
+    });
+}
+
+if (window.location.pathname.includes("gestionar-rutas.html")) {
+    loadRutasYUsuarios();
+}
+
 
 // Función para listar archivos y mostrar enlaces de descarga desde el bucket de descarga
 export function listFiles() {
@@ -267,11 +335,9 @@ if (document.getElementById('emailList')) {
 
 // Función para redirigir a las otras páginas pasando el nombre de usuario
 function goToPage(page) {
-    const username = localStorage.getItem("username");
+    const username = checkLogin();
     if (username) {
-        window.location.href = `${page}.html?cliente=${encodeURIComponent(username)}`;
-    } else {
-        window.location.href = "login.html";
+        window.location.href = `${page}.html?username=${encodeURIComponent(username)}`;
     }
 }
 

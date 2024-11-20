@@ -143,3 +143,20 @@ p {
     color: white;
     cursor: pointer;
 }
+
+.list {
+    list-style: none;
+    padding: 0;
+}
+
+.list li {
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin: 5px 0;
+    cursor: pointer;
+    background-color: #f9f9f9;
+}
+
+.list li:hover {
+    background-color: #f1f1f1;
+}

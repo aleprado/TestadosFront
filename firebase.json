@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "srs/frontend",  // Asegúrate de que este sea el directorio correcto para tu contenido de frontend
+    "public": "src/frontend",
     "ignore": [
       "firebase.json",
       "**/.*",
