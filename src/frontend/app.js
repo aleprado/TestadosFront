@@ -1,7 +1,7 @@
 // Importar las bibliotecas necesarias de Firebase
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, listAll } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
-import { getFirestore, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { collection, getFirestore, doc, getDocs, updateDoc, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 // Configuración de Firebase para el bucket de subida
 const firebaseConfigUpload = {
@@ -123,26 +123,36 @@ if (fileInput) {
 }
 
 async function loadLocalidades() {
-    const username = checkLogin(); // Verifica el login y obtiene el username
-    if (!username) return;
+    const username = localStorage.getItem("username");
+    if (!username) {
+        window.location.href = "login.html";
+        return;
+    }
 
     const localidadesList = document.getElementById("localidadesList");
     localidadesList.innerHTML = "Cargando localidades...";
 
-    const localidadesRef = db.collection("Clientes").doc(username).collection("Localidades");
-    const snapshot = await localidadesRef.get();
+    try {
+        // Acceder a la subcolección "Localidades"
+        const localidadesRef = collection(doc(db, "Clientes", username), "Localidades");
+        const snapshot = await getDocs(localidadesRef);
 
-    localidadesList.innerHTML = ""; // Limpiar la lista antes de agregar
-    snapshot.forEach(doc => {
-        const localidad = doc.id; // Usar el ID de la localidad
-        const listItem = document.createElement("li");
-        listItem.textContent = localidad;
-        listItem.onclick = () => {
-            window.location.href = `gestionar-rutas.html?localidad=${encodeURIComponent(localidad)}&username=${encodeURIComponent(username)}`;
-        };
-        localidadesList.appendChild(listItem);
-    });
+        localidadesList.innerHTML = ""; // Limpiar la lista antes de agregar
+        snapshot.forEach(doc => {
+            const localidad = doc.id;
+            const listItem = document.createElement("li");
+            listItem.textContent = localidad;
+            listItem.onclick = () => {
+                window.location.href = `gestionar-rutas.html?localidad=${encodeURIComponent(localidad)}&username=${encodeURIComponent(username)}`;
+            };
+            localidadesList.appendChild(listItem);
+        });
+    } catch (error) {
+        console.error("Error al cargar localidades:", error);
+        localidadesList.innerHTML = "Error al cargar localidades.";
+    }
 }
+
 
 if (window.location.pathname.includes("localidades.html")) {
     loadLocalidades();
