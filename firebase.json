@@ -8,10 +8,6 @@
     ],
     "rewrites": [
       {
-        "source": "/upload",
-        "destination": "/upload.html"
-      },
-      {
         "source": "/download",
         "destination": "/download.html"
       },
@@ -20,8 +16,8 @@
         "destination": "/manage-users.html"
       },
       {
-        "source": "/menu",
-        "destination": "/menu.html"
+        "source": "/localidades",
+        "destination": "/localidades.html"
       },
       {
         "source": "/login",
