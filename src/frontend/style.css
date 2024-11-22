@@ -1,162 +1,254 @@
-/* Estilos CSS basados en la página de referencia */
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
+/* Ajuste del contenedor principal */
 .container {
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 100%;
-    max-width: 500px;
+    width: 90%;
+    height: 90vh;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-h1 {
-    color: #333;
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
-
-p {
-    color: #666;
-    font-size: 16px;
-    margin-bottom: 20px;
-}
-
-.input-field {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-    font-size: 16px;
-}
-
-.btn {
-    background-color: #ff4d4d;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-
-.btn:hover {
-    background-color: #cc0000;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-}
-
-.btn-secondary:hover {
-    background-color: #5a6268;
-}
-
-.icon-section {
+/* Rutas y usuarios ocupando más espacio */
+.rutas-usuarios {
     display: flex;
     justify-content: space-between;
-    margin-top: 30px;
+    flex-grow: 1;
+    margin: 20px 0;
+    gap: 20px;
 }
 
-.icon {
-    font-size: 40px;
-    color: #333;
-    text-align: center;
+/* Ajustar los contenedores de rutas y usuarios */
+.rutas-container,
+.usuarios-container {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    height: calc(100% - 40px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.icon-circle {
-    border: 2px solid #333;
-    border-radius: 50%;
-    padding: 10px;
-    display: inline-block;
-}
-
-.menu {
-    position: fixed;
-    bottom: 0;
-    left: 0;
+/* Listas grandes para mostrar elementos más amplios */
+.large-list {
     width: 100%;
-    background-color: #333;
-    overflow: hidden;
-    text-align: center;
-    padding: 10px 0;
+    height: 100%;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.btn {
-    background-color: #007bff;
-    color: white;
+/* Estilo para cada elemento de la lista */
+.list li {
+    padding: 15px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Hover y selección para resaltar */
+.list li:hover {
+    background-color: #e0f7fa;
+    transform: scale(1.02);
+}
+
+/* Resaltar todo el contenedor del usuario */
+.highlight {
+    box-sizing: border-box;
+    width: 100%;
+    background-color: #ffe082; /* Fondo amarillo claro */
+    border: 2px solid #ffca28; /* Borde más visible */
+    font-weight: bold;
+    border-radius: 5px;
+    padding: 10px; /* Asegúrate de que incluye suficiente espacio */
+    display: flex; /* Asegura que todos los elementos internos estén alineados */
+    align-items: center; /* Centrar verticalmente el contenido */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Añadir un efecto de sombra */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Transiciones suaves */
+}
+
+/* Botones y campos de entrada separados debajo */
+.add-actions {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    gap: 20px;
+}
+
+.add-actions div {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    align-items: flex-start;
+}
+
+.add-actions input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.add-actions button {
     padding: 10px 20px;
-    border: none;
+    font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
+    background-color: #0288d1;
+    color: #fff;
+    border: none;
     transition: background-color 0.3s ease;
 }
 
-.btn:hover {
-    background-color: #0056b3;
+.add-actions button:hover {
+    background-color: #0277bd;
 }
 
-.menu {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: #333;
-    overflow: hidden;
+/* Botón de acción central */
+.actions {
     text-align: center;
-    padding: 10px 0;  /* Espacio vertical dentro del menú */
+    margin-top: 20px;
 }
 
-.menu a, .menu button {
-    display: inline-block;
-    color: white;
-    padding: 14px 40px;  /* Más espacio dentro de los botones/enlaces */
-    text-decoration: none;
-    text-align: center;
-    margin: 0 40px;  /* Aumenta el espacio entre los elementos del menú */
-}
-
-.menu a:hover, .menu button:hover {
-    background-color: #ddd;
-    color: black;
-}
-
-.menu button {
+.actions .btn {
+    padding: 15px 30px;
+    font-size: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #0288d1;
+    color: #fff;
     border: none;
-    background-color: #333;
-    color: white;
-    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-.list {
-    list-style: none;
+.actions .btn:hover {
+    background-color: #0277bd;
+}
+
+.localidadesContainer {
+    width: 90%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#localidadesList {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px 0;
     padding: 0;
+    list-style: none;
 }
 
-.list li {
-    padding: 10px;
+#localidadesList li {
+    padding: 15px;
+    font-size: 18px;
     border: 1px solid #ccc;
-    margin: 5px 0;
+    border-radius: 5px;
+    background-color: #fff;
+    margin-bottom: 10px;
     cursor: pointer;
-    background-color: #f9f9f9;
+    transition: background-color 0.3s ease;
 }
 
-.list li:hover {
-    background-color: #f1f1f1;
+#localidadesList li:hover {
+    background-color: #e0f7fa;
 }
+
+#logoutButton {
+    margin-top: 20px;
+    align-self: center;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #0288d1;
+    color: #fff;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+#logoutButton:hover {
+    background-color: #0277bd;
+}
+
+
+/* Ajuste del contenedor principal */
+.loginContainer {
+    width: 100%;
+    height: 100vh; /* Ocupa toda la altura de la pantalla */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centra verticalmente */
+    align-items: center; /* Centra horizontalmente */
+    background-color: #f5f5f5; /* Fondo claro */
+    text-align: center; /* Centra el texto */
+}
+
+/* Estilo del título */
+.container h1 {
+    font-size: 36px;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+/* Estilo de los campos de entrada */
+.input-field {
+    width: 100%;
+    max-width: 400px; /* Ancho máximo para los campos */
+    padding: 15px;
+    margin-bottom: 20px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Cambios en hover/focus */
+.input-field:focus {
+    border-color: #0288d1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilo del botón */
+.btn {
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 8px;
+    background-color: #0288d1;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Hover en botón */
+.btn:hover {
+    background-color: #0277bd;
+    transform: scale(1.05);
+}
+
+/* Responsividad */
+@media (max-width: 600px) {
+    .input-field {
+        font-size: 16px;
+    }
+
+    .btn {
+        font-size: 16px;
+    }
+}
+

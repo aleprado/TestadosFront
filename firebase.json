@@ -9,19 +9,30 @@
     "rewrites": [
       {
         "source": "/download",
-        "destination": "/download.html"
+        "destination": "/html/download.html"
       },
       {
-        "source": "/manage-users",
-        "destination": "/manage-users.html"
+        "source": "/gestionar-rutas",
+        "destination": "/html/gestionar-rutas.html"
       },
       {
         "source": "/localidades",
-        "destination": "/localidades.html"
+        "destination": "/html/localidades.html"
       },
       {
         "source": "/login",
-        "destination": "/login.html"
+        "destination": "/html/login.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|css|html)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ]
   }
