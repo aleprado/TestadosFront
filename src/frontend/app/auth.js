@@ -7,7 +7,7 @@ export function checkLogin() {
     const username = localStorage.getItem("username");
     if (!username) {
         alert("Por favor inicia sesión.");
-        window.location.href = "login.html";
+        window.location.href = "./html/login.html";
         return null;
     }
     return username;
@@ -25,7 +25,7 @@ export function login(username, password) {
     if (password === "pass") {
         localStorage.setItem("username", username);
         alert("Inicio de sesión exitoso.");
-        window.location.href = "localidades.html";
+        window.location.href = "./html/localidades.html";
     } else {
         alert("Credenciales incorrectas. Inténtalo de nuevo.");
     }
@@ -38,5 +38,5 @@ export function login(username, password) {
 export function logout() {
     localStorage.removeItem("username");
     alert("Sesión cerrada correctamente.");
-    window.location.href = "login.html";
+    window.location.href = "./html/login.html";
 }
