@@ -11,7 +11,7 @@ import { checkLogin, login } from "./auth.js";
 import { db } from "./config.js";
 
 // ####################### LOGIN #######################
-if (window.location.pathname.includes("login.html")) {
+if (window.location.pathname.includes("login")) {
     document.addEventListener("DOMContentLoaded", () => {
         const loginButton = document.getElementById("loginButton");
         loginButton?.addEventListener("click", () => {
@@ -28,7 +28,7 @@ if (window.location.pathname.includes("login.html")) {
 }
 
 // ####################### LOCALIDADES #######################
-if (window.location.pathname.includes("localidades.html")) {
+if (window.location.pathname.includes("localidades")) {
     document.addEventListener("DOMContentLoaded", async () => {
         const username = checkLogin();
         const localidadesList = document.getElementById("localidadesList");
@@ -63,7 +63,7 @@ if (window.location.pathname.includes("localidades.html")) {
 }
 
 // ####################### GESTIONAR RUTAS Y USUARIOS #######################
-if (window.location.pathname.includes("gestionar-rutas.html")) {
+if (window.location.pathname.includes("gestionar-rutas")) {
     document.addEventListener("DOMContentLoaded", async () => {
         const cliente = checkLogin();
         const localidad = localStorage.getItem("localidad");
