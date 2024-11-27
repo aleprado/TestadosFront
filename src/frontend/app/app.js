@@ -7,8 +7,8 @@ import {
     arrayUnion,
     arrayRemove,
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { checkLogin, login } from "/app/auth.js";
-import { db } from "/app/config.js";
+import { checkLogin, login } from "/auth.js";
+import { db } from "/config.js";
 
 // ####################### LOGIN #######################
 if (window.location.pathname.includes("login.html")) {
