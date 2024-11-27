@@ -20,6 +20,7 @@ export function checkLogin() {
  * @param {string} password - La contraseña.
  */
 export function login(username, password) {
+    console.log("iniciando login")
     // Ejemplo de validación de credenciales simple
     if (password === "pass") {
         localStorage.setItem("username", username);
