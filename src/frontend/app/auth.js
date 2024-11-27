@@ -7,7 +7,7 @@ export function checkLogin() {
     const username = localStorage.getItem("username");
     if (!username) {
         alert("Por favor inicia sesión.");
-        window.location.href = "./login";
+        window.location.href = "/login";
         return null;
     }
     return username;

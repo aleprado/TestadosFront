@@ -47,7 +47,7 @@ if (window.location.pathname.includes("localidades")) {
                 listItem.textContent = localidad;
                 listItem.addEventListener("click", () => {
                     localStorage.setItem("localidad", localidad);
-                    window.location.href = "gestionar-rutas.html";
+                    window.location.href = "/gestionar-rutas";
                 });
                 localidadesList.appendChild(listItem);
             });
