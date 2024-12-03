@@ -46,11 +46,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             snapshot.forEach((doc) => {
                 const localidad = doc.id;
                 const listItem = document.createElement("li");
-                listItem.textContent = localidad;
+                listItem.classList.add("list-item-clickable");
                 listItem.addEventListener("click", () => {
                     localStorage.setItem("localidad", localidad);
                     window.location.href = "/gestionar-rutas";
                 });
+
+                const label = document.createElement("label");
+                label.textContent = localidad;
+                listItem.appendChild(label);
                 localidadesList.appendChild(listItem);
             });
 
@@ -82,10 +86,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                         subirRuta(cliente, localidad);
                     });
 
-            document.getElementById("rutasList")?.addEventListener("change", async (event) => {
-                const rutaId = event.target.getAttribute("data-ruta-id");
-                if (rutaId) {
-                    await updateUserCheckboxes(rutaId);
+            document.getElementById("rutasList")?.addEventListener("click", async (event) => {
+                const listItem = event.target.closest("li");
+                if (listItem) {
+                    const rutaId = listItem.querySelector("input[type='radio']")?.getAttribute("data-ruta-id");
+                    if (rutaId) {
+                        await updateUserCheckboxes(rutaId);
+                    }
                 }
             });
         } catch (error) {
@@ -117,13 +124,28 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
             const rutaDoc = await getDoc(rutaRef);
             if (rutaDoc.exists()) {
                 const listItem = document.createElement("li");
+                listItem.classList.add("list-item-clickable");
+                listItem.addEventListener("click", () => {
+                    const radio = listItem.querySelector("input[type='radio']");
+                    if (radio) radio.checked = true;
+                });
+
+                const label = document.createElement("label");
+                label.setAttribute("for", rutaDoc.id);
+                label.classList.add("ruta-label");
 
                 const radio = document.createElement("input");
                 radio.type = "radio";
                 radio.name = "ruta";
+                radio.id = rutaDoc.id;
                 radio.setAttribute("data-ruta-id", rutaDoc.id);
-                listItem.appendChild(radio);
-                listItem.appendChild(document.createTextNode(rutaDoc.id));
+
+                const span = document.createElement("span");
+                span.textContent = rutaDoc.id;
+
+                label.appendChild(radio);
+                label.appendChild(span);
+                listItem.appendChild(label);
                 rutasList.appendChild(listItem);
             }
         }
@@ -155,19 +177,32 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
             if (usuarioDoc.exists()) {
                 const userData = usuarioDoc.data();
                 const listItem = document.createElement("li");
+                listItem.classList.add("list-item-clickable");
                 listItem.setAttribute("data-user-id", usuarioDoc.id);
+                listItem.addEventListener("click", () => {
+                    const checkbox = listItem.querySelector("input[type='checkbox']");
+                    if (checkbox) checkbox.checked = !checkbox.checked;
+                    handleUserAssignment(usuarioDoc.id, checkbox.checked);
+                });
+
+                const label = document.createElement("label");
+                label.setAttribute("for", usuarioDoc.id);
+                label.classList.add("usuario-label");
 
                 const checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
+                checkbox.id = usuarioDoc.id;
                 checkbox.setAttribute("data-user-id", usuarioDoc.id);
                 checkbox.addEventListener("change", (e) =>
                     handleUserAssignment(usuarioDoc.id, e.target.checked)
                 );
 
-                listItem.appendChild(checkbox);
-                listItem.appendChild(
-                    document.createTextNode(`${userData.nombre} (${userData.email})`)
-                );
+                const span = document.createElement("span");
+                span.textContent = `${userData.nombre} (${userData.email})`;
+
+                label.appendChild(checkbox);
+                label.appendChild(span);
+                listItem.appendChild(label);
                 usuariosList.appendChild(listItem);
             }
         }
