@@ -252,3 +252,6 @@
     }
 }
 
+.hidden-input {
+    display: none;
+}

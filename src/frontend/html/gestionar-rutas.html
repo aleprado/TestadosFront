@@ -6,7 +6,7 @@
     <title>Gestionar Rutas y Usuarios</title>
     <link rel="stylesheet" href="../style.css">
 </head>
-<body>
+<body data-page="gestionar-rutas">
 <div class="container">
     <h1>Gestionar Rutas y Usuarios</h1>
 
@@ -24,9 +24,10 @@
             </ul>
         </div>
     </section>
-
-    <div class="actions">
-        <button id="backButton" class="btn btn-secondary">Volver a Localidades</button>
+    <div>
+        <label for="fileInput" class="btn">Subir nueva ruta</label>
+        <input type="file" id="fileInput" class="hidden-input">
+        <span id="fileName"></span>
     </div>
 </div>
 
