@@ -6,7 +6,7 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove,
-    setDoc,
+    setDoc
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login } from "./auth.js";
@@ -84,19 +84,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             await loadUsuariosPorLocalidad(cliente, localidad);
 
             document.getElementById("fileInput")?.addEventListener("change", () => {
-                        subirRuta(cliente, localidad);
-                    });
+                subirRuta(cliente, localidad);
+            });
 
             document.getElementById("registerUserButton")?.addEventListener("click", () => {
-                            registrarUsuario(cliente, localidad);
-                        });
+                registrarUsuario(cliente, localidad);
+            });
 
             document.getElementById("rutasList")?.addEventListener("click", async (event) => {
                 const listItem = event.target.closest("li");
                 if (listItem) {
                     const rutaId = listItem.querySelector("input[type='radio']")?.getAttribute("data-ruta-id");
                     if (rutaId) {
+                        const usuariosList = document.getElementById("usuariosList");
+                        usuariosList.classList.add("blurred");
                         await updateUserCheckboxes(rutaId);
+                        usuariosList.classList.remove("blurred");
                     }
                 }
             });
@@ -339,5 +342,14 @@ async function registrarUsuario(cliente, localidad) {
     } catch (error) {
         console.error("Error al registrar el usuario:", error);
         alert("Error al registrar el usuario.");
+    }
+}
+
+function mostrarLoaderUsuarios(mostrar) {
+    const usuariosList = document.getElementById("usuariosList");
+    if (mostrar) {
+        usuariosList.classList.add("blurred");
+    } else {
+        usuariosList.classList.remove("blurred");
     }
 }
