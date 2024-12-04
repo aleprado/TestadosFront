@@ -103,14 +103,14 @@
     font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
-    background-color: #0288d1;
+    background-color: #d32f2f;
     color: #fff;
     border: none;
     transition: background-color 0.3s ease;
 }
 
 .add-actions button:hover {
-    background-color: #0277bd;
+    background-color: #c62828;
 }
 
 /* Botón de acción central */
@@ -124,14 +124,14 @@
     font-size: 20px;
     border-radius: 8px;
     cursor: pointer;
-    background-color: #0288d1;
+    background-color: #d32f2f;
     color: #fff;
     border: none;
     transition: background-color 0.3s ease;
 }
 
 .actions .btn:hover {
-    background-color: #0277bd;
+    background-color: #c62828;
 }
 
 .localidadesContainer {
@@ -173,16 +173,15 @@
     font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
-    background-color: #0288d1;
+    background-color: #d32f2f;
     color: #fff;
     border: none;
     transition: background-color 0.3s ease;
 }
 
 #logoutButton:hover {
-    background-color: #0277bd;
+    background-color: #c62828;
 }
-
 
 /* Ajuste del contenedor principal */
 .loginContainer {
@@ -219,7 +218,7 @@
 
 /* Cambios en hover/focus */
 .input-field:focus {
-    border-color: #0288d1;
+    border-color: #d32f2f;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -228,7 +227,7 @@
     padding: 15px 30px;
     font-size: 18px;
     border-radius: 8px;
-    background-color: #0288d1;
+    background-color: #d32f2f;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -237,8 +236,15 @@
 
 /* Hover en botón */
 .btn:hover {
-    background-color: #0277bd;
+    background-color: #c62828;
     transform: scale(1.05);
+}
+
+/* Estilo de los radiobuttons y checkboxes */
+input[type="radio"],
+input[type="checkbox"] {
+    accent-color: #d32f2f;
+    cursor: pointer;
 }
 
 /* Responsividad */
@@ -263,7 +269,7 @@
     margin: 10px 0;
     padding: 10px 20px;
     text-align: center;
-    background-color: #007bff;
+    background-color: #d32f2f;
     color: white;
     border: none;
     border-radius: 5px;
@@ -272,7 +278,7 @@
 }
 
 .btn:hover {
-    background-color: #0056b3;
+    background-color: #c62828;
 }
 
 .blurred {
