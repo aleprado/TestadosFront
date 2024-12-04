@@ -6,6 +6,7 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove,
+    setDoc,
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login } from "./auth.js";
@@ -85,6 +86,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("fileInput")?.addEventListener("change", () => {
                         subirRuta(cliente, localidad);
                     });
+
+            document.getElementById("registerUserButton")?.addEventListener("click", () => {
+                            registrarUsuario(cliente, localidad);
+                        });
 
             document.getElementById("rutasList")?.addEventListener("click", async (event) => {
                 const listItem = event.target.closest("li");
@@ -302,5 +307,37 @@ async function subirRuta(cliente, localidad) {
         );
     } catch (error) {
         console.error("Error general al subir el archivo:", error);
+    }
+}
+
+async function registrarUsuario(cliente, localidad) {
+    const nombreUsuario = prompt("Ingrese el nombre del usuario:");
+    const emailUsuario = prompt("Ingrese el email del usuario:");
+
+    if (!nombreUsuario || !emailUsuario) {
+        alert("Se requiere el nombre y el email del usuario.");
+        return;
+    }
+
+    try {
+        // Crear un nuevo documento para el usuario en la colección 'Usuarios'
+        const usuarioRef = doc(collection(db, "Usuarios"), nombreUsuario);
+        await setDoc(usuarioRef, {
+            nombre: nombreUsuario,
+            email: emailUsuario,
+            rutas: []
+        });
+
+        // Agregar referencia del usuario en la localidad actual
+        const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
+        await updateDoc(localidadRef, {
+            usuarios: arrayUnion(usuarioRef)
+        });
+
+        alert("Usuario registrado exitosamente.");
+        await loadUsuariosPorLocalidad(cliente, localidad); // Recargar usuarios
+    } catch (error) {
+        console.error("Error al registrar el usuario:", error);
+        alert("Error al registrar el usuario.");
     }
 }
