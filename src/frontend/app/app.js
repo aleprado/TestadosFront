@@ -10,7 +10,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login } from "./auth.js";
-import { db, storageUpload } from "./config.js";
+import { db, storageUpload, storageDownload } from "./config.js";
 
 // ####################### LOGIN #######################
 
@@ -126,34 +126,29 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
         }
 
         const rutasRefs = localidadDoc.data().rutas || [];
-        rutasList.innerHTML = "";
+        rutasList.innerHTML = ""; // Limpia las rutas actuales
 
         for (const rutaRef of rutasRefs) {
             const rutaDoc = await getDoc(rutaRef);
             if (rutaDoc.exists()) {
+                const rutaId = rutaDoc.id;
+
+                // Clona el HTML del elemento y lo personaliza
                 const listItem = document.createElement("li");
-                listItem.classList.add("list-item-clickable");
+                listItem.classList.add("list-item-clickable", "ruta-item");
+                const bucketUrl = `https://storage.googleapis.com/testados-rutas-exportadas/${cliente}/${rutaId}.csv`;
                 listItem.addEventListener("click", () => {
                     const radio = listItem.querySelector("input[type='radio']");
                     if (radio) radio.checked = true;
                 });
+                listItem.innerHTML = `
+                    <div class="ruta-content">
+                        <input type="radio" name="ruta" id="${rutaId}" data-ruta-id="${rutaId}">
+                        <label for="${rutaId}" class="ruta-label">${rutaId}</label>
+                    </div>
+                    <a href="${bucketUrl}" target="_blank" class="progreso-link">${Math.floor(Math.random() * 100)}%</a>
+                `;
 
-                const label = document.createElement("label");
-                label.setAttribute("for", rutaDoc.id);
-                label.classList.add("ruta-label");
-
-                const radio = document.createElement("input");
-                radio.type = "radio";
-                radio.name = "ruta";
-                radio.id = rutaDoc.id;
-                radio.setAttribute("data-ruta-id", rutaDoc.id);
-
-                const span = document.createElement("span");
-                span.textContent = rutaDoc.id;
-
-                label.appendChild(radio);
-                label.appendChild(span);
-                listItem.appendChild(label);
                 rutasList.appendChild(listItem);
             }
         }

@@ -286,3 +286,14 @@ input[type="checkbox"] {
     pointer-events: none; /* Esto evita que los elementos sean clickeables mientras están desenfocados */
     opacity: 0.6; /* Reduce la opacidad para dar un efecto visual adicional */
 }
+
+/* Contenedor principal para cada ruta */
+.ruta-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+
