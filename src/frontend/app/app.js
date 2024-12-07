@@ -6,10 +6,12 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove,
-    setDoc
+    setDoc,
+    query,
+    where
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
-import { checkLogin, login } from "./auth.js";
+import { checkLogin, login, logout } from "./auth.js";
 import { db, storageUpload, storageDownload } from "./config.js";
 
 // ####################### LOGIN #######################
@@ -34,38 +36,54 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ####################### LOCALIDADES #######################
     if (page === "localidades") {
         const username = checkLogin();
+        const logoutButton = document.getElementById("logoutButton");
+        logoutButton?.addEventListener("click", () => {
+            logout();
+        });
         const localidadesList = document.getElementById("localidadesList");
 
         if (!localidadesList) return;
 
         localidadesList.innerHTML = "Cargando localidades...";
         try {
-            const localidadesRef = collection(doc(db, "Clientes", username), "Localidades");
-            const snapshot = await getDocs(localidadesRef);
+          const clientesRef = collection(db, "Clientes");
+          const q = query(clientesRef, where("email", "==", username));
+          const querySnapshot = await getDocs(q);
 
-            localidadesList.innerHTML = "";
-            snapshot.forEach((doc) => {
-                const localidad = doc.id;
-                const listItem = document.createElement("li");
-                listItem.classList.add("list-item-clickable");
-                listItem.addEventListener("click", () => {
-                    localStorage.setItem("localidad", localidad);
-                    window.location.href = "/gestionar-rutas";
-                });
+          // Limpiar la lista de localidades
+          localidadesList.innerHTML = "";
 
-                const label = document.createElement("label");
-                label.textContent = localidad;
-                listItem.appendChild(label);
-                localidadesList.appendChild(listItem);
-            });
+          // Iterar sobre los resultados de la consulta a clientes
+          for (const doc of querySnapshot.docs) {
+            const localidadesRef = collection(doc.ref, "Localidades");
+            const localidadesSnapshot = await getDocs(localidadesRef);
 
-            if (snapshot.empty) {
-                localidadesList.innerHTML = "No se encontraron localidades.";
+            // Verificar si hay localidades
+            if (localidadesSnapshot.empty) {
+              localidadesList.innerHTML = "No se encontraron localidades.";
+              return;
             }
+
+            // Iterar sobre las localidades y agregar cada una a la lista
+            localidadesSnapshot.forEach((localidadDoc) => {
+              const localidad = localidadDoc.id;
+              const listItem = document.createElement("li");
+              listItem.classList.add("list-item-clickable");
+              listItem.addEventListener("click", () => {
+                localStorage.setItem("localidad", localidad);
+                window.location.href = "/gestionar-rutas";
+              });
+
+              const label = document.createElement("label");
+              label.textContent = localidad;
+              listItem.appendChild(label);
+              localidadesList.appendChild(listItem);
+            });
+          }
         } catch (error) {
-            console.error("Error al cargar localidades:", error);
-            localidadesList.innerHTML = "Error al cargar localidades.";
+          console.error("Error al obtener localidades:", error);
         }
+
     }
 
     // ####################### GESTIONAR RUTAS Y USUARIOS #######################

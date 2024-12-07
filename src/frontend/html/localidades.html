@@ -7,10 +7,28 @@
     <link rel="stylesheet" href="../style.css">
 </head>
 <body data-page="localidades">
-<div class="localidadesContainer">
-    <h1>Selecciona una Localidad</h1>
-    <ul id="localidadesList" class="list"></ul>
-    <button id="logoutButton" class="btn btn-secondary">Cerrar sesión</button>
+<!-- Título fuera del contenedor -->
+<h1>Selecciona una Localidad</h1>
+<!-- Contenedor específico para Localidades -->
+<div class="container">
+    <!-- Botón de Cerrar sesión -->
+    <div class="logout-button-container">
+        <button id="logoutButton" class="btn btn-secondary">Cerrar sesión</button>
+    </div>
+
+    <section class="rutas-usuarios">
+        <div class="rutas-container">
+            <h2>Localidades</h2>
+            <ul id="localidadesList" class="list large-list"></ul>
+        </div>
+    </section>
+
+    <div>
+        <label for="fileInput" class="btn">Agregar Localidad</label>
+        <input type="file" id="fileInput" class="hidden-input">
+        <span id="fileName"></span>
+    </div>
+
 </div>
 
 <script type="module" src="../app/app.js"></script>

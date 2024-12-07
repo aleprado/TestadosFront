@@ -28,6 +28,7 @@
     background-color: #f9f9f9;
     height: calc(100% - 40px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    justify-content: center;
 }
 
 /* Listas grandes para mostrar elementos más amplios */
@@ -195,13 +196,6 @@
     text-align: center; /* Centra el texto */
 }
 
-/* Estilo del título */
-.container h1 {
-    font-size: 36px;
-    color: #333;
-    margin-bottom: 30px;
-}
-
 /* Estilo de los campos de entrada */
 .input-field {
     width: 100%;
@@ -294,6 +288,13 @@ input[type="checkbox"] {
     align-items: center;
     padding: 10px;
     border-bottom: 1px solid #ddd;
+}
+
+/* Contenedor de los botones de cerrar sesión */
+.logout-button-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
 }
 
 
