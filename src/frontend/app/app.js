@@ -117,6 +117,7 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
 
     rutasList.innerHTML = "Cargando rutas...";
     try {
+        // Referencia a la localidad
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
         const localidadDoc = await getDoc(localidadRef);
 
@@ -125,28 +126,39 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
             return;
         }
 
+        // Obtener las referencias de las rutas
         const rutasRefs = localidadDoc.data().rutas || [];
         rutasList.innerHTML = ""; // Limpia las rutas actuales
 
         for (const rutaRef of rutasRefs) {
             const rutaDoc = await getDoc(rutaRef);
+
             if (rutaDoc.exists()) {
                 const rutaId = rutaDoc.id;
+                const rutaData = rutaDoc.data();
 
-                // Clona el HTML del elemento y lo personaliza
+                // Obtener el campo "completado"
+                const completado = rutaData.completado || 0;
+
+                // Enlace al archivo CSV en el bucket
+                const bucketUrl = `https://storage.googleapis.com/testados-rutas-exportadas/${cliente}/${localidad}/${rutaId}.csv`;
+
+                // Crear el elemento de la lista
                 const listItem = document.createElement("li");
                 listItem.classList.add("list-item-clickable", "ruta-item");
-                const bucketUrl = `https://storage.googleapis.com/testados-rutas-exportadas/${cliente}/${rutaId}.csv`;
+
                 listItem.addEventListener("click", () => {
                     const radio = listItem.querySelector("input[type='radio']");
                     if (radio) radio.checked = true;
                 });
+
+                // Personalizar el contenido del elemento
                 listItem.innerHTML = `
                     <div class="ruta-content">
                         <input type="radio" name="ruta" id="${rutaId}" data-ruta-id="${rutaId}">
                         <label for="${rutaId}" class="ruta-label">${rutaId}</label>
                     </div>
-                    <a href="${bucketUrl}" target="_blank" class="progreso-link">${Math.floor(Math.random() * 100)}%</a>
+                    <a href="${bucketUrl}" target="_blank" class="progreso-link">${completado.toFixed(2)}%</a>
                 `;
 
                 rutasList.appendChild(listItem);

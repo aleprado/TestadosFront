@@ -1,6 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { getStorage } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js'; // Importar auth
 
 // Configuración principal de Firebase
 const firebaseConfig = {
@@ -36,6 +37,7 @@ const firebaseConfigDownload = {
 // Inicialización de Firebase
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const auth = getAuth(app); // Inicializar Auth
 
 // Inicializar Firebase para los buckets de subida y descarga
 export const appUpload = initializeApp(firebaseConfigUpload, "uploadApp");
@@ -43,4 +45,3 @@ export const storageUpload = getStorage(appUpload);
 
 export const appDownload = initializeApp(firebaseConfigDownload, "downloadApp");
 export const storageDownload = getStorage(appDownload);
-
