@@ -71,6 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               listItem.classList.add("list-item-clickable");
               listItem.addEventListener("click", () => {
                 localStorage.setItem("localidad", localidad);
+                console.log("guardada localidad: " + localidad)
                 window.location.href = "/gestionar-rutas";
               });
 
@@ -89,6 +90,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ####################### GESTIONAR RUTAS Y USUARIOS #######################
     if (page === "gestionar-rutas") {
         const cliente = checkLogin();
+        console.log("Consulta localidad: " + localStorage.getItem("localidad"))
         const localidad = localStorage.getItem("localidad");
 
         if (!cliente || !localidad) {
