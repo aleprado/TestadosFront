@@ -46,41 +46,47 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         localidadesList.innerHTML = "Cargando localidades...";
         try {
+          console.log("localidades del cliente: " + username);
           const clientesRef = collection(db, "Clientes");
-          const q = query(clientesRef, where("email", "==", username));
-          const querySnapshot = await getDocs(q);
+
+          // Actualización: ahora consulta por el ID del documento que coincide con el username
+          const docRef = doc(clientesRef, username);
+          const clienteDoc = await getDoc(docRef);
+
+          if (!clienteDoc.exists()) {
+              localidadesList.innerHTML = "No se encontró el cliente.";
+              return;
+          }
 
           // Limpiar la lista de localidades
           localidadesList.innerHTML = "";
 
-          // Iterar sobre los resultados de la consulta a clientes
-          for (const doc of querySnapshot.docs) {
-            const localidadesRef = collection(doc.ref, "Localidades");
-            const localidadesSnapshot = await getDocs(localidadesRef);
+          // Obtener la referencia a la subcolección "Localidades"
+          const localidadesRef = collection(clienteDoc.ref, "Localidades");
+          const localidadesSnapshot = await getDocs(localidadesRef);
 
-            // Verificar si hay localidades
-            if (localidadesSnapshot.empty) {
+          // Verificar si hay localidades
+          if (localidadesSnapshot.empty) {
               localidadesList.innerHTML = "No se encontraron localidades.";
               return;
-            }
+          }
 
-            // Iterar sobre las localidades y agregar cada una a la lista
-            localidadesSnapshot.forEach((localidadDoc) => {
+          // Iterar sobre las localidades y agregar cada una a la lista
+          localidadesSnapshot.forEach((localidadDoc) => {
               const localidad = localidadDoc.id;
               const listItem = document.createElement("li");
               listItem.classList.add("list-item-clickable");
               listItem.addEventListener("click", () => {
-                localStorage.setItem("localidad", localidad);
-                console.log("guardada localidad: " + localidad)
-                window.location.href = "/gestionar-rutas";
+                  localStorage.setItem("localidad", localidad);
+                  console.log("guardada localidad: " + localidad);
+                  window.location.href = "/gestionar-rutas";
               });
 
               const label = document.createElement("label");
               label.textContent = localidad;
               listItem.appendChild(label);
               localidadesList.appendChild(listItem);
-            });
-          }
+          });
         } catch (error) {
           console.error("Error al obtener localidades:", error);
         }
