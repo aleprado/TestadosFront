@@ -167,7 +167,7 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 const completado = rutaData.completado || 0;
 
                 // Enlace al archivo CSV en el bucket
-                const bucketUrl = `https://storage.googleapis.com/testados-rutas-exportadas/${cliente}/${localidad}/${rutaId}.csv`;
+                const bucketUrl = `https://storage.googleapis.com/testados-rutas-exportadas/testados-rutas-exportadas/${cliente}/${localidad}/${rutaId}.csv`;
 
                 // Crear el elemento de la lista
                 const listItem = document.createElement("li");
