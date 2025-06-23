@@ -403,12 +403,13 @@ async function subirRuta(cliente, localidad) {
                 const rutaDocRef = doc(collection(db, "Rutas"), archivo.name);
                 const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
                 try {
-                    await setDoc(rutaDocRef, {
-                        completado: 0,
-                        cliente,
-                        localidad,
+                    // Guardar la ruta en la colección 'Rutas'
+                    await setDoc(rutaDocRef, { completado: 0 });
+
+                    // Guardar la referencia dentro de la localidad existente
+                    await updateDoc(localidadRef, {
+                        rutas: arrayUnion(rutaDocRef)
                     });
-                    await updateDoc(localidadRef, { rutas: arrayUnion(rutaDocRef) });
 
                     console.log("Ruta registrada exitosamente en la base de datos.");
                     await loadRutasPorLocalidad(cliente, localidad); // Recargar rutas
