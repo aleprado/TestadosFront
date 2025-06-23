@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             await loadUsuariosPorLocalidad(cliente, localidad);
 
             document.getElementById("fileInput")?.addEventListener("change", () => {
-                subirRuta(cliente, localidad);
+                subirRuta();
             });
 
             document.getElementById("registerUserButton")?.addEventListener("click", () => {
@@ -361,7 +361,14 @@ export async function handleUserAssignment(userId, isChecked) {
     }
 }
 
-async function subirRuta(cliente, localidad) {
+async function subirRuta() {
+    const cliente = checkLogin();
+    const localidad = localStorage.getItem("localidad");
+    if (!cliente || !localidad) {
+        alert("Selecciona una localidad para continuar.");
+        return;
+    }
+
     const archivoInput = document.getElementById("fileInput");
     const archivo = archivoInput?.files[0];
 
