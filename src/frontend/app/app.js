@@ -8,7 +8,8 @@ import {
     arrayRemove,
     setDoc,
     query,
-    where
+    where,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login, logout } from "./auth.js";
@@ -187,6 +188,15 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                     <a href="${bucketUrl}" target="_blank" class="progreso-link">${completado.toFixed(2)}%</a>
                 `;
 
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "\u2716";
+                deleteBtn.classList.add("delete-btn");
+                deleteBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    eliminarRuta(cliente, localidad, rutaId);
+                });
+                listItem.appendChild(deleteBtn);
+
                 rutasList.appendChild(listItem);
             }
         }
@@ -244,6 +254,15 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
                 label.appendChild(checkbox);
                 label.appendChild(span);
                 listItem.appendChild(label);
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "\u2716";
+                deleteBtn.classList.add("delete-btn");
+                deleteBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    eliminarUsuario(cliente, localidad, usuarioDoc.id);
+                });
+                listItem.appendChild(deleteBtn);
                 usuariosList.appendChild(listItem);
             }
         }
@@ -384,5 +403,50 @@ function mostrarLoaderUsuarios(mostrar) {
         usuariosList.classList.add("blurred");
     } else {
         usuariosList.classList.remove("blurred");
+    }
+}
+
+async function eliminarRuta(cliente, localidad, rutaId) {
+    try {
+        const confirmacion = confirm(`\u00bfEliminar la ruta ${rutaId}?`);
+        if (!confirmacion) return;
+
+        const rutaRef = doc(db, "Rutas", rutaId);
+        const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
+
+        // Obtener usuarios para quitar la referencia de la ruta
+        const localidadDoc = await getDoc(localidadRef);
+        const usuariosRefs = localidadDoc.data().usuarios || [];
+        for (const usuarioRef of usuariosRefs) {
+            await updateDoc(usuarioRef, { rutas: arrayRemove(rutaRef) });
+        }
+
+        // Quitar referencia de la localidad y eliminar el documento de la ruta
+        await updateDoc(localidadRef, { rutas: arrayRemove(rutaRef) });
+        await deleteDoc(rutaRef);
+
+        await loadRutasPorLocalidad(cliente, localidad);
+        await loadUsuariosPorLocalidad(cliente, localidad);
+    } catch (error) {
+        console.error("Error al eliminar la ruta:", error);
+        alert("Error al eliminar la ruta.");
+    }
+}
+
+async function eliminarUsuario(cliente, localidad, userId) {
+    try {
+        const confirmacion = confirm(`\u00bfEliminar el usuario ${userId}?`);
+        if (!confirmacion) return;
+
+        const usuarioRef = doc(db, "Usuarios", userId);
+        const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
+
+        await updateDoc(localidadRef, { usuarios: arrayRemove(usuarioRef) });
+        await deleteDoc(usuarioRef);
+
+        await loadUsuariosPorLocalidad(cliente, localidad);
+    } catch (error) {
+        console.error("Error al eliminar el usuario:", error);
+        alert("Error al eliminar el usuario.");
     }
 }
