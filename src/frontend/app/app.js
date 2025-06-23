@@ -26,6 +26,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         logout();
     });
 
+    const backButton = document.getElementById("backButton");
+    backButton?.addEventListener("click", () => {
+        window.location.href = "/localidades";
+    });
+
     if (page === "login") {
         const loginButton = document.getElementById("loginButton");
         loginButton?.addEventListener("click", () => {
