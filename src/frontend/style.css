@@ -341,6 +341,15 @@ input[type="checkbox"] {
     gap: 10px;
 }
 
+/* Ajustes para que los botones de navegación mantengan la altura y no
+   ocupen todo el ancho */
+.logout-button-container .btn {
+    display: inline-block;
+    width: auto;
+    max-width: none;
+    margin: 0;
+}
+
 .back-arrow {
     position: absolute;
     top: 20px;

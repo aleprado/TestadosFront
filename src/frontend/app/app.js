@@ -378,8 +378,11 @@ async function subirRuta(cliente, localidad) {
     }
 
     try {
-        // Usar la configuración específica para subida
-        const referenciaArchivo = ref(storageUpload, `/${cliente}/${archivo.name}`);
+        // Usar la configuración específica para subida e incluir la localidad en la ruta
+        const referenciaArchivo = ref(
+            storageUpload,
+            `/${cliente}/${localidad}/${archivo.name}`
+        );
         const tareaSubida = uploadBytesResumable(referenciaArchivo, archivo);
 
         tareaSubida.on(
@@ -396,10 +399,17 @@ async function subirRuta(cliente, localidad) {
                 // Archivo subido correctamente
                 alert("Archivo subido exitosamente.");
 
-                // Agregar referencia a Firestore
-                const rutaRef = doc(db, "Clientes", cliente, "Localidades", localidad);
-                const nuevaRuta = `/Rutas/${archivo.name}`;
+                // Crear documento de la ruta y asociarlo a la localidad seleccionada
+                const rutaDocRef = doc(collection(db, "Rutas"), archivo.name);
+                const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
                 try {
+                    await setDoc(rutaDocRef, {
+                        completado: 0,
+                        cliente,
+                        localidad,
+                    });
+                    await updateDoc(localidadRef, { rutas: arrayUnion(rutaDocRef) });
+
                     console.log("Ruta registrada exitosamente en la base de datos.");
                     await loadRutasPorLocalidad(cliente, localidad); // Recargar rutas
                 } catch (error) {
@@ -458,17 +468,26 @@ async function eliminarRuta(cliente, localidad, rutaId) {
         const confirmacion = confirm(`\u00bfEliminar la ruta ${rutaId}?`);
         if (!confirmacion) return;
 
-        const rutaRef = doc(db, "Rutas", rutaId);
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
-
-        // Obtener usuarios para quitar la referencia de la ruta
         const localidadDoc = await getDoc(localidadRef);
+        if (!localidadDoc.exists()) {
+            alert("La localidad no existe.");
+            return;
+        }
+
+        const rutasRefs = localidadDoc.data().rutas || [];
+        const rutaRef = rutasRefs.find((ref) => ref.id === rutaId || ref.path.endsWith(`/${rutaId}`));
+
+        if (!rutaRef) {
+            console.error(`No se encontr\xF3 la referencia a la ruta ${rutaId}`);
+            return;
+        }
+
         const usuariosRefs = localidadDoc.data().usuarios || [];
         for (const usuarioRef of usuariosRefs) {
             await updateDoc(usuarioRef, { rutas: arrayRemove(rutaRef) });
         }
 
-        // Quitar referencia de la localidad y eliminar el documento de la ruta
         await updateDoc(localidadRef, { rutas: arrayRemove(rutaRef) });
         await deleteDoc(rutaRef);
 
