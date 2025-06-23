@@ -44,65 +44,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (page === "localidades") {
         const username = checkLogin();
         const localidadesList = document.getElementById("localidadesList");
+        const addBtn = document.getElementById("agregarLocalidadButton");
+        addBtn?.addEventListener("click", async () => {
+            const input = document.getElementById("nuevaLocalidadInput");
+            const nombre = input.value.trim();
+            if (!nombre) {
+                alert("Ingresa un nombre de localidad.");
+                return;
+            }
+            try {
+                await setDoc(doc(db, "Clientes", username, "Localidades", nombre), {
+                    rutas: [],
+                    usuarios: []
+                });
+                input.value = "";
+                await loadLocalidades(username);
+            } catch (error) {
+                console.error("Error al agregar localidad:", error);
+                alert("Error al agregar la localidad.");
+            }
+        });
 
         if (!localidadesList) return;
 
-        localidadesList.innerHTML = "Cargando localidades...";
-        try {
-          console.log("localidades del cliente: " + username);
-          const clientesRef = collection(db, "Clientes");
-
-          // Actualización: ahora consulta por el ID del documento que coincide con el username
-          const docRef = doc(clientesRef, username);
-          const clienteDoc = await getDoc(docRef);
-
-          if (!clienteDoc.exists()) {
-              localidadesList.innerHTML = "No se encontró el cliente.";
-              return;
-          }
-
-          // Limpiar la lista de localidades
-          localidadesList.innerHTML = "";
-
-          // Obtener la referencia a la subcolección "Localidades"
-          const localidadesRef = collection(clienteDoc.ref, "Localidades");
-          const localidadesSnapshot = await getDocs(localidadesRef);
-
-          // Verificar si hay localidades
-          if (localidadesSnapshot.empty) {
-              localidadesList.innerHTML = "No se encontraron localidades.";
-              return;
-          }
-
-          // Iterar sobre las localidades y agregar cada una a la lista
-          localidadesSnapshot.forEach((localidadDoc) => {
-              const localidad = localidadDoc.id;
-              const listItem = document.createElement("li");
-              listItem.classList.add("list-item-clickable");
-              listItem.addEventListener("click", () => {
-                  localStorage.setItem("localidad", localidad);
-                  console.log("guardada localidad: " + localidad);
-                  window.location.href = "/gestionar-rutas";
-              });
-
-              const label = document.createElement("label");
-              label.textContent = localidad;
-              listItem.appendChild(label);
-
-              const deleteBtn = document.createElement("button");
-              deleteBtn.textContent = "\u2716";
-              deleteBtn.classList.add("delete-btn");
-              deleteBtn.addEventListener("click", (e) => {
-                  e.stopPropagation();
-                  eliminarLocalidad(username, localidad);
-              });
-              listItem.appendChild(deleteBtn);
-
-              localidadesList.appendChild(listItem);
-          });
-        } catch (error) {
-          console.error("Error al obtener localidades:", error);
-        }
+        await loadLocalidades(username);
 
     }
 
@@ -149,6 +114,59 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // ####################### FUNCIONES REUSABLES #######################
+
+export async function loadLocalidades(cliente) {
+    const localidadesList = document.getElementById("localidadesList");
+    if (!localidadesList) return;
+
+    localidadesList.innerHTML = "Cargando localidades...";
+    try {
+        console.log("localidades del cliente: " + cliente);
+        const clienteDoc = await getDoc(doc(collection(db, "Clientes"), cliente));
+
+        if (!clienteDoc.exists()) {
+            localidadesList.innerHTML = "No se encontró el cliente.";
+            return;
+        }
+
+        localidadesList.innerHTML = "";
+        const localidadesRef = collection(clienteDoc.ref, "Localidades");
+        const localidadesSnapshot = await getDocs(localidadesRef);
+
+        if (localidadesSnapshot.empty) {
+            localidadesList.innerHTML = "No se encontraron localidades.";
+            return;
+        }
+
+        localidadesSnapshot.forEach((localidadDoc) => {
+            const localidad = localidadDoc.id;
+            const listItem = document.createElement("li");
+            listItem.classList.add("list-item-clickable");
+            listItem.addEventListener("click", () => {
+                localStorage.setItem("localidad", localidad);
+                console.log("guardada localidad: " + localidad);
+                window.location.href = "/gestionar-rutas";
+            });
+
+            const label = document.createElement("label");
+            label.textContent = localidad;
+            listItem.appendChild(label);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "\u2716";
+            deleteBtn.classList.add("delete-btn");
+            deleteBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                eliminarLocalidad(cliente, localidad);
+            });
+            listItem.appendChild(deleteBtn);
+
+            localidadesList.appendChild(listItem);
+        });
+    } catch (error) {
+        console.error("Error al obtener localidades:", error);
+    }
+}
 
 export async function loadRutasPorLocalidad(cliente, localidad) {
     const rutasList = document.getElementById("rutasList");
