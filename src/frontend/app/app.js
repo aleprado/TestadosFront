@@ -20,6 +20,12 @@ import { db, storageUpload, storageDownload } from "./config.js";
 document.addEventListener("DOMContentLoaded", async () => {
     const page = document.body.dataset.page;
 
+    // Botón de cierre de sesión disponible en todas las páginas
+    const logoutButton = document.getElementById("logoutButton");
+    logoutButton?.addEventListener("click", () => {
+        logout();
+    });
+
     if (page === "login") {
         const loginButton = document.getElementById("loginButton");
         loginButton?.addEventListener("click", () => {
@@ -37,10 +43,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ####################### LOCALIDADES #######################
     if (page === "localidades") {
         const username = checkLogin();
-        const logoutButton = document.getElementById("logoutButton");
-        logoutButton?.addEventListener("click", () => {
-            logout();
-        });
         const localidadesList = document.getElementById("localidadesList");
 
         if (!localidadesList) return;
@@ -86,6 +88,16 @@ document.addEventListener("DOMContentLoaded", async () => {
               const label = document.createElement("label");
               label.textContent = localidad;
               listItem.appendChild(label);
+
+              const deleteBtn = document.createElement("button");
+              deleteBtn.textContent = "\u2716";
+              deleteBtn.classList.add("delete-btn");
+              deleteBtn.addEventListener("click", (e) => {
+                  e.stopPropagation();
+                  eliminarLocalidad(username, localidad);
+              });
+              listItem.appendChild(deleteBtn);
+
               localidadesList.appendChild(listItem);
           });
         } catch (error) {
@@ -460,5 +472,43 @@ async function eliminarUsuario(cliente, localidad, userId) {
     } catch (error) {
         console.error("Error al eliminar el usuario:", error);
         alert("Error al eliminar el usuario.");
+    }
+}
+
+async function eliminarLocalidad(cliente, localidad) {
+    const confirm1 = confirm(`\u00bfEliminar la localidad ${localidad}?`);
+    if (!confirm1) return;
+    const confirm2 = confirm(
+        "Se eliminar\xE1n todas las rutas y usuarios asociados. \xBFDeseas continuar?"
+    );
+    if (!confirm2) return;
+
+    try {
+        const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
+        const localidadDoc = await getDoc(localidadRef);
+
+        if (!localidadDoc.exists()) {
+            alert("La localidad no existe.");
+            return;
+        }
+
+        const rutasRefs = localidadDoc.data().rutas || [];
+        const usuariosRefs = localidadDoc.data().usuarios || [];
+
+        for (const rutaRef of rutasRefs) {
+            await deleteDoc(rutaRef);
+        }
+
+        for (const usuarioRef of usuariosRefs) {
+            await deleteDoc(usuarioRef);
+        }
+
+        await deleteDoc(localidadRef);
+
+        alert("Localidad eliminada correctamente.");
+        window.location.reload();
+    } catch (error) {
+        console.error("Error al eliminar la localidad:", error);
+        alert("Error al eliminar la localidad.");
     }
 }
