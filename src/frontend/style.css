@@ -284,10 +284,35 @@ input[type="checkbox"] {
 /* Contenedor principal para cada ruta */
 .ruta-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     padding: 10px;
     border-bottom: 1px solid #ddd;
+    gap: 10px;
+}
+
+.ruta-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+.progreso-link {
+    text-decoration: none;
+    color: #d32f2f;
+    display: flex;
+    align-items: center;
+}
+
+.progreso-link::before {
+    content: "|";
+    color: #999;
+    margin-right: 6px;
+}
+
+.progreso-link::after {
+    content: "\2B07";
+    font-size: 14px;
+    margin-left: 4px;
 }
 
 /* Contenedor de los botones de cerrar sesión */
@@ -308,6 +333,15 @@ input[type="checkbox"] {
 
 .delete-btn:hover {
     color: #c62828;
+}
+
+.usuario-item {
+    display: flex;
+    align-items: center;
+}
+
+.usuario-item .usuario-label {
+    flex: 1;
 }
 
 

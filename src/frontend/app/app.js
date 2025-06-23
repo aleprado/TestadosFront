@@ -179,14 +179,24 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                     if (radio) radio.checked = true;
                 });
 
-                // Personalizar el contenido del elemento
+                // Contenido principal con el nombre de la ruta
                 listItem.innerHTML = `
                     <div class="ruta-content">
                         <input type="radio" name="ruta" id="${rutaId}" data-ruta-id="${rutaId}">
                         <label for="${rutaId}" class="ruta-label">${rutaId}</label>
                     </div>
-                    <a href="${bucketUrl}" target="_blank" class="progreso-link">${completado.toFixed(2)}%</a>
                 `;
+
+                // Contenedor de acciones a la derecha
+                const actions = document.createElement("div");
+                actions.classList.add("ruta-actions");
+
+                const progressLink = document.createElement("a");
+                progressLink.href = bucketUrl;
+                progressLink.target = "_blank";
+                progressLink.classList.add("progreso-link");
+                progressLink.textContent = `${completado.toFixed(2)}%`;
+                actions.appendChild(progressLink);
 
                 const deleteBtn = document.createElement("button");
                 deleteBtn.textContent = "\u2716";
@@ -195,7 +205,9 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                     e.stopPropagation();
                     eliminarRuta(cliente, localidad, rutaId);
                 });
-                listItem.appendChild(deleteBtn);
+                actions.appendChild(deleteBtn);
+
+                listItem.appendChild(actions);
 
                 rutasList.appendChild(listItem);
             }
@@ -228,7 +240,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
             if (usuarioDoc.exists()) {
                 const userData = usuarioDoc.data();
                 const listItem = document.createElement("li");
-                listItem.classList.add("list-item-clickable");
+                listItem.classList.add("list-item-clickable", "usuario-item");
                 listItem.setAttribute("data-user-id", usuarioDoc.id);
                 listItem.addEventListener("click", () => {
                     const checkbox = listItem.querySelector("input[type='checkbox']");
