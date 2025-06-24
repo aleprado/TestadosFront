@@ -406,23 +406,8 @@ async function subirRuta() {
                 // Archivo subido correctamente
                 alert("Archivo subido exitosamente.");
 
-                // Crear documento de la ruta y asociarlo a la localidad seleccionada
-                const rutaDocRef = doc(collection(db, "Rutas"), archivo.name);
-                const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
-                try {
-                    // Guardar la ruta en la colección 'Rutas'
-                    await setDoc(rutaDocRef, { completado: 0 });
-
-                    // Guardar la referencia dentro de la localidad existente
-                    await updateDoc(localidadRef, {
-                        rutas: arrayUnion(rutaDocRef)
-                    });
-
-                    console.log("Ruta registrada exitosamente en la base de datos.");
-                    await loadRutasPorLocalidad(cliente, localidad); // Recargar rutas
-                } catch (error) {
-                    console.error("Error al registrar la ruta en la base de datos:", error);
-                }
+                // Recargar rutas una vez que la lambda registre la nueva ruta
+                await loadRutasPorLocalidad(cliente, localidad);
             }
         );
     } catch (error) {
