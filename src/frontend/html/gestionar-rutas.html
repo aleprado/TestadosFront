@@ -48,13 +48,20 @@
             <ul id="usuariosList" class="list large-list">
                 <!-- Los elementos de usuarios se generarán dinámicamente aquí -->
             </ul>
+            <div class="add-actions">
+                <div>
+                    <input type="text" id="emailUsuarioInput" placeholder="Email" class="input-field">
+                </div>
+                <div>
+                    <input type="text" id="nombreUsuarioInput" placeholder="Nombre" class="input-field">
+                </div>
+                <button id="registerUserButton" class="btn">Registrar Usuario</button>
+            </div>
         </div>
     </section>
-    <div>
+    <div class="add-actions">
         <label for="fileInput" class="btn">Subir Nueva Ruta</label>
         <input type="file" id="fileInput" class="hidden-input">
-        <span id="fileName"></span>
-        <button id="registerUserButton" class="btn">Registrar Nuevo Usuario</button>
     </div>
 
 </div>
