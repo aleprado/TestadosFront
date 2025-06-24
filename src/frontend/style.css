@@ -8,6 +8,16 @@ body[data-page='localidades'] h1 {
     margin: 30px 0;
 }
 
+.help-text {
+    text-align: center;
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 20px;
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
 /* Ajuste del contenedor principal */
 .container {
     width: 90%;
@@ -419,6 +429,17 @@ input[type="checkbox"] {
     margin-left: auto;
 }
 
+.usuarios-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.registrar-usuario-btn {
+    margin-left: auto;
+}
+
 
 .popup-overlay {
     position: fixed;
@@ -461,4 +482,11 @@ input[type="checkbox"] {
     display: flex;
     gap: 10px;
     justify-content: center;
+}
+
+.popup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
 }

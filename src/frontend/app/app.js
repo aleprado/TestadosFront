@@ -13,7 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login, logout } from "./auth.js";
-import { showPopup } from "./ui.js";
+import { showPopup, showUserFormPopup } from "./ui.js";
 import { db, storageUpload, storageDownload } from "./config.js";
 
 // ####################### LOGIN #######################
@@ -97,8 +97,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 subirRuta();
             });
 
-            document.getElementById("registerUserButton")?.addEventListener("click", () => {
-                registrarUsuario(cliente, localidad);
+            document.getElementById("registerUserButton")?.addEventListener("click", async () => {
+                const data = await showUserFormPopup();
+                if (data) {
+                    registrarUsuario(cliente, localidad, data.nombre, data.email);
+                }
             });
 
             document.getElementById("rutasList")?.addEventListener("click", async (event) => {
@@ -415,12 +418,7 @@ async function subirRuta() {
     }
 }
 
-async function registrarUsuario(cliente, localidad) {
-    const nombreInput = document.getElementById("nombreUsuarioInput");
-    const emailInput = document.getElementById("emailUsuarioInput");
-    const nombreUsuario = nombreInput?.value.trim();
-    const emailUsuario = emailInput?.value.trim();
-
+async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario) {
     if (!nombreUsuario || !emailUsuario) {
         showPopup("Se requiere el nombre y el email del usuario.");
         return;
@@ -442,8 +440,6 @@ async function registrarUsuario(cliente, localidad) {
         });
 
         showPopup("Usuario registrado exitosamente.");
-        nombreInput.value = "";
-        emailInput.value = "";
         await loadUsuariosPorLocalidad(cliente, localidad); // Recargar usuarios
     } catch (error) {
         console.error("Error al registrar el usuario:", error);

@@ -16,6 +16,7 @@
     </div>
 
     <h1>Gestionar Rutas y Usuarios</h1>
+    <p class="help-text">Seleccione una ruta para ver los usuarios asignados. Marque los usuarios que desee asignar a la ruta elegida.</p>
 
     <section class="rutas-usuarios">
         <div class="rutas-container">
@@ -48,20 +49,15 @@
             </ul>
         </div>
         <div class="usuarios-container">
-            <h2>Usuarios</h2>
+            <div class="usuarios-header">
+                <h2>Usuarios</h2>
+                <button id="registerUserButton" class="btn registrar-usuario-btn">Registrar Usuario</button>
+            </div>
             <ul id="usuariosList" class="list large-list">
                 <!-- Los elementos de usuarios se generarán dinámicamente aquí -->
             </ul>
         </div>
     </section>
-
-    <h2>Registrar Usuario</h2>
-    <div class="add-actions user-registration">
-        <input type="text" id="emailUsuarioInput" placeholder="Email" class="input-field">
-        <input type="text" id="nombreUsuarioInput" placeholder="Nombre" class="input-field">
-        <button id="registerUserButton" class="btn">Registrar Usuario</button>
-    </div>
-
 </div>
 
 <script type="module" src="../app/app.js"></script>
