@@ -13,6 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login, logout } from "./auth.js";
+import { showPopup } from "./ui.js";
 import { db, storageUpload, storageDownload } from "./config.js";
 
 // ####################### LOGIN #######################
@@ -40,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (username && password) {
                 login(username, password);
             } else {
-                alert("Por favor, ingrese usuario y contraseña.");
+                showPopup("Por favor, ingrese usuario y contraseña.");
             }
         });
     }
@@ -54,7 +55,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const input = document.getElementById("nuevaLocalidadInput");
             const nombre = input.value.trim();
             if (!nombre) {
-                alert("Ingresa un nombre de localidad.");
+                showPopup("Ingresa un nombre de localidad.");
                 return;
             }
             try {
@@ -66,7 +67,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 await loadLocalidades(username);
             } catch (error) {
                 console.error("Error al agregar localidad:", error);
-                alert("Error al agregar la localidad.");
+                showPopup("Error al agregar la localidad.");
             }
         });
 
@@ -83,7 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const localidad = localStorage.getItem("localidad");
 
         if (!cliente || !localidad) {
-            alert("Selecciona una localidad para continuar.");
+            showPopup("Selecciona una localidad para continuar.");
             window.location.href = "/localidades";
             return;
         }
@@ -340,7 +341,7 @@ async function updateUserCheckboxes(rutaId) {
 export async function handleUserAssignment(userId, isChecked) {
     const rutaId = document.querySelector("input[name='ruta']:checked")?.getAttribute("data-ruta-id");
     if (!rutaId) {
-        alert("Selecciona una ruta antes de asignar usuarios.");
+        showPopup("Selecciona una ruta antes de asignar usuarios.");
         return;
     }
 
@@ -365,7 +366,7 @@ async function subirRuta() {
     const cliente = checkLogin();
     const localidad = localStorage.getItem("localidad");
     if (!cliente || !localidad) {
-        alert("Selecciona una localidad para continuar.");
+        showPopup("Selecciona una localidad para continuar.");
         return;
     }
 
@@ -373,14 +374,14 @@ async function subirRuta() {
     const archivo = archivoInput?.files[0];
 
     if (!archivo) {
-        alert("Selecciona un archivo para subir.");
+        showPopup("Selecciona un archivo para subir.");
         return;
     }
 
     // Validar que el archivo tenga una extensión válida
     const extensionesValidas = [".txt", ".csv"];
     if (!extensionesValidas.some((ext) => archivo.name.endsWith(ext))) {
-        alert("Solo se permiten archivos .txt o .csv.");
+        showPopup("Solo se permiten archivos .txt o .csv.");
         return;
     }
 
@@ -400,11 +401,11 @@ async function subirRuta() {
             },
             (error) => {
                 console.error("Error durante la subida del archivo:", error);
-                alert("Error al subir el archivo.");
+                showPopup("Error al subir el archivo.");
             },
             async () => {
                 // Archivo subido correctamente
-                alert("Archivo subido exitosamente.");
+                showPopup("Archivo subido exitosamente.");
 
                 // Recargar rutas una vez que la lambda registre la nueva ruta
                 await loadRutasPorLocalidad(cliente, localidad);
@@ -420,7 +421,7 @@ async function registrarUsuario(cliente, localidad) {
     const emailUsuario = prompt("Ingrese el email del usuario:");
 
     if (!nombreUsuario || !emailUsuario) {
-        alert("Se requiere el nombre y el email del usuario.");
+        showPopup("Se requiere el nombre y el email del usuario.");
         return;
     }
 
@@ -439,11 +440,11 @@ async function registrarUsuario(cliente, localidad) {
             usuarios: arrayUnion(usuarioRef)
         });
 
-        alert("Usuario registrado exitosamente.");
+        showPopup("Usuario registrado exitosamente.");
         await loadUsuariosPorLocalidad(cliente, localidad); // Recargar usuarios
     } catch (error) {
         console.error("Error al registrar el usuario:", error);
-        alert("Error al registrar el usuario.");
+        showPopup("Error al registrar el usuario.");
     }
 }
 
@@ -464,7 +465,7 @@ async function eliminarRuta(cliente, localidad, rutaId) {
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
         const localidadDoc = await getDoc(localidadRef);
         if (!localidadDoc.exists()) {
-            alert("La localidad no existe.");
+            showPopup("La localidad no existe.");
             return;
         }
 
@@ -488,7 +489,7 @@ async function eliminarRuta(cliente, localidad, rutaId) {
         await loadUsuariosPorLocalidad(cliente, localidad);
     } catch (error) {
         console.error("Error al eliminar la ruta:", error);
-        alert("Error al eliminar la ruta.");
+        showPopup("Error al eliminar la ruta.");
     }
 }
 
@@ -506,7 +507,7 @@ async function eliminarUsuario(cliente, localidad, userId) {
         await loadUsuariosPorLocalidad(cliente, localidad);
     } catch (error) {
         console.error("Error al eliminar el usuario:", error);
-        alert("Error al eliminar el usuario.");
+        showPopup("Error al eliminar el usuario.");
     }
 }
 
@@ -523,7 +524,7 @@ async function eliminarLocalidad(cliente, localidad) {
         const localidadDoc = await getDoc(localidadRef);
 
         if (!localidadDoc.exists()) {
-            alert("La localidad no existe.");
+            showPopup("La localidad no existe.");
             return;
         }
 
@@ -540,10 +541,10 @@ async function eliminarLocalidad(cliente, localidad) {
 
         await deleteDoc(localidadRef);
 
-        alert("Localidad eliminada correctamente.");
+        showPopup("Localidad eliminada correctamente.");
         window.location.reload();
     } catch (error) {
         console.error("Error al eliminar la localidad:", error);
-        alert("Error al eliminar la localidad.");
+        showPopup("Error al eliminar la localidad.");
     }
 }

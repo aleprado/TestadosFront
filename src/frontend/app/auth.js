@@ -1,6 +1,7 @@
 import { auth, db } from './config.js'; // Importa la configuración de Firebase Auth y Firestore
 import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { showPopup } from './ui.js';
 
 /**
  * Verifica si el usuario está autenticado.
@@ -10,7 +11,7 @@ import { collection, query, where, getDocs } from 'https://www.gstatic.com/fireb
 export function checkLogin() {
     const clienteNombre = localStorage.getItem("cliente");
     if (!clienteNombre) {
-        alert("Por favor inicia sesión.");
+        showPopup("Por favor inicia sesión.");
         window.location.href = "/login";
         return null;
     }
@@ -60,7 +61,7 @@ export async function login(email, password) {
         // Obtener el nombre del cliente
         const clienteNombre = await obtenerNombreCliente(user.email);
         if (!clienteNombre) {
-            alert("No se encontró un cliente asociado a este email.");
+            showPopup("No se encontró un cliente asociado a este email.");
             return;
         }
 
@@ -74,7 +75,7 @@ export async function login(email, password) {
         window.location.href = "/localidades";
     } catch (error) {
         console.error("Error de autenticación:", error);
-        alert("Credenciales incorrectas. Inténtalo de nuevo.");
+        showPopup("Credenciales incorrectas. Inténtalo de nuevo.");
     }
 }
 
@@ -85,6 +86,6 @@ export async function login(email, password) {
 export function logout() {
     localStorage.removeItem("email");
     localStorage.removeItem("cliente");
-    alert("Sesión cerrada correctamente.");
+    showPopup("Sesión cerrada correctamente.");
     window.location.href = "/login";
 }
