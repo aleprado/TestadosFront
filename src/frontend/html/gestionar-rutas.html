@@ -19,7 +19,11 @@
 
     <section class="rutas-usuarios">
         <div class="rutas-container">
-            <h2>Rutas</h2>
+            <div class="rutas-header">
+                <h2>Rutas</h2>
+                <label for="fileInput" class="btn registrar-ruta-btn">Registrar Ruta</label>
+                <input type="file" id="fileInput" class="hidden-input">
+            </div>
             <ul id="rutasList" class="list large-list">
                 <li class="list-item-clickable ruta-item">
                     <div class="ruta-content">
@@ -50,16 +54,12 @@
             </ul>
         </div>
     </section>
-    <div class="add-actions">
-        <div>
-            <label for="fileInput" class="btn">Subir Nueva Ruta</label>
-            <input type="file" id="fileInput" class="hidden-input">
-        </div>
-        <div class="user-registration">
-            <input type="text" id="emailUsuarioInput" placeholder="Email" class="input-field">
-            <input type="text" id="nombreUsuarioInput" placeholder="Nombre" class="input-field">
-            <button id="registerUserButton" class="btn">Registrar Usuario</button>
-        </div>
+
+    <h2>Registrar Usuario</h2>
+    <div class="add-actions user-registration">
+        <input type="text" id="emailUsuarioInput" placeholder="Email" class="input-field">
+        <input type="text" id="nombreUsuarioInput" placeholder="Nombre" class="input-field">
+        <button id="registerUserButton" class="btn">Registrar Usuario</button>
     </div>
 
 </div>
