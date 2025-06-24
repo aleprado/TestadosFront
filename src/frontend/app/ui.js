@@ -7,13 +7,13 @@ export function showPopup(message, { confirm = false } = {}) {
         overlay.className = 'popup-overlay';
         overlay.innerHTML = `
             <div class="popup-box">
-                <img src="../favicon.png" class="popup-logo" alt="logo">
                 <div class="popup-content">
+                    <img src="../favicon.png" class="popup-logo" alt="logo">
                     <span id="popupMessage"></span>
-                    <div class="popup-buttons">
-                        <button id="popupOkButton" class="btn">Aceptar</button>
-                        <button id="popupCancelButton" class="btn btn-secondary">Cancelar</button>
-                    </div>
+                </div>
+                <div class="popup-buttons">
+                    <button id="popupOkButton" class="btn">Aceptar</button>
+                    <button id="popupCancelButton" class="btn btn-secondary">Cancelar</button>
                 </div>
             </div>`;
         document.body.appendChild(overlay);
