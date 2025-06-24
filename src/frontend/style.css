@@ -90,6 +90,18 @@
     align-items: flex-start;
 }
 
+/* Contenedor para registrar usuarios en una sola línea */
+.user-registration {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-registration input {
+    width: auto;
+    margin-bottom: 0;
+}
+
 .add-actions input {
     width: 100%;
     padding: 10px;
