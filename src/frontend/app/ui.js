@@ -1,4 +1,5 @@
-export function showPopup(message) {
+export function showPopup(message, { confirm = false } = {}) {
+
     let overlay = document.getElementById('popupOverlay');
     if (!overlay) {
         overlay = document.createElement('div');
@@ -7,14 +8,33 @@ export function showPopup(message) {
         overlay.innerHTML = `
             <div class="popup-box">
                 <img src="../favicon.png" class="popup-logo" alt="logo">
-                <span id="popupMessage"></span>
-                <button id="popupButton" class="btn">OK</button>
+                <div class="popup-content">
+                    <span id="popupMessage"></span>
+                    <div class="popup-buttons">
+                        <button id="popupOkButton" class="btn">Aceptar</button>
+                        <button id="popupCancelButton" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </div>
             </div>`;
         document.body.appendChild(overlay);
-        overlay.querySelector('#popupButton').addEventListener('click', () => {
-            overlay.style.display = 'none';
-        });
     }
-    overlay.querySelector('#popupMessage').textContent = message;
-    overlay.style.display = 'flex';
+
+    const okButton = overlay.querySelector('#popupOkButton');
+    const cancelButton = overlay.querySelector('#popupCancelButton');
+
+    return new Promise((resolve) => {
+        overlay.querySelector('#popupMessage').textContent = message;
+        cancelButton.style.display = confirm ? 'inline-block' : 'none';
+        overlay.style.display = 'flex';
+
+        okButton.onclick = () => {
+            overlay.style.display = 'none';
+            resolve(true);
+        };
+
+        cancelButton.onclick = () => {
+            overlay.style.display = 'none';
+            resolve(false);
+        };
+    });
 }

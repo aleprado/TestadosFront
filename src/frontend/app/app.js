@@ -405,8 +405,7 @@ async function subirRuta() {
             },
             async () => {
                 // Archivo subido correctamente
-                showPopup("Archivo subido exitosamente.");
-
+                showPopup("Ruta cargada exitosamente.");
                 // Recargar rutas una vez que la lambda registre la nueva ruta
                 await loadRutasPorLocalidad(cliente, localidad);
             }
@@ -459,7 +458,7 @@ function mostrarLoaderUsuarios(mostrar) {
 
 async function eliminarRuta(cliente, localidad, rutaId) {
     try {
-        const confirmacion = confirm(`\u00bfEliminar la ruta ${rutaId}?`);
+        const confirmacion = await showPopup(`\u00bfEliminar la ruta ${rutaId}?`, { confirm: true });
         if (!confirmacion) return;
 
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
@@ -495,7 +494,7 @@ async function eliminarRuta(cliente, localidad, rutaId) {
 
 async function eliminarUsuario(cliente, localidad, userId) {
     try {
-        const confirmacion = confirm(`\u00bfEliminar el usuario ${userId}?`);
+        const confirmacion = await showPopup(`\u00bfEliminar el usuario ${userId}?`, { confirm: true });
         if (!confirmacion) return;
 
         const usuarioRef = doc(db, "Usuarios", userId);
@@ -512,10 +511,11 @@ async function eliminarUsuario(cliente, localidad, userId) {
 }
 
 async function eliminarLocalidad(cliente, localidad) {
-    const confirm1 = confirm(`\u00bfEliminar la localidad ${localidad}?`);
+    const confirm1 = await showPopup(`\u00bfEliminar la localidad ${localidad}?`, { confirm: true });
     if (!confirm1) return;
-    const confirm2 = confirm(
-        "Se eliminar\xE1n todas las rutas y usuarios asociados. \xBFDeseas continuar?"
+    const confirm2 = await showPopup(
+        "Se eliminar\xE1n todas las rutas y usuarios asociados. \xBFDeseas continuar?",
+        { confirm: true }
     );
     if (!confirm2) return;
 
