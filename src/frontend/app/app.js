@@ -416,8 +416,10 @@ async function subirRuta() {
 }
 
 async function registrarUsuario(cliente, localidad) {
-    const nombreUsuario = prompt("Ingrese el nombre del usuario:");
-    const emailUsuario = prompt("Ingrese el email del usuario:");
+    const nombreInput = document.getElementById("nombreUsuarioInput");
+    const emailInput = document.getElementById("emailUsuarioInput");
+    const nombreUsuario = nombreInput?.value.trim();
+    const emailUsuario = emailInput?.value.trim();
 
     if (!nombreUsuario || !emailUsuario) {
         showPopup("Se requiere el nombre y el email del usuario.");
@@ -440,6 +442,8 @@ async function registrarUsuario(cliente, localidad) {
         });
 
         showPopup("Usuario registrado exitosamente.");
+        nombreInput.value = "";
+        emailInput.value = "";
         await loadUsuariosPorLocalidad(cliente, localidad); // Recargar usuarios
     } catch (error) {
         console.error("Error al registrar el usuario:", error);
