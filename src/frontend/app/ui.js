@@ -1,4 +1,5 @@
 export function showPopup(message, { confirm = false } = {}) {
+
     let overlay = document.getElementById('popupOverlay');
     if (!overlay) {
         overlay = document.createElement('div');

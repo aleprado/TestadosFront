@@ -406,7 +406,6 @@ async function subirRuta() {
             async () => {
                 // Archivo subido correctamente
                 showPopup("Ruta cargada exitosamente.");
-
                 // Recargar rutas una vez que la lambda registre la nueva ruta
                 await loadRutasPorLocalidad(cliente, localidad);
             }
