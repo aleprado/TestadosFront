@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             await loadUsuariosPorLocalidad(cliente, localidad);
 
             document.getElementById("fileInput")?.addEventListener("change", () => {
-                subirRuta();
+                subirRutas();
             });
 
             document.getElementById("registerUserButton")?.addEventListener("click", async () => {
@@ -365,7 +365,7 @@ export async function handleUserAssignment(userId, isChecked) {
     }
 }
 
-async function subirRuta() {
+async function subirRutas() {
     const cliente = checkLogin();
     const localidad = localStorage.getItem("localidad");
     if (!cliente || !localidad) {
@@ -374,48 +374,54 @@ async function subirRuta() {
     }
 
     const archivoInput = document.getElementById("fileInput");
-    const archivo = archivoInput?.files[0];
+    const archivos = archivoInput?.files;
 
-    if (!archivo) {
+    if (!archivos || archivos.length === 0) {
         showPopup("Selecciona un archivo para subir.");
         return;
     }
 
-    // Validar que el archivo tenga una extensión válida
     const extensionesValidas = [".txt", ".csv"];
-    if (!extensionesValidas.some((ext) => archivo.name.endsWith(ext))) {
-        showPopup("Solo se permiten archivos .txt o .csv.");
-        return;
+
+    for (const archivo of archivos) {
+        if (!extensionesValidas.some((ext) => archivo.name.endsWith(ext))) {
+            showPopup("Solo se permiten archivos .txt o .csv.");
+            return;
+        }
     }
 
-    try {
-        // Usar la configuración específica para subida e incluir la localidad en la ruta
-        const referenciaArchivo = ref(
-            storageUpload,
-            `/${cliente}/${localidad}/${archivo.name}`
-        );
-        const tareaSubida = uploadBytesResumable(referenciaArchivo, archivo);
+    for (const archivo of archivos) {
+        await new Promise((resolver, rechazar) => {
+            const referenciaArchivo = ref(
+                storageUpload,
+                `/${cliente}/${localidad}/${archivo.name}`
+            );
+            const tareaSubida = uploadBytesResumable(referenciaArchivo, archivo);
 
-        tareaSubida.on(
-            "state_changed",
-            (instantanea) => {
-                const progreso = (instantanea.bytesTransferred / instantanea.totalBytes) * 100;
-                console.log(`Progreso de subida: ${progreso}%`);
-            },
-            (error) => {
-                console.error("Error durante la subida del archivo:", error);
-                showPopup("Error al subir el archivo.");
-            },
-            async () => {
-                // Archivo subido correctamente
-                showPopup("Ruta cargada exitosamente.");
-                // Recargar rutas una vez que la lambda registre la nueva ruta
-                await loadRutasPorLocalidad(cliente, localidad);
-            }
-        );
-    } catch (error) {
-        console.error("Error general al subir el archivo:", error);
+            tareaSubida.on(
+                "state_changed",
+                (instantanea) => {
+                    const progreso =
+                        (instantanea.bytesTransferred / instantanea.totalBytes) * 100;
+                    console.log(
+                        `Progreso de subida de ${archivo.name}: ${progreso}%`
+                    );
+                },
+                (error) => {
+                    console.error(
+                        "Error durante la subida del archivo:",
+                        error
+                    );
+                    showPopup("Error al subir el archivo.");
+                    rechazar(error);
+                },
+                () => resolver()
+            );
+        });
     }
+
+    showPopup("Rutas cargadas exitosamente.");
+    await loadRutasPorLocalidad(cliente, localidad);
 }
 
 async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario) {
