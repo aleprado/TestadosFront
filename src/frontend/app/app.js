@@ -177,6 +177,15 @@ export async function loadLocalidades(cliente) {
     }
 }
 
+async function esperarActualizacionRutas(cliente, localidad, cantidadAnterior) {
+    for (let i = 0; i < 10; i++) {
+        await loadRutasPorLocalidad(cliente, localidad);
+        const lista = document.getElementById("rutasList");
+        if (lista && lista.children.length > cantidadAnterior) return;
+        await new Promise((r) => setTimeout(r, 2000));
+    }
+}
+
 export async function loadRutasPorLocalidad(cliente, localidad) {
     const rutasList = document.getElementById("rutasList");
     if (!rutasList) return;
@@ -375,6 +384,8 @@ async function subirRuta() {
 
     const archivoInput = document.getElementById("fileInput");
     const archivo = archivoInput?.files[0];
+    const listaRutas = document.getElementById("rutasList");
+    const cantidadAnterior = listaRutas ? listaRutas.children.length : 0;
 
     if (!archivo) {
         showPopup("Selecciona un archivo para subir.");
@@ -407,10 +418,8 @@ async function subirRuta() {
                 showPopup("Error al subir el archivo.");
             },
             async () => {
-                // Archivo subido correctamente
                 showPopup("Ruta cargada exitosamente.");
-                // Recargar rutas una vez que la lambda registre la nueva ruta
-                await loadRutasPorLocalidad(cliente, localidad);
+                await esperarActualizacionRutas(cliente, localidad, cantidadAnterior);
             }
         );
     } catch (error) {
