@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             await loadUsuariosPorLocalidad(cliente, localidad);
 
             document.getElementById("fileInput")?.addEventListener("change", () => {
-                subirRuta();
+                subirRutas();
             });
 
             document.getElementById("registerUserButton")?.addEventListener("click", async () => {
@@ -374,7 +374,7 @@ export async function handleUserAssignment(userId, isChecked) {
     }
 }
 
-async function subirRuta() {
+async function subirRutas() {
     const cliente = checkLogin();
     const localidad = localStorage.getItem("localidad");
     if (!cliente || !localidad) {
@@ -383,48 +383,48 @@ async function subirRuta() {
     }
 
     const archivoInput = document.getElementById("fileInput");
-    const archivo = archivoInput?.files[0];
+    const archivos = archivoInput?.files;
     const listaRutas = document.getElementById("rutasList");
     const cantidadAnterior = listaRutas ? listaRutas.children.length : 0;
 
-    if (!archivo) {
+    if (!archivos || archivos.length === 0) {
         showPopup("Selecciona un archivo para subir.");
         return;
     }
 
-    // Validar que el archivo tenga una extensión válida
     const extensionesValidas = [".txt", ".csv"];
-    if (!extensionesValidas.some((ext) => archivo.name.endsWith(ext))) {
-        showPopup("Solo se permiten archivos .txt o .csv.");
-        return;
-    }
+    for (const archivo of archivos) {
+        if (!extensionesValidas.some((ext) => archivo.name.endsWith(ext))) {
+            showPopup("Solo se permiten archivos .txt o .csv.");
+            continue;
+        }
 
-    try {
-        // Usar la configuración específica para subida e incluir la localidad en la ruta
-        const referenciaArchivo = ref(
-            storageUpload,
-            `/${cliente}/${localidad}/${archivo.name}`
-        );
-        const tareaSubida = uploadBytesResumable(referenciaArchivo, archivo);
+        try {
+            const referenciaArchivo = ref(
+                storageUpload,
+                `/${cliente}/${localidad}/${archivo.name}`
+            );
+            const tareaSubida = uploadBytesResumable(referenciaArchivo, archivo);
 
-        tareaSubida.on(
-            "state_changed",
-            (instantanea) => {
-                const progreso = (instantanea.bytesTransferred / instantanea.totalBytes) * 100;
-                console.log(`Progreso de subida: ${progreso}%`);
-            },
-            (error) => {
-                console.error("Error durante la subida del archivo:", error);
-                showPopup("Error al subir el archivo.");
-            },
-            async () => {
-                showPopup("Ruta cargada exitosamente.");
-                await esperarActualizacionRutas(cliente, localidad, cantidadAnterior);
-            }
-        );
-    } catch (error) {
-        console.error("Error general al subir el archivo:", error);
+            await new Promise((resolve) => {
+                tareaSubida.on(
+                    "state_changed",
+                    null,
+                    (error) => {
+                        console.error("Error durante la subida del archivo:", error);
+                        showPopup("Error al subir el archivo.");
+                        resolve();
+                    },
+                    () => resolve()
+                );
+            });
+
+            showPopup("Ruta cargada exitosamente.");
+        } catch (error) {
+            console.error("Error general al subir el archivo:", error);
+        }
     }
+    await esperarActualizacionRutas(cliente, localidad, cantidadAnterior);
 }
 
 async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario) {
