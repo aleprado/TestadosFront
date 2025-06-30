@@ -418,6 +418,18 @@ input[type="checkbox"] {
     flex: 1;
 }
 
+.usuario-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.estado-asignacion {
+    cursor: pointer;
+    font-weight: bold;
+}
+
 /* Encabezado de rutas con botón a la derecha */
 .rutas-header {
     display: flex;
