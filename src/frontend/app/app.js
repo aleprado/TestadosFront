@@ -252,6 +252,9 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 progressLink.href = bucketUrl;
                 progressLink.target = "_blank";
                 progressLink.classList.add("progreso-link");
+                if (completado === 0) {
+                    progressLink.classList.add("progreso-disabled");
+                }
                 progressLink.textContent = `${completado.toFixed(2)}%`;
                 actions.appendChild(progressLink);
 
