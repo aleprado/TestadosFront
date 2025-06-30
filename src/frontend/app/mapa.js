@@ -12,6 +12,7 @@ async function dibujar(){
     const recorrido = d.recorrido || []
     if(recorrido.length){
         const puntos = recorrido.map(p=>[p.latitud,p.longitud])
+        m.setView(puntos[0],13)
         L.polyline(puntos,{color:'green'}).addTo(m)
     }
 }

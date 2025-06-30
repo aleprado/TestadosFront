@@ -13,7 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login, logout } from "./auth.js";
-import { showPopup, showUserFormPopup } from "./ui.js";
+import { showPopup, showUserFormPopup, mostrarMapaPopup } from "./ui.js";
 import { db, storageUpload, storageDownload } from "./config.js";
 
 let rutaSeleccionada = null;
@@ -263,7 +263,7 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 mapaBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
                     if (mapaBtn.disabled) return;
-                    window.location.href = `/mapa?ruta=${rutaId}`;
+                    mostrarMapaPopup(rutaId);
                 });
                 actions.appendChild(mapaBtn);
 
