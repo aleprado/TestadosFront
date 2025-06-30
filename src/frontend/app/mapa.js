@@ -10,6 +10,7 @@ async function dibujar(){
     const resultado = await getDocs(refRecorrido)
     const puntos = resultado.docs
         .sort((a,b)=>parseInt(a.id)-parseInt(b.id))
+        .filter(d=>d.data().latitud!=='' && d.data().longitud!=='')
         .map(d=>[d.data().latitud,d.data().longitud])
     if(puntos.length){
         mapa.setView(puntos[0],13)
