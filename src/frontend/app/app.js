@@ -251,6 +251,17 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 progressLink.textContent = `${completado.toFixed(2)}%`;
                 actions.appendChild(progressLink);
 
+                const mapaBtn = document.createElement("button");
+                mapaBtn.textContent = "🗺️";
+                mapaBtn.classList.add("map-btn");
+                mapaBtn.disabled = completado === 0;
+                mapaBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (mapaBtn.disabled) return;
+                    window.location.href = `/mapa?ruta=${rutaId}`;
+                });
+                actions.appendChild(mapaBtn);
+
                 const deleteBtn = document.createElement("button");
                 deleteBtn.textContent = "\u2716";
                 deleteBtn.classList.add("delete-btn");
