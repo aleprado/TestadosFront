@@ -524,6 +524,12 @@ input[type="checkbox"] {
     font-size:16px;
     margin-left:10px;
 }
+.map-btn svg{
+    width:1em;
+    height:1em;
+    fill:currentColor;
+    vertical-align:middle;
+}
 .map-btn::before{
     content:"|";
     color:#999;
