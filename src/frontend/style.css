@@ -352,6 +352,11 @@ input[type="checkbox"] {
     align-items: center;
 }
 
+.progreso-disabled {
+    color: #999;
+    pointer-events: none;
+}
+
 
 .progreso-link::after {
     content: "\2B07";
@@ -396,7 +401,7 @@ input[type="checkbox"] {
     color: #d32f2f;
     cursor: pointer;
     font-size: 16px;
-    margin-left: 10px;
+    margin-left: 0;
 }
 
 .delete-btn::before {
