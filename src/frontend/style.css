@@ -430,6 +430,18 @@ input[type="checkbox"] {
     font-weight: bold;
 }
 
+.asignada-label {
+    color: #4caf50;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.ruta-seleccionada {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: scale(1.02);
+    border: 2px solid #4caf50;
+}
+
 /* Encabezado de rutas con botón a la derecha */
 .rutas-header {
     display: flex;
