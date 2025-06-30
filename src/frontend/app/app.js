@@ -290,30 +290,33 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
                 const listItem = document.createElement("li");
                 listItem.classList.add("list-item-clickable", "usuario-item");
                 listItem.setAttribute("data-user-id", usuarioDoc.id);
-                listItem.addEventListener("click", () => {
-                    const checkbox = listItem.querySelector("input[type='checkbox']");
-                    if (checkbox) checkbox.checked = !checkbox.checked;
-                    handleUserAssignment(usuarioDoc.id, checkbox.checked);
-                });
 
                 const label = document.createElement("label");
-                label.setAttribute("for", usuarioDoc.id);
                 label.classList.add("usuario-label");
-
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.id = usuarioDoc.id;
-                checkbox.setAttribute("data-user-id", usuarioDoc.id);
-                checkbox.addEventListener("change", (e) =>
-                    handleUserAssignment(usuarioDoc.id, e.target.checked)
-                );
 
                 const span = document.createElement("span");
                 span.textContent = `${userData.nombre} (${userData.email})`;
 
-                label.appendChild(checkbox);
                 label.appendChild(span);
                 listItem.appendChild(label);
+
+                const acciones = document.createElement("div");
+                acciones.classList.add("usuario-actions");
+
+                const estado = document.createElement("span");
+                estado.classList.add("estado-asignacion");
+                estado.textContent = "Asignar";
+                estado.dataset.asignado = "false";
+                estado.style.color = "#2196f3";
+                estado.addEventListener("click", async (e) => {
+                    e.stopPropagation();
+                    const nuevoEstado = estado.dataset.asignado !== "true";
+                    await handleUserAssignment(usuarioDoc.id, nuevoEstado);
+                    estado.textContent = nuevoEstado ? "Asignado" : "Asignar";
+                    estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
+                    estado.dataset.asignado = String(nuevoEstado);
+                });
+                acciones.appendChild(estado);
 
                 const deleteBtn = document.createElement("button");
                 deleteBtn.textContent = "\u2716";
@@ -322,7 +325,9 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
                     e.stopPropagation();
                     eliminarUsuario(cliente, localidad, usuarioDoc.id);
                 });
-                listItem.appendChild(deleteBtn);
+                acciones.appendChild(deleteBtn);
+
+                listItem.appendChild(acciones);
                 usuariosList.appendChild(listItem);
             }
         }
@@ -335,22 +340,26 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
 async function updateUserCheckboxes(rutaId) {
     const usuariosList = document.getElementById("usuariosList");
     for (const listItem of usuariosList.children) {
-        const checkbox = listItem.querySelector("input[type='checkbox']");
+        const estado = listItem.querySelector(".estado-asignacion");
         const userId = listItem.getAttribute("data-user-id");
         try {
             const usuarioRef = doc(db, "Usuarios", userId);
             const usuarioDoc = await getDoc(usuarioRef);
             const rutasAsignadas = usuarioDoc.data().rutas.map((ruta) => ruta.path || ruta);
-
-            checkbox.checked = rutasAsignadas.includes(`Rutas/${rutaId}`);
+            const asignado = rutasAsignadas.includes(`Rutas/${rutaId}`);
+            estado.textContent = asignado ? "Asignado" : "Asignar";
+            estado.style.color = asignado ? "#4caf50" : "#2196f3";
+            estado.dataset.asignado = String(asignado);
         } catch (error) {
             console.error(`Error al consultar el documento del usuario ${userId}:`, error);
-            if (checkbox) checkbox.checked = false;
+            estado.textContent = "Asignar";
+            estado.style.color = "#2196f3";
+            estado.dataset.asignado = "false";
         }
     }
 }
 
-export async function handleUserAssignment(userId, isChecked) {
+export async function handleUserAssignment(userId, asignar) {
     const rutaId = document.querySelector("input[name='ruta']:checked")?.getAttribute("data-ruta-id");
     if (!rutaId) {
         showPopup("Selecciona una ruta antes de asignar usuarios.");
@@ -361,13 +370,13 @@ export async function handleUserAssignment(userId, isChecked) {
         const usuarioRef = doc(db, "Usuarios", userId);
         const rutaRef = doc(db, "Rutas", rutaId);
 
-        const updateData = isChecked
-            ? { rutas: arrayUnion(rutaRef) }
-            : { rutas: arrayRemove(rutaRef) };
+    const updateData = asignar
+        ? { rutas: arrayUnion(rutaRef) }
+        : { rutas: arrayRemove(rutaRef) };
 
         await updateDoc(usuarioRef, updateData);
         console.log(
-            `${isChecked ? "Asignada" : "Eliminada"} la ruta ${rutaId} al usuario ${userId}`
+            `${asignar ? "Asignada" : "Eliminada"} la ruta ${rutaId} al usuario ${userId}`
         );
     } catch (error) {
         console.error("Error al actualizar la asignación de usuarios:", error);
