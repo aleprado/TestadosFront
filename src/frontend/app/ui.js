@@ -77,3 +77,20 @@ export function showUserFormPopup() {
         };
     });
 }
+
+export function mostrarMapaPopup(ruta) {
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.innerHTML = `
+        <div class="popup-box mapa-popup">
+            <iframe src="/mapa?ruta=${ruta}"></iframe>
+            <div class="popup-buttons">
+                <button id="cerrarMapa" class="btn">Cerrar</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+    overlay.style.display = 'flex';
+    overlay.querySelector('#cerrarMapa').onclick = () => {
+        document.body.removeChild(overlay);
+    };
+}
