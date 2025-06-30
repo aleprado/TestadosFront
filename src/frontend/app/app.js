@@ -305,14 +305,14 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
 
                 const estado = document.createElement("span");
                 estado.classList.add("estado-asignacion");
-                estado.textContent = "Asignar";
+                estado.textContent = "Vincular";
                 estado.dataset.asignado = "false";
                 estado.style.color = "#2196f3";
                 estado.addEventListener("click", async (e) => {
                     e.stopPropagation();
                     const nuevoEstado = estado.dataset.asignado !== "true";
                     await handleUserAssignment(usuarioDoc.id, nuevoEstado);
-                    estado.textContent = nuevoEstado ? "Asignado" : "Asignar";
+                    estado.textContent = nuevoEstado ? "Desvincular" : "Vincular";
                     estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
                     estado.dataset.asignado = String(nuevoEstado);
                 });
