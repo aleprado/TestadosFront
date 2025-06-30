@@ -10,12 +10,6 @@ async function dibujar(){
     if(!s.exists())return
     const d = s.data()
     const recorrido = d.recorrido || []
-    const plan = d.plan || []
-    if(plan.length){
-        const puntos = plan.map(p=>[p.latitud,p.longitud])
-        L.polyline(puntos,{color:'blue'}).addTo(m)
-        m.setView(puntos[0],15)
-    }
     if(recorrido.length){
         const puntos = recorrido.map(p=>[p.latitud,p.longitud])
         L.polyline(puntos,{color:'green'}).addTo(m)
