@@ -305,14 +305,14 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
 
                 const estado = document.createElement("span");
                 estado.classList.add("estado-asignacion");
-                estado.textContent = "Vincular";
+                estado.textContent = "Asignar";
                 estado.dataset.asignado = "false";
                 estado.style.color = "#2196f3";
                 estado.addEventListener("click", async (e) => {
                     e.stopPropagation();
                     const nuevoEstado = estado.dataset.asignado !== "true";
                     await handleUserAssignment(usuarioDoc.id, nuevoEstado);
-                    estado.textContent = nuevoEstado ? "Desvincular" : "Vincular";
+                    estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
                     estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
                     estado.dataset.asignado = String(nuevoEstado);
                 });
@@ -347,7 +347,7 @@ async function updateUserCheckboxes(rutaId) {
             const usuarioDoc = await getDoc(usuarioRef);
             const rutasAsignadas = usuarioDoc.data().rutas.map((ruta) => ruta.path || ruta);
             const asignado = rutasAsignadas.includes(`Rutas/${rutaId}`);
-            estado.textContent = asignado ? "Asignado" : "Asignar";
+            estado.textContent = asignado ? "Desasignar" : "Asignar";
             estado.style.color = asignado ? "#4caf50" : "#2196f3";
             estado.dataset.asignado = String(asignado);
         } catch (error) {
