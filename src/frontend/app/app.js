@@ -16,6 +16,8 @@ import { checkLogin, login, logout } from "./auth.js";
 import { showPopup, showUserFormPopup } from "./ui.js";
 import { db, storageUpload, storageDownload } from "./config.js";
 
+let rutaSeleccionada = null;
+
 // ####################### LOGIN #######################
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -107,8 +109,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("rutasList")?.addEventListener("click", async (event) => {
                 const listItem = event.target.closest("li");
                 if (listItem) {
-                    const rutaId = listItem.querySelector("input[type='radio']")?.getAttribute("data-ruta-id");
+                    const rutaId = listItem.getAttribute("data-ruta-id");
                     if (rutaId) {
+                        rutaSeleccionada = rutaId;
+                        document.querySelectorAll(".ruta-item").forEach((el) => el.classList.remove("ruta-seleccionada"));
+                        listItem.classList.add("ruta-seleccionada");
                         const usuariosList = document.getElementById("usuariosList");
                         usuariosList.classList.add("blurred");
                         await updateUserCheckboxes(rutaId);
@@ -212,32 +217,32 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 const rutaId = rutaDoc.id;
                 const rutaData = rutaDoc.data();
 
-                // Obtener el campo "completado"
                 const completado = rutaData.completado || 0;
-
-                // Enlace al archivo CSV en el bucket
                 const bucketUrl = `https://storage.googleapis.com/testados-rutas-exportadas/testados-rutas-exportadas/${cliente}/${localidad}/${rutaId}.csv`;
 
-                // Crear el elemento de la lista
+                const asignada = await rutaTieneAsignados(rutaRef);
+
                 const listItem = document.createElement("li");
                 listItem.classList.add("list-item-clickable", "ruta-item");
+                listItem.setAttribute("data-ruta-id", rutaId);
 
-                listItem.addEventListener("click", () => {
-                    const radio = listItem.querySelector("input[type='radio']");
-                    if (radio) radio.checked = true;
-                });
+                const contenido = document.createElement("div");
+                contenido.classList.add("ruta-content");
+                const nombre = document.createElement("span");
+                nombre.classList.add("ruta-label");
+                nombre.textContent = rutaId;
+                contenido.appendChild(nombre);
+                listItem.appendChild(contenido);
 
-                // Contenido principal con el nombre de la ruta
-                listItem.innerHTML = `
-                    <div class="ruta-content">
-                        <input type="radio" name="ruta" id="${rutaId}" data-ruta-id="${rutaId}">
-                        <label for="${rutaId}" class="ruta-label">${rutaId}</label>
-                    </div>
-                `;
-
-                // Contenedor de acciones a la derecha
                 const actions = document.createElement("div");
                 actions.classList.add("ruta-actions");
+
+                if (asignada) {
+                    const etiqueta = document.createElement("span");
+                    etiqueta.classList.add("asignada-label");
+                    etiqueta.textContent = "Asignada";
+                    actions.appendChild(etiqueta);
+                }
 
                 const progressLink = document.createElement("a");
                 progressLink.href = bucketUrl;
@@ -359,8 +364,14 @@ async function updateUserCheckboxes(rutaId) {
     }
 }
 
+async function rutaTieneAsignados(rutaRef) {
+    const consulta = query(collection(db, "Usuarios"), where("rutas", "array-contains", rutaRef));
+    const resultado = await getDocs(consulta);
+    return !resultado.empty;
+}
+
 export async function handleUserAssignment(userId, asignar) {
-    const rutaId = document.querySelector("input[name='ruta']:checked")?.getAttribute("data-ruta-id");
+    const rutaId = rutaSeleccionada;
     if (!rutaId) {
         showPopup("Selecciona una ruta antes de asignar usuarios.");
         return;
