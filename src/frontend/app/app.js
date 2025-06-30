@@ -17,6 +17,7 @@ import { showPopup, showUserFormPopup } from "./ui.js";
 import { db, storageUpload, storageDownload } from "./config.js";
 
 let rutaSeleccionada = null;
+let usuariosCargados = false;
 
 // ####################### LOGIN #######################
 
@@ -93,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         try {
             await loadRutasPorLocalidad(cliente, localidad);
-            await loadUsuariosPorLocalidad(cliente, localidad);
+            document.getElementById("usuariosList").innerHTML = "Elige una ruta";
 
             document.getElementById("fileInput")?.addEventListener("change", () => {
                 subirRutas();
@@ -116,6 +117,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                         listItem.classList.add("ruta-seleccionada");
                         const usuariosList = document.getElementById("usuariosList");
                         usuariosList.classList.add("blurred");
+                        if (!usuariosCargados) {
+                            await loadUsuariosPorLocalidad(cliente, localidad);
+                            usuariosCargados = true;                        }
                         await updateUserCheckboxes(rutaId);
                         usuariosList.classList.remove("blurred");
                     }
@@ -483,7 +487,8 @@ async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario)
         });
 
         showPopup("Usuario registrado exitosamente.");
-        await loadUsuariosPorLocalidad(cliente, localidad); // Recargar usuarios
+        await loadUsuariosPorLocalidad(cliente, localidad);
+        usuariosCargados = true;
     } catch (error) {
         console.error("Error al registrar el usuario:", error);
         showPopup("Error al registrar el usuario.");
@@ -529,6 +534,7 @@ async function eliminarRuta(cliente, localidad, rutaId) {
 
         await loadRutasPorLocalidad(cliente, localidad);
         await loadUsuariosPorLocalidad(cliente, localidad);
+        usuariosCargados = true;
     } catch (error) {
         console.error("Error al eliminar la ruta:", error);
         showPopup("Error al eliminar la ruta.");
@@ -547,6 +553,7 @@ async function eliminarUsuario(cliente, localidad, userId) {
         await deleteDoc(usuarioRef);
 
         await loadUsuariosPorLocalidad(cliente, localidad);
+        usuariosCargados = true;
     } catch (error) {
         console.error("Error al eliminar el usuario:", error);
         showPopup("Error al eliminar el usuario.");

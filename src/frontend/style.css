@@ -437,9 +437,10 @@ input[type="checkbox"] {
 }
 
 .ruta-seleccionada {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transform: scale(1.05);
     border: 2px solid #4caf50;
+    background-color: #e8f5e9;
 }
 
 /* Encabezado de rutas con botón a la derecha */
