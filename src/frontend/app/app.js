@@ -195,7 +195,7 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
     const rutasList = document.getElementById("rutasList");
     if (!rutasList) return;
 
-    rutasList.innerHTML = "Cargando rutas...";
+    rutasList.innerHTML = "";
     try {
         // Referencia a la localidad
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
@@ -386,9 +386,23 @@ export async function handleUserAssignment(userId, asignar) {
         : { rutas: arrayRemove(rutaRef) };
 
         await updateDoc(usuarioRef, updateData);
-        console.log(
-            `${asignar ? "Asignada" : "Eliminada"} la ruta ${rutaId} al usuario ${userId}`
-        );
+        const asignada = await rutaTieneAsignados(rutaRef);
+        const item = document.querySelector(`li[data-ruta-id="${rutaId}"]`);
+        if (item) {
+            const contenedor = item.querySelector(".ruta-actions");
+            let etiqueta = contenedor.querySelector(".asignada-label");
+            if (asignada) {
+                if (!etiqueta) {
+                    etiqueta = document.createElement("span");
+                    etiqueta.classList.add("asignada-label");
+                    etiqueta.textContent = "Asignada";
+                    contenedor.prepend(etiqueta);
+                }
+            } else {
+                etiqueta?.remove();
+            }
+        }
+        console.log(`${asignar ? "Asignada" : "Eliminada"} la ruta ${rutaId} al usuario ${userId}`);
     } catch (error) {
         console.error("Error al actualizar la asignación de usuarios:", error);
     }
