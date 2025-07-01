@@ -23,7 +23,7 @@ async function dibujar(){
         L.polyline(coords,{color:'green',dashArray:'4 6'}).addTo(mapa)
         puntos.forEach(p=>{
             L.circleMarker([p.latitud,p.longitud],{radius:4,color:'red',fillColor:'red',fillOpacity:0.8})
-                .bindTooltip(`${p.fecha}<br>Medidor: ${p.medidor}`)
+                .bindTooltip(`Lectura: ${p.fecha}<br>Medidor: ${p.medidor}`)
                 .addTo(mapa)
         })
     }
