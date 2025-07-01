@@ -14,7 +14,8 @@ async function dibujar(){
     const puntos = datos.map(d=>({
         latitud:d.data().latitud,
         longitud:d.data().longitud,
-        fecha:d.data().fecha_hora_lectura
+        fecha:d.data().fecha_hora_lectura,
+        medidor:d.data().medidor
     }))
     if(puntos.length){
         mapa.setView([puntos[0].latitud,puntos[0].longitud],13)
@@ -22,7 +23,7 @@ async function dibujar(){
         L.polyline(coords,{color:'green',dashArray:'4 6'}).addTo(mapa)
         puntos.forEach(p=>{
             L.circleMarker([p.latitud,p.longitud],{radius:4,color:'red',fillColor:'red',fillOpacity:0.8})
-                .bindTooltip(p.fecha)
+                .bindTooltip(`${p.fecha}<br>Medidor: ${p.medidor}`)
                 .addTo(mapa)
         })
     }
