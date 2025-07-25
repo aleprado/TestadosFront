@@ -44,8 +44,8 @@ export function showUserFormPopup() {
     overlay.className = 'popup-overlay';
     overlay.innerHTML = `
         <div class="popup-box">
+            <h2 class="popup-titulo">Registrar Usuario</h2>
             <div class="popup-content">
-                <img src="../favicon.png" class="popup-logo" alt="logo">
                 <div class="popup-form">
                     <input type="text" id="popupNombreUsuario" class="input-field" placeholder="Nombre">
                     <input type="text" id="popupEmailUsuario" class="input-field" placeholder="Email">
