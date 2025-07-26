@@ -566,3 +566,22 @@ input[type="checkbox"] {
     height:80vh;
     border:none;
 }
+.contenedor-medicion{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-top:40px;
+}
+.flecha{
+    width:50px;
+}
+.mensaje-volver{
+    margin-top:20px;
+    color:#2196f3;
+    text-align:center;
+}
+.mensaje-volver:hover{
+    text-decoration:underline;
+    cursor:pointer;
+}
