@@ -219,9 +219,11 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
 
             if (rutaDoc.exists()) {
                 const rutaId = rutaDoc.id;
-                const rutaData = rutaDoc.data();
-
-                const completado = rutaData.completado || 0;
+                const refLecturas = collection(rutaRef,'RutaRecorrido');
+                const lecturas = await getDocs(refLecturas);
+                const total = lecturas.size;
+                const conMedicion = lecturas.docs.filter(d=>d.data().medicion_actual).length;
+                const completado = total ? conMedicion/total*100 : 0;
                 const bucketUrl = `https://storage.googleapis.com/testados-rutas-exportadas/testados-rutas-exportadas/${cliente}/${localidad}/${rutaId}.csv`;
 
                 const asignada = await rutaTieneAsignados(rutaRef);
