@@ -14,7 +14,7 @@ import {
 import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login, logout } from "./auth.js";
 import { showPopup, showUserFormPopup, mostrarMapaPopup, showLoading, hideLoading } from "./ui.js";
-import { db, storageUpload, storageDownload } from "./config.js";
+import { db, storageUpload, storageDownload, exportOnDemandEndpoint } from "./config.js";
 
 let rutaSeleccionada = null;
 let usuariosCargados = false;
@@ -140,19 +140,28 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
         url.searchParams.set("cliente", cliente);
         url.searchParams.set("localidad", localidad);
         url.searchParams.set("rutaId", rutaId);
-        // pedir JSON para saber cuándo está listo y su URL
-        const fetchUrl = new URL(url);
-        const resp = await fetch(fetchUrl.toString(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cliente, localidad, rutaId }) });
-        const ok = resp.ok;
-        let data = null;
-        try { data = await resp.json(); } catch {}
-        if (!ok || !data?.url) {
-            throw new Error("No se pudo generar el CSV");
+        
+        const response = await fetch(url.toString(), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Error al exportar CSV');
         }
-        window.open(data.url, "_blank");
-    } catch (e) {
-        console.error(e);
-        showPopup("No se pudo generar el CSV. Intenta nuevamente.");
+
+        const data = await response.json();
+        if (data.url) {
+            window.open(data.url, "_blank");
+        } else {
+            showPopup("No se recibió una URL de descarga.");
+        }
+    } catch (error) {
+        console.error("Error en la exportación y descarga:", error);
+        showPopup(`Error al generar el CSV: ${error.message}`);
     } finally {
         hideLoading();
     }
