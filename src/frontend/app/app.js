@@ -367,9 +367,10 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 rutasList.appendChild(listItem);
             }
         }
-    } catch (error) {
-        console.error("Error al cargar rutas:", error);
-        rutasList.innerHTML = "Error al cargar rutas.";
+            } catch (error) {
+            console.error("Error al cargar rutas:", error);
+            rutasList.innerHTML = "Error al cargar rutas.";
+        }
     }
 }
 
