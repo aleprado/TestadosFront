@@ -94,3 +94,26 @@ export function mostrarMapaPopup(ruta) {
         document.body.removeChild(overlay);
     };
 }
+
+export function showLoading(message = 'Procesando...') {
+    let overlay = document.getElementById('loadingOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = `
+            <div class="loading-box">
+                <div class="spinner"></div>
+                <div class="loading-text"></div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+    overlay.querySelector('.loading-text').textContent = message;
+    overlay.style.display = 'flex';
+}
+
+export function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
