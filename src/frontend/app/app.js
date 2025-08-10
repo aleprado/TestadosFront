@@ -261,19 +261,9 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
 
                 const asignada = await rutaTieneAsignados(rutaRef);
 
-                // Crear contenedor principal de la ruta
-                const rutaContainer = document.createElement("div");
-                rutaContainer.classList.add("ruta-container");
-                rutaContainer.setAttribute("data-ruta-id", rutaId);
-
-                // Header de la ruta (clickeable para expandir/colapsar)
-                const rutaHeader = document.createElement("div");
-                rutaHeader.classList.add("ruta-header", "list-item-clickable");
-                
-                const expandIcon = document.createElement("span");
-                expandIcon.classList.add("expand-icon");
-                expandIcon.innerHTML = "▶"; // Triángulo hacia la derecha (cerrado)
-                rutaHeader.appendChild(expandIcon);
+                const listItem = document.createElement("li");
+                listItem.classList.add("list-item-clickable", "ruta-item");
+                listItem.setAttribute("data-ruta-id", rutaId);
 
                 const contenido = document.createElement("div");
                 contenido.classList.add("ruta-content");
@@ -281,7 +271,7 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 nombre.classList.add("ruta-label");
                 nombre.textContent = rutaId;
                 contenido.appendChild(nombre);
-                rutaHeader.appendChild(contenido);
+                listItem.appendChild(contenido);
 
                 const actions = document.createElement("div");
                 actions.classList.add("ruta-actions");
@@ -328,117 +318,14 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 });
                 actions.appendChild(deleteBtn);
 
-                rutaHeader.appendChild(actions);
+                listItem.appendChild(actions);
 
-                // Contenedor para usuarios (inicialmente oculto)
-                const usuariosContainer = document.createElement("div");
-                usuariosContainer.classList.add("usuarios-container", "usuarios-hidden");
-                
-                // Lista de usuarios de esta ruta
-                const usuariosList = document.createElement("ul");
-                usuariosList.classList.add("usuarios-list");
-                usuariosContainer.appendChild(usuariosList);
-
-                // Evento para expandir/colapsar
-                rutaHeader.addEventListener("click", async (e) => {
-                    // No expandir si se hace clic en botones de acción
-                    if (e.target.closest('.ruta-actions')) return;
-                    
-                    const isExpanded = usuariosContainer.classList.contains("usuarios-hidden");
-                    
-                    if (isExpanded) {
-                        // Expandir
-                        expandIcon.innerHTML = "▼"; // Triángulo hacia abajo
-                        usuariosContainer.classList.remove("usuarios-hidden");
-                        await loadUsuariosDeRuta(cliente, localidad, rutaId, usuariosList);
-                    } else {
-                        // Colapsar
-                        expandIcon.innerHTML = "▶"; // Triángulo hacia la derecha
-                        usuariosContainer.classList.add("usuarios-hidden");
-                    }
-                });
-
-                rutaContainer.appendChild(rutaHeader);
-                rutaContainer.appendChild(usuariosContainer);
-
-                // Crear elemento de lista para mantener la estructura
-                const listItem = document.createElement("li");
-                listItem.appendChild(rutaContainer);
                 rutasList.appendChild(listItem);
             }
         }
-            } catch (error) {
-            console.error("Error al cargar rutas:", error);
-            rutasList.innerHTML = "Error al cargar rutas.";
-        }
-    }
-}
-
-// Función para cargar usuarios de una ruta específica
-async function loadUsuariosDeRuta(cliente, localidad, rutaId, usuariosList) {
-    try {
-        // Limpiar lista anterior
-        usuariosList.innerHTML = "";
-        
-        // Buscar usuarios asignados a esta ruta
-        const rutaRef = doc(db, "Rutas", rutaId);
-        const usuariosQuery = query(
-            collection(db, "Usuarios"), 
-            where("rutas", "array-contains", rutaRef)
-        );
-        const usuariosSnapshot = await getDocs(usuariosQuery);
-        
-        if (usuariosSnapshot.empty) {
-            const noUsuarios = document.createElement("li");
-            noUsuarios.classList.add("no-usuarios");
-            noUsuarios.textContent = "No hay usuarios asignados a esta ruta";
-            usuariosList.appendChild(noUsuarios);
-            return;
-        }
-        
-        // Crear lista de usuarios asignados
-        usuariosSnapshot.forEach((usuarioDoc) => {
-            const userData = usuarioDoc.data();
-            const listItem = document.createElement("li");
-            listItem.classList.add("usuario-asignado-item");
-            listItem.setAttribute("data-user-id", usuarioDoc.id);
-            
-            const userInfo = document.createElement("div");
-            userInfo.classList.add("usuario-info");
-            
-            const userName = document.createElement("span");
-            userName.classList.add("usuario-nombre");
-            userName.textContent = userData.nombre || usuarioDoc.id;
-            userInfo.appendChild(userName);
-            
-            if (userData.email) {
-                const userEmail = document.createElement("span");
-                userEmail.classList.add("usuario-email");
-                userEmail.textContent = `(${userData.email})`;
-                userInfo.appendChild(userEmail);
-            }
-            
-            listItem.appendChild(userInfo);
-            
-            // Botón para desasignar
-            const desasignarBtn = document.createElement("button");
-            desasignarBtn.textContent = "❌";
-            desasignarBtn.classList.add("desasignar-btn");
-            desasignarBtn.title = "Desasignar usuario de la ruta";
-            desasignarBtn.addEventListener("click", async (e) => {
-                e.stopPropagation();
-                await handleUserAssignment(usuarioDoc.id, false);
-                // Recargar usuarios de la ruta
-                await loadUsuariosDeRuta(cliente, localidad, rutaId, usuariosList);
-            });
-            listItem.appendChild(desasignarBtn);
-            
-            usuariosList.appendChild(listItem);
-        });
-        
     } catch (error) {
-        console.error("Error al cargar usuarios de la ruta:", error);
-        usuariosList.innerHTML = "<li class='error'>Error al cargar usuarios</li>";
+        console.error("Error al cargar rutas:", error);
+        rutasList.innerHTML = "Error al cargar rutas.";
     }
 }
 
