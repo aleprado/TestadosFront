@@ -141,6 +141,10 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
         url.searchParams.set("localidad", localidad);
         url.searchParams.set("rutaId", rutaId);
         
+        // Agregar timestamp para asegurar que se genere un archivo fresco
+        const timestamp = new Date().getTime();
+        url.searchParams.set("t", timestamp.toString());
+        
         const response = await fetch(url.toString(), {
             method: 'POST',
             headers: {
@@ -155,7 +159,19 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
 
         const data = await response.json();
         if (data.url) {
-            window.open(data.url, "_blank");
+            // Descarga directa del archivo en lugar de window.open
+            const link = document.createElement('a');
+            link.href = data.url;
+            link.download = `${rutaId}.csv`;
+            link.target = '_blank';
+            
+            // Agregar timestamp para evitar cache
+            const timestamp = new Date().getTime();
+            link.href = `${data.url}?t=${timestamp}`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         } else {
             showPopup("No se recibió una URL de descarga.");
         }
