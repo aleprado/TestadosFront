@@ -172,6 +172,11 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            
+            // Mostrar información del archivo generado
+            if (data.filename && data.timestamp) {
+                showPopup(`Archivo generado: ${data.filename}<br>Timestamp: ${data.timestamp}<br>Porcentaje completado: ${data.porcentaje_completado}%`);
+            }
         } else {
             showPopup("No se recibió una URL de descarga.");
         }
