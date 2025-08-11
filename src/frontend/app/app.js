@@ -93,8 +93,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         try {
+            showLoading("Cargando rutas, por favor espera...");
             await loadRutasPorLocalidad(cliente, localidad);
             document.getElementById("usuariosList").innerHTML = "Elige una ruta";
+            hideLoading();
 
             document.getElementById("fileInput")?.addEventListener("change", () => {
                 subirRutas();
@@ -249,7 +251,9 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
     const rutasList = document.getElementById("rutasList");
     if (!rutasList) return;
 
-    rutasList.innerHTML = "";
+    // Mostrar spinner mientras se cargan las rutas
+    rutasList.innerHTML = '<div class="loading-spinner">Cargando rutas...</div>';
+    
     try {
         // Referencia a la localidad
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
@@ -263,6 +267,14 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
         // Obtener las referencias de las rutas
         const rutasRefs = localidadDoc.data().rutas || [];
         rutasList.innerHTML = ""; // Limpia las rutas actuales
+
+        // Mostrar progreso si hay muchas rutas
+        if (rutasRefs.length > 5) {
+            const progressDiv = document.createElement('div');
+            progressDiv.id = 'rutas-progress';
+            progressDiv.innerHTML = `<div class="loading-spinner">Procesando ${rutasRefs.length} rutas...</div>`;
+            rutasList.appendChild(progressDiv);
+        }
 
         for (const rutaRef of rutasRefs) {
             const rutaDoc = await getDoc(rutaRef);
@@ -335,9 +347,14 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 actions.appendChild(deleteBtn);
 
                 listItem.appendChild(actions);
-
                 rutasList.appendChild(listItem);
             }
+        }
+
+        // Eliminar el spinner de progreso si existía
+        const progressDiv = document.getElementById('rutas-progress');
+        if (progressDiv) {
+            progressDiv.remove();
         }
     } catch (error) {
         console.error("Error al cargar rutas:", error);
@@ -349,7 +366,9 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
     const usuariosList = document.getElementById("usuariosList");
     if (!usuariosList) return;
 
-    usuariosList.innerHTML = "Cargando usuarios...";
+    // Mostrar spinner mientras se cargan los usuarios
+    usuariosList.innerHTML = '<div class="loading-spinner">Cargando usuarios...</div>';
+    
     try {
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
         const localidadDoc = await getDoc(localidadRef);
@@ -361,6 +380,14 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
 
         const usuariosRefs = localidadDoc.data().usuarios || [];
         usuariosList.innerHTML = "";
+
+        // Mostrar progreso si hay muchos usuarios
+        if (usuariosRefs.length > 5) {
+            const progressDiv = document.createElement('div');
+            progressDiv.id = 'usuarios-progress';
+            progressDiv.innerHTML = `<div class="loading-spinner">Procesando ${usuariosRefs.length} usuarios...</div>`;
+            usuariosList.appendChild(progressDiv);
+        }
 
         for (const usuarioRef of usuariosRefs) {
             const usuarioDoc = await getDoc(usuarioRef);
@@ -413,6 +440,12 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
     } catch (error) {
         console.error("Error al cargar usuarios:", error);
         usuariosList.innerHTML = "Error al cargar usuarios.";
+    } finally {
+        // Eliminar el spinner de progreso si existía
+        const progressDiv = document.getElementById('usuarios-progress');
+        if (progressDiv) {
+            progressDiv.remove();
+        }
     }
 }
 
