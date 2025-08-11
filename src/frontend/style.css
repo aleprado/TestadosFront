@@ -662,3 +662,18 @@ input[type="checkbox"] {
     padding: 20px;
     margin: 0;
 }
+
+/* Contenedor de progreso para localidades */
+#localidades-progress {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+#localidades-progress .loading-spinner {
+    padding: 20px;
+    margin: 0;
+}

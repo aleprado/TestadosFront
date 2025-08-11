@@ -93,10 +93,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         try {
-            showLoading("Cargando rutas, por favor espera...");
             await loadRutasPorLocalidad(cliente, localidad);
             document.getElementById("usuariosList").innerHTML = "Elige una ruta";
-            hideLoading();
 
             document.getElementById("fileInput")?.addEventListener("change", () => {
                 subirRutas();
@@ -189,7 +187,9 @@ export async function loadLocalidades(cliente) {
     const localidadesList = document.getElementById("localidadesList");
     if (!localidadesList) return;
 
-    localidadesList.innerHTML = "Cargando localidades...";
+    // Mostrar spinner mientras se cargan las localidades
+    localidadesList.innerHTML = '<div class="loading-spinner">Cargando localidades...</div>';
+    
     try {
         console.log("localidades del cliente: " + cliente);
         const clienteDoc = await getDoc(doc(collection(db, "Clientes"), cliente));
@@ -206,6 +206,14 @@ export async function loadLocalidades(cliente) {
         if (localidadesSnapshot.empty) {
             localidadesList.innerHTML = "No se encontraron localidades.";
             return;
+        }
+
+        // Mostrar progreso si hay muchas localidades
+        if (localidadesSnapshot.size > 5) {
+            const progressDiv = document.createElement('div');
+            progressDiv.id = 'localidades-progress';
+            progressDiv.innerHTML = `<div class="loading-spinner">Procesando ${localidadesSnapshot.size} localidades...</div>`;
+            localidadesList.appendChild(progressDiv);
         }
 
         localidadesSnapshot.forEach((localidadDoc) => {
@@ -233,6 +241,12 @@ export async function loadLocalidades(cliente) {
 
             localidadesList.appendChild(listItem);
         });
+        
+        // Eliminar el spinner de progreso si existía
+        const progressDiv = document.getElementById('localidades-progress');
+        if (progressDiv) {
+            progressDiv.remove();
+        }
     } catch (error) {
         console.error("Error al obtener localidades:", error);
     }
