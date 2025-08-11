@@ -159,24 +159,7 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
 
         const data = await response.json();
         if (data.url) {
-            // Descarga directa del archivo en lugar de window.open
-            const link = document.createElement('a');
-            link.href = data.url;
-            link.download = `${rutaId}.csv`;
-            link.target = '_blank';
-            
-            // Agregar timestamp para evitar cache
-            const timestamp = new Date().getTime();
-            link.href = `${data.url}?t=${timestamp}`;
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Mostrar información del archivo generado
-            if (data.filename && data.timestamp) {
-                showPopup(`Archivo generado: ${data.filename}<br>Timestamp: ${data.timestamp}<br>Porcentaje completado: ${data.porcentaje_completado}%`);
-            }
+            window.open(data.url, "_blank");
         } else {
             showPopup("No se recibió una URL de descarga.");
         }
