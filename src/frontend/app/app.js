@@ -391,13 +391,22 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
             usuariosList.appendChild(progressDiv);
         }
 
+        // ✅ OPTIMIZACIÓN: Obtener todos los usuarios en una sola consulta
+        const usuariosSnapshot = await getDocs(query(collection(db, "Usuarios"), where("__name__", "in", usuariosRefs.map(ref => ref.id))));
+        
+        // Crear un mapa para acceso rápido
+        const usuariosMap = new Map();
+        usuariosSnapshot.forEach(doc => {
+            usuariosMap.set(doc.id, doc.data());
+        });
+
+        // Renderizar usuarios desde el mapa
         for (const usuarioRef of usuariosRefs) {
-            const usuarioDoc = await getDoc(usuarioRef);
-            if (usuarioDoc.exists()) {
-                const userData = usuarioDoc.data();
+            const userData = usuariosMap.get(usuarioRef.id);
+            if (userData) {
                 const listItem = document.createElement("li");
                 listItem.classList.add("list-item-clickable", "usuario-item");
-                listItem.setAttribute("data-user-id", usuarioDoc.id);
+                listItem.setAttribute("data-user-id", usuarioRef.id);
 
                 const label = document.createElement("label");
                 label.classList.add("usuario-label");
@@ -419,7 +428,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
                 estado.addEventListener("click", async (e) => {
                     e.stopPropagation();
                     const nuevoEstado = estado.dataset.asignado !== "true";
-                    await handleUserAssignment(usuarioDoc.id, nuevoEstado);
+                    await handleUserAssignment(usuarioRef.id, nuevoEstado);
                     estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
                     estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
                     estado.dataset.asignado = String(nuevoEstado);
@@ -431,7 +440,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
                 deleteBtn.classList.add("delete-btn");
                 deleteBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    eliminarUsuario(cliente, localidad, usuarioDoc.id);
+                    eliminarUsuario(cliente, localidad, usuarioRef.id);
                 });
                 acciones.appendChild(deleteBtn);
 
@@ -453,23 +462,38 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
 
 async function updateUserCheckboxes(rutaId) {
     const usuariosList = document.getElementById("usuariosList");
-    for (const listItem of usuariosList.children) {
-        const estado = listItem.querySelector(".estado-asignacion");
-        const userId = listItem.getAttribute("data-user-id");
-        try {
-            const usuarioRef = doc(db, "Usuarios", userId);
-            const usuarioDoc = await getDoc(usuarioRef);
-            const rutasAsignadas = usuarioDoc.data().rutas.map((ruta) => ruta.path || ruta);
-            const asignado = rutasAsignadas.includes(`Rutas/${rutaId}`);
-            estado.textContent = asignado ? "Desasignar" : "Asignar";
-            estado.style.color = asignado ? "#4caf50" : "#2196f3";
-            estado.dataset.asignado = String(asignado);
-        } catch (error) {
-            console.error(`Error al consultar el documento del usuario ${userId}:`, error);
-            estado.textContent = "Asignar";
-            estado.style.color = "#2196f3";
-            estado.dataset.asignado = "false";
+    
+    // ✅ OPTIMIZACIÓN: Obtener solo los IDs de usuarios visibles
+    const userIds = Array.from(usuariosList.children).map(item => item.getAttribute("data-user-id"));
+    
+    if (userIds.length === 0) return;
+    
+    try {
+        // ✅ OPTIMIZACIÓN: Consulta en lote para todos los usuarios
+        const usuariosSnapshot = await getDocs(query(collection(db, "Usuarios"), where("__name__", "in", userIds)));
+        
+        // Crear mapa para acceso rápido
+        const usuariosMap = new Map();
+        usuariosSnapshot.forEach(doc => {
+            usuariosMap.set(doc.id, doc.data());
+        });
+        
+        // Actualizar UI desde el mapa
+        for (const listItem of usuariosList.children) {
+            const estado = listItem.querySelector(".estado-asignacion");
+            const userId = listItem.getAttribute("data-user-id");
+            const userData = usuariosMap.get(userId);
+            
+            if (userData) {
+                const rutasAsignadas = userData.rutas.map((ruta) => ruta.path || ruta);
+                const asignado = rutasAsignadas.includes(`Rutas/${rutaId}`);
+                estado.textContent = asignado ? "Desasignar" : "Asignar";
+                estado.style.color = asignado ? "#4caf50" : "#2196f3";
+                estado.dataset.asignado = String(asignado);
+            }
         }
+    } catch (error) {
+        console.error("Error al actualizar checkboxes:", error);
     }
 }
 
