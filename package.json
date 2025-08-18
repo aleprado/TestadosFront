@@ -1,0 +1,17 @@
+{
+  "name": "testados-frontend",
+  "version": "1.0.0",
+  "description": "Frontend para la aplicación Testados",
+  "main": "src/frontend/app/app.js",
+  "scripts": {
+    "build": "echo 'Build completado - proyecto estático'",
+    "dev": "echo 'Ejecutar servidor local para desarrollo'",
+    "deploy": "firebase deploy"
+  },
+  "keywords": ["frontend", "testados", "firebase"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "firebase-tools": "^13.0.0"
+  }
+}

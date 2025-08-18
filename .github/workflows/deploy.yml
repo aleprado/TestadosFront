@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -18,12 +19,13 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       
-      - name: Build & Obfuscate
+      - name: Build project
         run: npm run build
       
       - name: Deploy to Firebase
         run: |
-          npm install -g firebase-tools
-          firebase deploy --project estado-eb18c --token ${{ secrets.FIREBASE_TOKEN }} --force
+          npm run deploy -- --project estado-eb18c --token ${{ secrets.FIREBASE_TOKEN }} --force
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
