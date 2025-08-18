@@ -26,6 +26,6 @@ jobs:
       
       - name: Deploy to Firebase
         run: |
-          npm run deploy -- --project estado-eb18c --token ${{ secrets.FIREBASE_TOKEN }} --force
+          npm run deploy -- --project estado-eb18c --token ${{ secrets.FIREBASE_TOKEN }} --only hosting
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
