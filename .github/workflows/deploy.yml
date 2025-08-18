@@ -3,13 +3,6 @@ name: Deploy Frontend
 on:
   push:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'firebase.json'
-      - 'firestore.rules'
-      - 'storage.rules'
 
 jobs:
   deploy:
