@@ -3,33 +3,28 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // ✅ REGLAS DE SEGURIDAD: Solo usuarios autenticados pueden acceder
     
-    // Clientes - solo usuarios autenticados y verificados
+    // Clientes - solo usuarios autenticados
     match /Clientes/{clienteId} {
-      allow read, write: if request.auth != null && 
-        request.auth.token.email_verified == true;
+      allow read, write: if request.auth != null;
       
       // Subcolecciones de localidades
       match /Localidades/{localidadId} {
-        allow read, write: if request.auth != null && 
-          request.auth.token.email_verified == true;
+        allow read, write: if request.auth != null;
       }
     }
     
-    // Usuarios - solo usuarios autenticados y verificados
+    // Usuarios - solo usuarios autenticados
     match /Usuarios/{userId} {
-      allow read, write: if request.auth != null && 
-        request.auth.token.email_verified == true;
+      allow read, write: if request.auth != null;
     }
     
-    // Rutas - solo usuarios autenticados y verificados
+    // Rutas - solo usuarios autenticados
     match /Rutas/{rutaId} {
-      allow read, write: if request.auth != null && 
-        request.auth.token.email_verified == true;
+      allow read, write: if request.auth != null;
       
       // Subcolecciones de recorrido de ruta
       match /RutaRecorrido/{recorridoId} {
-        allow read, write: if request.auth != null && 
-          request.auth.token.email_verified == true;
+        allow read, write: if request.auth != null;
       }
     }
     
