@@ -15,7 +15,7 @@ import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/f
 import { checkLogin, login, logout } from "./auth.js";
 import { showPopup, showUserFormPopup, mostrarMapaPopup, showLoading, hideLoading } from "./ui.js";
 import { db, storageUpload, storageDownload, exportOnDemandEndpoint, auth } from "./config.js";
-import { ref, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+import { ref as storageRef, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
 let rutaSeleccionada = null;
 let usuariosCargados = false;
@@ -156,7 +156,7 @@ async function generarUrlFirmada(cliente, localidad, archivo) {
         }
         
         // Generar referencia al archivo en Storage
-        const storageRef = ref(storageDownload, `${cliente}/${localidad}/${archivo}`);
+        const fileRef = storageRef(storageDownload, `${cliente}/${localidad}/${archivo}`);
         
         // Generar URL firmada (temporal y segura)
         const url = await getDownloadURL(storageRef);
