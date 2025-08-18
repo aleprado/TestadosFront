@@ -14,7 +14,8 @@ import {
 import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login, logout } from "./auth.js";
 import { showPopup, showUserFormPopup, mostrarMapaPopup, showLoading, hideLoading } from "./ui.js";
-import { db, storageUpload, storageDownload, exportOnDemandEndpoint } from "./config.js";
+import { db, storageUpload, storageDownload, exportOnDemandEndpoint, auth } from "./config.js";
+import { ref, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
 let rutaSeleccionada = null;
 let usuariosCargados = false;
@@ -143,13 +144,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // ####################### FUNCIONES REUSABLES #######################
 
+/**
+ * 🔒 SEGURIDAD: Genera URL firmada para descargar archivo de Storage
+ * Solo usuarios autenticados pueden generar URLs firmadas
+ */
+async function generarUrlFirmada(cliente, localidad, archivo) {
+    try {
+        // Verificar que el usuario esté autenticado
+        if (!auth.currentUser) {
+            throw new Error('Usuario no autenticado');
+        }
+        
+        // Generar referencia al archivo en Storage
+        const storageRef = ref(storageDownload, `${cliente}/${localidad}/${archivo}`);
+        
+        // Generar URL firmada (temporal y segura)
+        const url = await getDownloadURL(storageRef);
+        
+        console.log(`✅ URL firmada generada para: ${cliente}/${localidad}/${archivo}`);
+        return url;
+        
+    } catch (error) {
+        console.error('❌ Error generando URL firmada:', error);
+        throw error;
+    }
+}
+
 async function exportarYDescargar(cliente, localidad, rutaId) {
     try {
         showLoading("Generando CSV, por favor espera...");
         const url = new URL(exportOnDemandEndpoint);
         url.searchParams.set("cliente", cliente);
         url.searchParams.set("localidad", localidad);
-        url.searchParams.set("rutaId", rutaId);
+        url.searchParams.set("ruta_id", rutaId);
         
         // Agregar timestamp para asegurar que se genere un archivo fresco
         const timestamp = new Date().getTime();
@@ -168,10 +195,26 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
         }
 
         const data = await response.json();
-        if (data.url) {
-            window.open(data.url, "_blank");
+        if (data.filename) {
+            try {
+                // 🔒 SEGURIDAD: Generar URL firmada en lugar de usar URL directa
+                const urlFirmada = await generarUrlFirmada(cliente, localidad, data.filename.split('/').pop());
+                
+                // Descargar archivo con URL firmada
+                const link = document.createElement('a');
+                link.href = urlFirmada;
+                link.download = data.filename.split('/').pop();
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showPopup("✅ CSV generado y descargado correctamente");
+            } catch (error) {
+                console.error('Error generando URL firmada:', error);
+                showPopup("❌ Error al descargar el archivo. Verifica tu autenticación.");
+            }
         } else {
-            showPopup("No se recibió una URL de descarga.");
+            showPopup("No se recibió información del archivo generado.");
         }
     } catch (error) {
         console.error("Error en la exportación y descarga:", error);

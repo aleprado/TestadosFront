@@ -16,22 +16,22 @@ const firebaseConfig = {
 
 // Configuración de Firebase para el bucket de subida
 const firebaseConfigUpload = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
+    apiKey: "AIzaSyAksqUv9fz5XqluvoIla1Ih9mzwpZFls7k",
+    authDomain: "estado-eb18c.firebaseapp.com",
+    projectId: "estado-eb18c",
     storageBucket: "testados-rutas", // Nombre del bucket para subida
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    messagingSenderId: "749071992711",
+    appId: "1:749071992711:web:9c4caaca8e2ff42c27b522"
 };
 
 // Configuración de Firebase para el bucket de descarga
 const firebaseConfigDownload = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "testados-rutas-exportadas", // Nombre del bucket para descarga
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAksqUv9fz5XqluvoIla1Ih9mzwpZFls7k",
+    authDomain: "estado-eb18c.firebaseapp.com",
+    projectId: "estado-eb18c",
+    storageBucket: "testados-rutas", // Mismo bucket para descarga (archivos de rutas)
+    messagingSenderId: "749071992711",
+    appId: "1:749071992711:web:9c4caaca8e2ff42c27b522"
 };
 
 // Inicialización de Firebase
