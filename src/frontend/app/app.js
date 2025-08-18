@@ -453,82 +453,83 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
             usuariosList.appendChild(progressDiv);
         }
 
-        // ✅ OPTIMIZACIÓN: Obtener todos los usuarios en una sola consulta
-        const usuariosSnapshot = await getDocs(query(collection(db, "Usuarios"), where("__name__", "in", usuariosRefs.map(ref => ref.id))));
-        
-        // Crear un mapa para acceso rápido
-        const usuariosMap = new Map();
-        usuariosSnapshot.forEach(doc => {
-            usuariosMap.set(doc.id, doc.data());
-        });
-
-        // Renderizar usuarios desde el mapa
+        // ✅ SOLUCIÓN SIMPLE: Obtener cada usuario directamente desde su referencia
         for (const usuarioRef of usuariosRefs) {
-            const userData = usuariosMap.get(usuarioRef.id);
-            if (userData) {
-                const listItem = document.createElement("li");
-                listItem.classList.add("list-item-clickable", "usuario-item");
-                listItem.setAttribute("data-user-id", usuarioRef.id);
-
-                const label = document.createElement("label");
-                label.classList.add("usuario-label");
-
-                const span = document.createElement("span");
-                span.textContent = `${userData.nombre} (${userData.email})`;
-
-                label.appendChild(span);
-                listItem.appendChild(label);
-
-                const acciones = document.createElement("div");
-                acciones.classList.add("usuario-actions");
-
-                const estado = document.createElement("span");
-                estado.classList.add("estado-asignacion");
-                estado.textContent = "Asignar";
-                estado.dataset.asignado = "false";
-                estado.style.color = "#2196f3";
-                estado.addEventListener("click", async (e) => {
-                    e.stopPropagation();
-                    const nuevoEstado = estado.dataset.asignado !== "true";
+            try {
+                const usuarioDoc = await getDoc(usuarioRef);
+                
+                if (usuarioDoc.exists()) {
+                    const userData = usuarioDoc.data();
                     
-                    // ✅ SOLUCIÓN: Mostrar spinner en el botón mientras se procesa
-                    const estadoOriginal = estado.textContent;
-                    const colorOriginal = estado.style.color;
-                    estado.textContent = "⏳";
-                    estado.style.color = "#ff9800";
-                    estado.disabled = true;
-                    estado.setAttribute("data-loading", "true");
-                    
-                    try {
-                        await handleUserAssignment(usuarioRef.id, nuevoEstado);
-                        estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
-                        estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
-                        estado.dataset.asignado = String(nuevoEstado);
-                    } catch (error) {
-                        // Restaurar estado original en caso de error
-                        estado.textContent = estadoOriginal;
-                        estado.style.color = colorOriginal;
-                        console.error("Error en asignación:", error);
-                    } finally {
-                        estado.disabled = false;
-                        estado.removeAttribute("data-loading");
-                    }
-                });
-                acciones.appendChild(estado);
+                    const listItem = document.createElement("li");
+                    listItem.classList.add("list-item-clickable", "usuario-item");
+                    listItem.setAttribute("data-user-id", usuarioRef.id);
 
-                const deleteBtn = document.createElement("button");
-                deleteBtn.textContent = "\u2716";
-                deleteBtn.classList.add("delete-btn");
-                deleteBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    eliminarUsuario(cliente, localidad, usuarioRef.id);
-                });
-                acciones.appendChild(deleteBtn);
+                    const label = document.createElement("label");
+                    label.classList.add("usuario-label");
 
-                listItem.appendChild(acciones);
-                usuariosList.appendChild(listItem);
+                    const span = document.createElement("span");
+                    span.textContent = `${userData.nombre} (${userData.email})`;
+
+                    label.appendChild(span);
+                    listItem.appendChild(label);
+
+                    const acciones = document.createElement("div");
+                    acciones.classList.add("usuario-actions");
+
+                    const estado = document.createElement("span");
+                    estado.classList.add("estado-asignacion");
+                    estado.textContent = "Asignar";
+                    estado.dataset.asignado = "false";
+                    estado.style.color = "#2196f3";
+                    estado.addEventListener("click", async (e) => {
+                        e.stopPropagation();
+                        const nuevoEstado = estado.dataset.asignado !== "true";
+                        
+                        // ✅ SOLUCIÓN: Mostrar spinner en el botón mientras se procesa
+                        const estadoOriginal = estado.textContent;
+                        const colorOriginal = estado.style.color;
+                        estado.textContent = "⏳";
+                        estado.style.color = "#ff9800";
+                        estado.disabled = true;
+                        estado.setAttribute("data-loading", "true");
+                        
+                        try {
+                            await handleUserAssignment(usuarioRef.id, nuevoEstado);
+                            estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
+                            estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
+                            estado.dataset.asignado = String(nuevoEstado);
+                        } catch (error) {
+                            // Restaurar estado original en caso de error
+                            estado.textContent = estadoOriginal;
+                            estado.style.color = colorOriginal;
+                            console.error("Error en asignación:", error);
+                        } finally {
+                            estado.disabled = false;
+                            estado.removeAttribute("data-loading");
+                        }
+                    });
+                    acciones.appendChild(estado);
+
+                    const deleteBtn = document.createElement("button");
+                    deleteBtn.textContent = "\u2716";
+                    deleteBtn.classList.add("delete-btn");
+                    deleteBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        eliminarUsuario(cliente, localidad, usuarioRef.id);
+                    });
+                    acciones.appendChild(deleteBtn);
+
+                    listItem.appendChild(acciones);
+                    usuariosList.appendChild(listItem);
+                }
+            } catch (error) {
+                console.error(`Error al cargar usuario ${usuarioRef.id}:`, error);
+                // Continuar con el siguiente usuario
             }
         }
+
+
     } catch (error) {
         console.error("Error al cargar usuarios:", error);
         usuariosList.innerHTML = "Error al cargar usuarios.";
