@@ -453,80 +453,86 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
             usuariosList.appendChild(progressDiv);
         }
 
-        // ✅ SOLUCIÓN SIMPLE: Obtener cada usuario directamente desde su referencia
-        for (const usuarioRef of usuariosRefs) {
+        // ✅ SOLUCIÓN OPTIMIZADA: Cargar todos los usuarios en paralelo (más rápida)
+        const usuariosPromises = usuariosRefs.map(async (usuarioRef) => {
             try {
                 const usuarioDoc = await getDoc(usuarioRef);
-                
-                if (usuarioDoc.exists()) {
-                    const userData = usuarioDoc.data();
-                    
-                    const listItem = document.createElement("li");
-                    listItem.classList.add("list-item-clickable", "usuario-item");
-                    listItem.setAttribute("data-user-id", usuarioRef.id);
-
-                    const label = document.createElement("label");
-                    label.classList.add("usuario-label");
-
-                    const span = document.createElement("span");
-                    span.textContent = `${userData.nombre} (${userData.email})`;
-
-                    label.appendChild(span);
-                    listItem.appendChild(label);
-
-                    const acciones = document.createElement("div");
-                    acciones.classList.add("usuario-actions");
-
-                    const estado = document.createElement("span");
-                    estado.classList.add("estado-asignacion");
-                    estado.textContent = "Asignar";
-                    estado.dataset.asignado = "false";
-                    estado.style.color = "#2196f3";
-                    estado.addEventListener("click", async (e) => {
-                        e.stopPropagation();
-                        const nuevoEstado = estado.dataset.asignado !== "true";
-                        
-                        // ✅ SOLUCIÓN: Mostrar spinner en el botón mientras se procesa
-                        const estadoOriginal = estado.textContent;
-                        const colorOriginal = estado.style.color;
-                        estado.textContent = "⏳";
-                        estado.style.color = "#ff9800";
-                        estado.disabled = true;
-                        estado.setAttribute("data-loading", "true");
-                        
-                        try {
-                            await handleUserAssignment(usuarioRef.id, nuevoEstado);
-                            estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
-                            estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
-                            estado.dataset.asignado = String(nuevoEstado);
-                        } catch (error) {
-                            // Restaurar estado original en caso de error
-                            estado.textContent = estadoOriginal;
-                            estado.style.color = colorOriginal;
-                            console.error("Error en asignación:", error);
-                        } finally {
-                            estado.disabled = false;
-                            estado.removeAttribute("data-loading");
-                        }
-                    });
-                    acciones.appendChild(estado);
-
-                    const deleteBtn = document.createElement("button");
-                    deleteBtn.textContent = "\u2716";
-                    deleteBtn.classList.add("delete-btn");
-                    deleteBtn.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        eliminarUsuario(cliente, localidad, usuarioRef.id);
-                    });
-                    acciones.appendChild(deleteBtn);
-
-                    listItem.appendChild(acciones);
-                    usuariosList.appendChild(listItem);
-                }
+                return usuarioDoc.exists() ? { id: usuarioRef.id, data: usuarioDoc.data() } : null;
             } catch (error) {
                 console.error(`Error al cargar usuario ${usuarioRef.id}:`, error);
-                // Continuar con el siguiente usuario
+                return null;
             }
+        });
+
+        const usuarios = (await Promise.all(usuariosPromises)).filter(u => u !== null);
+
+        // Renderizar todos los usuarios de una vez
+        for (const usuario of usuarios) {
+            const listItem = document.createElement("li");
+            listItem.classList.add("list-item-clickable", "usuario-item");
+            listItem.setAttribute("data-user-id", usuario.id);
+
+            const label = document.createElement("label");
+            label.classList.add("usuario-label");
+
+            const span = document.createElement("span");
+            span.textContent = `${usuario.data.nombre} (${usuario.data.email})`;
+
+            label.appendChild(span);
+            listItem.appendChild(label);
+
+            const acciones = document.createElement("div");
+            acciones.classList.add("usuario-actions");
+
+            // ✅ RESTAURAR: Verificar si el usuario ya tiene asignada la ruta actual
+            const rutasAsignadas = usuario.data.rutas.map((ruta) => ruta.path || ruta);
+            const asignado = rutasAsignadas.includes(`Rutas/${rutaSeleccionada}`);
+            
+            const estado = document.createElement("span");
+            estado.classList.add("estado-asignacion");
+            estado.textContent = asignado ? "Desasignar" : "Asignar";
+            estado.dataset.asignado = String(asignado);
+            estado.style.color = asignado ? "#4caf50" : "#2196f3";
+            estado.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                const nuevoEstado = estado.dataset.asignado !== "true";
+                
+                // ✅ SOLUCIÓN: Mostrar spinner en el botón mientras se procesa
+                const estadoOriginal = estado.textContent;
+                const colorOriginal = estado.style.color;
+                estado.textContent = "⏳";
+                estado.style.color = "#ff9800";
+                estado.disabled = true;
+                estado.setAttribute("data-loading", "true");
+                
+                try {
+                    await handleUserAssignment(usuario.id, nuevoEstado);
+                    estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
+                    estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
+                    estado.dataset.asignado = String(nuevoEstado);
+                } catch (error) {
+                    // Restaurar estado original en caso de error
+                    estado.textContent = estadoOriginal;
+                    estado.style.color = colorOriginal;
+                    console.error("Error en asignación:", error);
+                } finally {
+                    estado.disabled = false;
+                    estado.removeAttribute("data-loading");
+                }
+            });
+            acciones.appendChild(estado);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "\u2716";
+            deleteBtn.classList.add("delete-btn");
+            deleteBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                eliminarUsuario(cliente, localidad, usuario.id);
+            });
+            acciones.appendChild(deleteBtn);
+
+            listItem.appendChild(acciones);
+            usuariosList.appendChild(listItem);
         }
 
 
