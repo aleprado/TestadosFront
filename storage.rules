@@ -1,0 +1,23 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // ✅ REGLAS DE SEGURIDAD: Solo usuarios autenticados pueden acceder a archivos
+    
+    // Archivos de rutas - solo usuarios autenticados y verificados
+    match /{clienteId}/{localidadId}/{fileName} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email_verified == true;
+    }
+    
+    // Archivos exportados - solo usuarios autenticados y verificados
+    match /exportados/{clienteId}/{localidadId}/{fileName} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email_verified == true;
+    }
+    
+    // Denegar acceso a todos los demás archivos
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

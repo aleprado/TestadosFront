@@ -6,16 +6,52 @@ import { showPopup } from './ui.js';
 /**
  * Verifica si el usuario está autenticado.
  * Si no hay un usuario autenticado, redirige al login.
- * @returns {string|null} El nombre del cliente guardado o null si no hay sesión.
+ * @returns {Promise<string|null>} El nombre del cliente guardado o null si no hay sesión.
  */
-export function checkLogin() {
-    const clienteNombre = localStorage.getItem("cliente");
-    if (!clienteNombre) {
-        showPopup("Por favor inicia sesión.");
+export async function checkLogin() {
+    try {
+        // ✅ SEGURIDAD: Verificar si hay usuario autenticado en Firebase
+        let user = auth.currentUser;
+        
+        if (!user) {
+            // Intentar obtener usuario de la sesión persistente
+            user = await new Promise((resolve) => {
+                const unsubscribe = auth.onAuthStateChanged((user) => {
+                    unsubscribe();
+                    resolve(user);
+                });
+            });
+        }
+        
+        if (!user) {
+            showPopup("Por favor inicia sesión.");
+            window.location.href = "/login";
+            return null;
+        }
+        
+        // ✅ SEGURIDAD: Verificar token válido
+        const token = await user.getIdToken();
+        if (!token) {
+            showPopup("Sesión expirada. Por favor inicia sesión nuevamente.");
+            window.location.href = "/login";
+            return null;
+        }
+        
+        // Obtener cliente desde localStorage (ya verificado)
+        const clienteNombre = localStorage.getItem("cliente");
+        if (!clienteNombre) {
+            showPopup("Error de sesión. Por favor inicia sesión nuevamente.");
+            window.location.href = "/login";
+            return null;
+        }
+        
+        return clienteNombre;
+    } catch (error) {
+        console.error("Error de verificación:", error);
+        showPopup("Error de autenticación. Por favor inicia sesión nuevamente.");
         window.location.href = "/login";
         return null;
     }
-    return clienteNombre;
 }
 
 /**
@@ -83,9 +119,23 @@ export async function login(email, password) {
  * Realiza el proceso de cierre de sesión.
  * Elimina los datos de `localStorage` y redirige al login.
  */
-export function logout() {
-    localStorage.removeItem("email");
-    localStorage.removeItem("cliente");
-    showPopup("Sesión cerrada correctamente.");
-    window.location.href = "/login";
+export async function logout() {
+    try {
+        // ✅ SEGURIDAD: Cerrar sesión de Firebase
+        await auth.signOut();
+        
+        // Limpiar localStorage
+        localStorage.removeItem("email");
+        localStorage.removeItem("cliente");
+        
+        showPopup("Sesión cerrada correctamente.");
+        window.location.href = "/login";
+    } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+        // Limpiar localStorage de todas formas
+        localStorage.removeItem("email");
+        localStorage.removeItem("cliente");
+        showPopup("Sesión cerrada correctamente.");
+        window.location.href = "/login";
+    }
 }

@@ -51,7 +51,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // ####################### LOCALIDADES #######################
     if (page === "localidades") {
-        const username = checkLogin();
+        const username = await checkLogin();
+        if (!username) {
+            window.location.href = "/login";
+            return;
+        }
+        
         const localidadesList = document.getElementById("localidadesList");
         const addBtn = document.getElementById("agregarLocalidadButton");
         addBtn?.addEventListener("click", async () => {
@@ -82,11 +87,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // ####################### GESTIONAR RUTAS Y USUARIOS #######################
     if (page === "gestionar-rutas") {
-        const cliente = checkLogin();
+        const cliente = await checkLogin();
+        if (!cliente) {
+            window.location.href = "/login";
+            return;
+        }
+        
         console.log("Consulta localidad: " + localStorage.getItem("localidad"))
         const localidad = localStorage.getItem("localidad");
 
-        if (!cliente || !localidad) {
+        if (!localidad) {
             showPopup("Selecciona una localidad para continuar.");
             window.location.href = "/localidades";
             return;
@@ -180,15 +190,9 @@ export async function loadLocalidades(cliente) {
     
     try {
         console.log("localidades del cliente: " + cliente);
-        const clienteDoc = await getDoc(doc(collection(db, "Clientes"), cliente));
-
-        if (!clienteDoc.exists()) {
-            localidadesList.innerHTML = "No se encontró el cliente.";
-            return;
-        }
-
-        localidadesList.innerHTML = "";
-        const localidadesRef = collection(clienteDoc.ref, "Localidades");
+        
+        // ✅ OPTIMIZACIÓN: Consulta directa a la subcolección de localidades
+        const localidadesRef = collection(db, "Clientes", cliente, "Localidades");
         const localidadesSnapshot = await getDocs(localidadesRef);
 
         if (localidadesSnapshot.empty) {
@@ -196,7 +200,8 @@ export async function loadLocalidades(cliente) {
             return;
         }
 
-        // Mostrar progreso si hay muchas localidades
+        // ✅ OPTIMIZACIÓN: No limpiar la lista hasta que tengamos todas las localidades procesadas
+        // Solo mostrar progreso si hay muchas localidades
         if (localidadesSnapshot.size > 5) {
             const progressDiv = document.createElement('div');
             progressDiv.id = 'localidades-progress';
@@ -204,6 +209,9 @@ export async function loadLocalidades(cliente) {
             localidadesList.appendChild(progressDiv);
         }
 
+        // ✅ OPTIMIZACIÓN: Procesar todas las localidades antes de limpiar la lista
+        const localidadesProcesadas = [];
+        
         localidadesSnapshot.forEach((localidadDoc) => {
             const localidad = localidadDoc.id;
             const listItem = document.createElement("li");
@@ -227,8 +235,12 @@ export async function loadLocalidades(cliente) {
             });
             listItem.appendChild(deleteBtn);
 
-            localidadesList.appendChild(listItem);
+            localidadesProcesadas.push(listItem);
         });
+        
+        // ✅ OPTIMIZACIÓN: Limpiar la lista solo después de procesar todas las localidades
+        localidadesList.innerHTML = '';
+        localidadesProcesadas.forEach(item => localidadesList.appendChild(item));
         
         // Eliminar el spinner de progreso si existía
         const progressDiv = document.getElementById('localidades-progress');
@@ -237,6 +249,7 @@ export async function loadLocalidades(cliente) {
         }
     } catch (error) {
         console.error("Error al obtener localidades:", error);
+        localidadesList.innerHTML = "Error al cargar localidades.";
     }
 }
 
@@ -268,9 +281,9 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
 
         // Obtener las referencias de las rutas
         const rutasRefs = localidadDoc.data().rutas || [];
-        rutasList.innerHTML = ""; // Limpia las rutas actuales
-
-        // Mostrar progreso si hay muchas rutas
+        
+        // ✅ SOLUCIÓN: No limpiar la lista hasta que tengamos todas las rutas procesadas
+        // Solo mostrar progreso si hay muchas rutas
         if (rutasRefs.length > 5) {
             const progressDiv = document.createElement('div');
             progressDiv.id = 'rutas-progress';
@@ -353,6 +366,12 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
             }
         }
 
+        // ✅ SOLUCIÓN: Limpiar la lista solo después de procesar todas las rutas
+        // y reemplazar el contenido con las rutas procesadas
+        const rutasProcesadas = Array.from(rutasList.children).filter(child => child.classList.contains('ruta-item'));
+        rutasList.innerHTML = '';
+        rutasProcesadas.forEach(ruta => rutasList.appendChild(ruta));
+
         // Eliminar el spinner de progreso si existía
         const progressDiv = document.getElementById('rutas-progress');
         if (progressDiv) {
@@ -428,10 +447,29 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
                 estado.addEventListener("click", async (e) => {
                     e.stopPropagation();
                     const nuevoEstado = estado.dataset.asignado !== "true";
-                    await handleUserAssignment(usuarioRef.id, nuevoEstado);
-                    estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
-                    estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
-                    estado.dataset.asignado = String(nuevoEstado);
+                    
+                    // ✅ SOLUCIÓN: Mostrar spinner en el botón mientras se procesa
+                    const estadoOriginal = estado.textContent;
+                    const colorOriginal = estado.style.color;
+                    estado.textContent = "⏳";
+                    estado.style.color = "#ff9800";
+                    estado.disabled = true;
+                    estado.setAttribute("data-loading", "true");
+                    
+                    try {
+                        await handleUserAssignment(usuarioRef.id, nuevoEstado);
+                        estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
+                        estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
+                        estado.dataset.asignado = String(nuevoEstado);
+                    } catch (error) {
+                        // Restaurar estado original en caso de error
+                        estado.textContent = estadoOriginal;
+                        estado.style.color = colorOriginal;
+                        console.error("Error en asignación:", error);
+                    } finally {
+                        estado.disabled = false;
+                        estado.removeAttribute("data-loading");
+                    }
                 });
                 acciones.appendChild(estado);
 
@@ -542,9 +580,14 @@ export async function handleUserAssignment(userId, asignar) {
 }
 
 async function subirRutas() {
-    const cliente = checkLogin();
+    const cliente = await checkLogin();
+    if (!cliente) {
+        showPopup("Error de autenticación. Por favor inicia sesión nuevamente.");
+        return;
+    }
+    
     const localidad = localStorage.getItem("localidad");
-    if (!cliente || !localidad) {
+    if (!localidad) {
         showPopup("Selecciona una localidad para continuar.");
         return;
     }

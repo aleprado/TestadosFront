@@ -1,0 +1,42 @@
+version: 2
+updates:
+  # Mantener actualizadas las dependencias de npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Mexico_City"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "alejandroprado"
+    assignees:
+      - "alejandroprado"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "automated"
+
+  # Mantener actualizadas las GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Mexico_City"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "alejandroprado"
+    assignees:
+      - "alejandroprado"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "github-actions"
+      - "automated"

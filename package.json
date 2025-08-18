@@ -1,0 +1,26 @@
+{
+  "name": "testados-frontend",
+  "version": "1.0.0",
+  "description": "Frontend de Testados con seguridad y ofuscación",
+  "scripts": {
+    "build": "npm run build:js && npm run build:css && npm run build:html",
+    "build:js": "node scripts/build-js.js",
+    "build:css": "node scripts/build-css.js",
+    "build:html": "node scripts/build-html.js",
+    "dev": "npm run build && firebase serve",
+    "deploy": "npm run build && firebase deploy --only hosting",
+    "deploy:security": "firebase deploy --only firestore:rules,storage",
+    "clean": "rm -rf dist/*",
+    "watch": "nodemon --watch src --ext js,css,html --exec 'npm run build'"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.0",
+    "terser": "^5.24.0",
+    "clean-css-cli": "^5.6.2",
+    "html-minifier-terser": "^7.2.0",
+    "nodemon": "^3.0.2"
+  },
+  "keywords": ["firebase", "security", "obfuscation", "frontend"],
+  "author": "Testados Team",
+  "license": "MIT"
+}

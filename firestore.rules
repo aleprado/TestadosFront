@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ✅ REGLAS DE SEGURIDAD: Solo usuarios autenticados pueden acceder
+    
+    // Clientes - solo usuarios autenticados y verificados
+    match /Clientes/{clienteId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email_verified == true;
+      
+      // Subcolecciones de localidades
+      match /Localidades/{localidadId} {
+        allow read, write: if request.auth != null && 
+          request.auth.token.email_verified == true;
+      }
+    }
+    
+    // Usuarios - solo usuarios autenticados y verificados
+    match /Usuarios/{userId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email_verified == true;
+    }
+    
+    // Rutas - solo usuarios autenticados y verificados
+    match /Rutas/{rutaId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email_verified == true;
+      
+      // Subcolecciones de recorrido de ruta
+      match /RutaRecorrido/{recorridoId} {
+        allow read, write: if request.auth != null && 
+          request.auth.token.email_verified == true;
+      }
+    }
+    
+    // Denegar acceso a todas las demás colecciones
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

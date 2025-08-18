@@ -1,27 +1,39 @@
-name: Deploy to Firebase Hosting
+name: Deploy Frontend
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'firebase.json'
+      - 'firestore.rules'
+      - 'storage.rules'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '18.x'
-
-    - name: Install Firebase CLI
-      run: npm install -g firebase-tools
-
-    - name: Deploy to Firebase
-      env:
-        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-      run: firebase deploy --only hosting --project estado-eb18c
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Build & Obfuscate
+        run: npm run build
+      
+      - name: Deploy to Firebase
+        run: npm install -g firebase-tools
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      
+      - name: Deploy
+        run: firebase deploy --project estado-eb18c
