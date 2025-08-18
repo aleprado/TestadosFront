@@ -172,29 +172,41 @@ async function generarUrlFirmada(cliente, localidad, archivo) {
 
 async function exportarYDescargar(cliente, localidad, rutaId) {
     try {
+        // ✅ DEBUG: Log de los parámetros que se están enviando
+        console.log("🔍 DEBUG exportarYDescargar:");
+        console.log("  - cliente:", cliente);
+        console.log("  - localidad:", localidad);
+        console.log("  - rutaId:", rutaId);
+        console.log("  - tipos:", typeof cliente, typeof localidad, typeof rutaId);
+        
         showLoading("Generando CSV, por favor espera...");
-        const url = new URL(exportOnDemandEndpoint);
-        url.searchParams.set("cliente", cliente);
-        url.searchParams.set("localidad", localidad);
-        url.searchParams.set("ruta_id", rutaId);
         
-        // Agregar timestamp para asegurar que se genere un archivo fresco
-        const timestamp = new Date().getTime();
-        url.searchParams.set("t", timestamp.toString());
-        
-        const response = await fetch(url.toString(), {
+        // ✅ SOLUCIÓN: Enviar parámetros en el body JSON en lugar de en la URL
+        const response = await fetch(exportOnDemandEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({
+                cliente: cliente,
+                localidad: localidad,
+                ruta_id: rutaId,
+                timestamp: new Date().getTime() // Para asegurar archivo fresco
+            })
         });
+
+        // ✅ DEBUG: Log de la respuesta
+        console.log("🔍 DEBUG respuesta:", response.status, response.statusText);
 
         if (!response.ok) {
             const errorData = await response.json();
+            console.log("🔍 DEBUG error data:", errorData);
             throw new Error(errorData.error || 'Error al exportar CSV');
         }
 
         const data = await response.json();
+        console.log("🔍 DEBUG success data:", data);
+        
         if (data.filename) {
             try {
                 // 🔒 SEGURIDAD: Generar URL firmada en lugar de usar URL directa
@@ -379,6 +391,12 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 progressLink.textContent = `${completado.toFixed(2)}%`;
                 progressLink.addEventListener("click", (e) => {
                     e.preventDefault();
+                    // ✅ DEBUG: Log antes de llamar a la función
+                    console.log("🔍 DEBUG click en progressLink:");
+                    console.log("  - cliente:", cliente);
+                    console.log("  - localidad:", localidad);
+                    console.log("  - rutaId:", rutaId);
+                    console.log("  - tipos:", typeof cliente, typeof localidad, typeof rutaId);
                     exportarYDescargar(cliente, localidad, rutaId);
                 });
                 actions.appendChild(progressLink);
