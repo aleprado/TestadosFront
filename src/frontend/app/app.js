@@ -158,7 +158,7 @@ async function generarUrlFirmada(cliente, localidad, archivo) {
         const fileRef = storageRef(storageDownload, `${cliente}/${localidad}/${archivo}`);
         
         // Generar URL firmada (temporal y segura)
-        const url = await getDownloadURL(storageRef);
+        const url = await getDownloadURL(fileRef);
         
         console.log(`✅ URL firmada generada para: ${cliente}/${localidad}/${archivo}`);
         return url;
