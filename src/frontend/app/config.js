@@ -29,7 +29,7 @@ const firebaseConfigDownload = {
     apiKey: "AIzaSyAksqUv9fz5XqluvoIla1Ih9mzwpZFls7k",
     authDomain: "estado-eb18c.firebaseapp.com",
     projectId: "estado-eb18c",
-    storageBucket: "testados-rutas", // Mismo bucket para descarga (archivos de rutas)
+    storageBucket: "testados-rutas-exportadas", // Bucket donde la función guarda los CSVs
     messagingSenderId: "749071992711",
     appId: "1:749071992711:web:9c4caaca8e2ff42c27b522"
 };
