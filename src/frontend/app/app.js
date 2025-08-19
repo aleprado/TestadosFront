@@ -131,7 +131,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                         if (!usuariosCargados) {
                             await loadUsuariosPorLocalidad(cliente, localidad);
                             usuariosCargados = true;                        }
-                        await updateUserCheckboxes(rutaId);
                         usuariosList.classList.remove("blurred");
                     }
                 }
@@ -566,42 +565,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
     }
 }
 
-async function updateUserCheckboxes(rutaId) {
-    const usuariosList = document.getElementById("usuariosList");
-    
-    // ✅ OPTIMIZACIÓN: Obtener solo los IDs de usuarios visibles
-    const userIds = Array.from(usuariosList.children).map(item => item.getAttribute("data-user-id"));
-    
-    if (userIds.length === 0) return;
-    
-    try {
-        // ✅ OPTIMIZACIÓN: Consulta en lote para todos los usuarios
-        const usuariosSnapshot = await getDocs(query(collection(db, "Usuarios"), where("__name__", "in", userIds)));
-        
-        // Crear mapa para acceso rápido
-        const usuariosMap = new Map();
-        usuariosSnapshot.forEach(doc => {
-            usuariosMap.set(doc.id, doc.data());
-        });
-        
-        // Actualizar UI desde el mapa
-        for (const listItem of usuariosList.children) {
-            const estado = listItem.querySelector(".estado-asignacion");
-            const userId = listItem.getAttribute("data-user-id");
-            const userData = usuariosMap.get(userId);
-            
-            if (userData) {
-                const rutasAsignadas = userData.rutas.map((ruta) => ruta.path || ruta);
-                const asignado = rutasAsignadas.includes(`Rutas/${rutaId}`);
-                estado.textContent = asignado ? "Desasignar" : "Asignar";
-                estado.style.color = asignado ? "#4caf50" : "#2196f3";
-                estado.dataset.asignado = String(asignado);
-            }
-        }
-    } catch (error) {
-        console.error("Error al actualizar checkboxes:", error);
-    }
-}
+
 
 async function rutaTieneAsignados(rutaRef) {
     const consulta = query(collection(db, "Usuarios"), where("rutas", "array-contains", rutaRef));
