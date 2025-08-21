@@ -11,11 +11,9 @@ import {
     where,
     deleteDoc
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login, logout } from "./auth.js";
 import { showPopup, showUserFormPopup, mostrarMapaPopup, showLoading, hideLoading } from "./ui.js";
-import { db, storageUpload, storageDownload, exportOnDemandEndpoint, auth } from "./config.js";
-import { ref as storageRef, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+import { db, exportOnDemandEndpoint, auth } from "./config.js";
 
 let rutaSeleccionada = null;
 let usuariosCargados = false;
@@ -147,26 +145,14 @@ document.addEventListener("DOMContentLoaded", async () => {
  * 🔒 SEGURIDAD: Genera URL firmada para descargar archivo de Storage
  * Solo usuarios autenticados pueden generar URLs firmadas
  */
-async function generarUrlFirmada(cliente, localidad, archivo) {
-    try {
-        // Verificar que el usuario esté autenticado
-        if (!auth.currentUser) {
-            throw new Error('Usuario no autenticado');
-        }
-        
-        // Generar referencia al archivo en Storage
-        const fileRef = storageRef(storageDownload, `${cliente}/${localidad}/${archivo}`);
-        
-        // Generar URL firmada (temporal y segura)
-        const url = await getDownloadURL(fileRef);
-        
-        console.log(`✅ URL firmada generada para: ${cliente}/${localidad}/${archivo}`);
-        return url;
-        
-    } catch (error) {
-        console.error('❌ Error generando URL firmada:', error);
-        throw error;
-    }
+function generarUrlDirecta(cliente, localidad, archivo) {
+    // Usar URL directa del bucket público de GCP (configurado en Terraform)
+    const bucketName = 'testados-rutas-exportadas';
+    const url = `https://storage.googleapis.com/${bucketName}/${cliente}/${localidad}/${archivo}`;
+    
+    console.log(`✅ URL directa generada para: ${cliente}/${localidad}/${archivo}`);
+    console.log(`🔍 URL completa: ${url}`);
+    return url;
 }
 
 async function exportarYDescargar(cliente, localidad, rutaId) {
@@ -208,21 +194,25 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
         
         if (data.filename) {
             try {
-                // 🔒 SEGURIDAD: Generar URL firmada en lugar de usar URL directa
-                const urlFirmada = await generarUrlFirmada(cliente, localidad, data.filename.split('/').pop());
+                console.log(`🔍 DEBUG filename recibido: ${data.filename}`);
+                const nombreArchivo = data.filename.split('/').pop();
+                console.log(`🔍 DEBUG nombre archivo extraído: ${nombreArchivo}`);
                 
-                // Descargar archivo con URL firmada
+                // Generar URL directa del bucket público de GCP
+                const urlDirecta = generarUrlDirecta(cliente, localidad, nombreArchivo);
+                
+                // Descargar archivo con URL directa
                 const link = document.createElement('a');
-                link.href = urlFirmada;
-                link.download = data.filename.split('/').pop();
+                link.href = urlDirecta;
+                link.download = nombreArchivo;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 
                 showPopup("✅ CSV generado y descargado correctamente");
             } catch (error) {
-                console.error('Error generando URL firmada:', error);
-                showPopup("❌ Error al descargar el archivo. Verifica tu autenticación.");
+                console.error('Error generando URL directa:', error);
+                showPopup("❌ Error al descargar el archivo.");
             }
         } else {
             showPopup("No se recibió información del archivo generado.");
