@@ -23,11 +23,35 @@
         <span>Con imagen</span>
     </div>
 </div>
-<!-- Cargar primero el módulo para que initMap esté disponible -->
-<script type="module" src="../app/mapa.js"></script>
-<!-- Cargar Google Maps después, con defer para asegurar que el módulo esté listo -->
-<script defer 
+
+<!-- Definir initMap globalmente ANTES de cargar Google Maps -->
+<script>
+// Función global que Google Maps necesita
+window.initMap = function() {
+    console.log('Inicializando mapa desde HTML...');
+    // Esta función será reemplazada por el módulo cuando se cargue
+    if (window.initMapFromModule) {
+        window.initMapFromModule();
+    } else {
+        console.log('Módulo aún no cargado, esperando...');
+        // Esperar a que el módulo se cargue
+        setTimeout(() => {
+            if (window.initMapFromModule) {
+                window.initMapFromModule();
+            } else {
+                console.error('Módulo no se cargó correctamente');
+            }
+        }, 1000);
+    }
+};
+</script>
+
+<!-- Cargar Google Maps después de definir initMap -->
+<script async defer 
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAksqUv9fz5XqluvoIla1Ih9mzwpZFls7k&callback=initMap">
 </script>
+
+<!-- Cargar el módulo después -->
+<script type="module" src="../app/mapa.js"></script>
 </body>
 </html>

@@ -8,10 +8,9 @@ console.log('Ruta ID:', ruta)
 // Variable global para el mapa de Google
 let mapa;
 
-// Función de callback requerida por Google Maps (debe ser global)
-// Esta función debe estar disponible globalmente ANTES de que se cargue Google Maps
-window.initMap = function() {
-    console.log('Inicializando mapa...');
+// Función que será llamada por el HTML cuando Google Maps esté listo
+function initMapFromModule() {
+    console.log('Inicializando mapa desde módulo...');
     mapa = new google.maps.Map(document.getElementById('mapa'), {
         zoom: 13,
         center: { lat: 0, lng: 0 },
@@ -20,7 +19,16 @@ window.initMap = function() {
     
     // Iniciar la carga de datos una vez que el mapa esté listo
     dibujar();
-};
+}
+
+// Exponer la función globalmente para que el HTML pueda llamarla
+window.initMapFromModule = initMapFromModule;
+
+// Si Google Maps ya está cargado, inicializar inmediatamente
+if (window.google && window.google.maps) {
+    console.log('Google Maps ya está cargado, inicializando inmediatamente...');
+    initMapFromModule();
+}
 
 // Funciones auxiliares
 function validarCoordenadas(documento) {
