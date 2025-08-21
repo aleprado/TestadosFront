@@ -114,7 +114,12 @@ function crearTooltip(punto) {
     }
     
     if (punto.imageUrl && punto.imageUrl.trim() !== '') {
-        contenido += `<br><img src="${punto.imageUrl}" alt="Imagen del punto" style="max-width: 200px; max-height: 150px; margin-top: 10px;" onerror="this.style.display='none'">`
+        contenido += `<br><a href="${punto.imageUrl}" target="_blank" title="Haz clic para ver imagen completa">
+            <img src="${punto.imageUrl}" alt="Imagen del punto" style="max-width: 200px; max-height: 150px; margin-top: 10px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s;" 
+                 onerror="this.style.display='none'"
+                 onmouseover="this.style.borderColor='#1976d2'"
+                 onmouseout="this.style.borderColor='#ddd'">
+        </a>`
     }
     
     return contenido
