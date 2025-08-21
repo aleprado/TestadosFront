@@ -8,8 +8,8 @@ console.log('Ruta ID:', ruta)
 // Variable global para el mapa de Google
 let mapa;
 
-// Función de callback requerida por Google Maps
-window.initMap = function() {
+// Función de callback requerida por Google Maps (debe ser global)
+function initMap() {
     mapa = new google.maps.Map(document.getElementById('mapa'), {
         zoom: 13,
         center: { lat: 0, lng: 0 },
@@ -18,7 +18,10 @@ window.initMap = function() {
     
     // Iniciar la carga de datos una vez que el mapa esté listo
     dibujar();
-};
+}
+
+// Hacer la función disponible globalmente para Google Maps
+window.initMap = initMap;
 
 // Funciones auxiliares
 function validarCoordenadas(documento) {
