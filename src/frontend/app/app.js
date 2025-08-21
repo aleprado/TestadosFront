@@ -11,9 +11,10 @@ import {
     where,
     deleteDoc
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login, logout } from "./auth.js";
 import { showPopup, showUserFormPopup, mostrarMapaPopup, showLoading, hideLoading } from "./ui.js";
-import { db, exportOnDemandEndpoint, auth } from "./config.js";
+import { db, exportOnDemandEndpoint, auth, storageUpload } from "./config.js";
 
 let rutaSeleccionada = null;
 let usuariosCargados = false;
