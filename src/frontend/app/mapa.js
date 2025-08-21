@@ -92,6 +92,7 @@ function procesarDatos(documentos) {
             fecha: d.data().fecha_hora_lectura,
             medidor: d.data().medidor,
             novedad: d.data().novedades,
+            lectura_actual: d.data().lectura_actual,
             imageUrl: d.data().imagenUrl
         }))
 }
@@ -108,7 +109,11 @@ function determinarColor(punto) {
 
 function crearTooltip(punto) {
     let contenido = `Lectura: ${punto.fecha || 'N/A'}<br>Medidor: ${punto.medidor || 'N/A'}`
-    
+
+    if (punto.lectura_actual && punto.lectura_actual.trim() !== '') {
+        contenido += `<br>Lectura: ${punto.lectura_actual}`
+    }
+
     if (punto.novedad && punto.novedad.trim() !== '') {
         contenido += `<br>Novedad: ${punto.novedad}`
     }
