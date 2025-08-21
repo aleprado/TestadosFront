@@ -4,12 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa de Ruta</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="../style.css">
 </head>
 <body data-page="mapa">
 <div id="mapa"></div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<div id="leyenda-colores" class="leyenda-mapa">
+    <div class="leyenda-titulo">Leyenda de Puntos</div>
+    <div class="leyenda-item">
+        <div class="leyenda-color verde"></div>
+        <span>Sin novedad</span>
+    </div>
+    <div class="leyenda-item">
+        <div class="leyenda-color amarillo"></div>
+        <span>Con novedad</span>
+    </div>
+    <div class="leyenda-item">
+        <div class="leyenda-color rojo"></div>
+        <span>Con imagen</span>
+    </div>
+</div>
+<script async defer 
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAksqUv9fz5XqluvoIla1Ih9mzwpZFls7k&callback=initMap">
+</script>
 <script type="module" src="../app/mapa.js"></script>
 </body>
 </html>

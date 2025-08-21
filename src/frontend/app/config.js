@@ -48,3 +48,6 @@ export const storageDownload = getStorage(appDownload);
 
 // Endpoint HTTP de la función de exportación on-demand (derivado del proyecto/región)
 export const exportOnDemandEndpoint = "https://us-central1-estado-eb18c.cloudfunctions.net/exportCSVOnDemand";
+
+// Google Maps API Key (usa la misma key de Firebase o crea una específica)
+export const GOOGLE_MAPS_API_KEY = "AIzaSyAksqUv9fz5XqluvoIla1Ih9mzwpZFls7k";
