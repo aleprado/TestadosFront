@@ -91,7 +91,7 @@ function procesarDatos(documentos) {
             longitud: parseFloat(d.data().longitud),
             fecha: d.data().fecha_hora_lectura,
             medidor: d.data().medidor,
-            novedad: d.data().novedad,
+            novedad: d.data().novedades,
             imageUrl: d.data().imagenUrl
         }))
 }
@@ -205,9 +205,6 @@ async function dibujar(){
         const puntos = procesarDatos(resultado.docs)
         console.log('Documentos con coordenadas válidas:', puntos.length)
         
-        // Mostrar resumen de datos
-        mostrarResumenDatos(resultado.docs, puntos);
-        
         // Solo intentar dibujar en el mapa si está disponible
         if (mapa && puntos.length > 0) {
             // Centrar el mapa en el primer punto
@@ -244,35 +241,4 @@ async function dibujar(){
     }
 }
 
-// Nueva función para mostrar resumen de datos
-function mostrarResumenDatos(todosLosDocs, puntosValidos) {
-    const resumenDiv = document.createElement('div');
-    resumenDiv.style.cssText = `
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(255, 255, 255, 0.95);
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-        max-width: 300px;
-        font-size: 14px;
-    `;
-    
-    const totalDocs = todosLosDocs.length;
-    const docsConCoords = puntosValidos.length;
-    const docsSinCoords = totalDocs - docsConCoords;
-    
-    resumenDiv.innerHTML = `
-        <h4 style="margin: 0 0 10px 0; color: #1976d2;">📊 Resumen de Datos</h4>
-        <p><strong>Total documentos:</strong> ${totalDocs}</p>
-        <p><strong>Con coordenadas:</strong> <span style="color: #4caf50;">${docsConCoords}</span></p>
-        <p><strong>Sin coordenadas:</strong> <span style="color: #f44336;">${docsSinCoords}</span></p>
-        <p><strong>Porcentaje válido:</strong> ${Math.round((docsConCoords/totalDocs)*100)}%</p>
-        ${docsSinCoords > 0 ? '<p style="color: #ff9800; font-size: 12px;">⚠️ Muchos documentos no tienen coordenadas válidas</p>' : ''}
-    `;
-    
-    // Agregar al body para que esté visible
-    document.body.appendChild(resumenDiv);
-}
+
