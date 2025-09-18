@@ -19,6 +19,9 @@ const authNavTemplate = `
 const footerTemplate = `
   <div class="site-footer__inner">
     <span>© <span id="year"></span> Testados</span>
+    <a class="footer-store" href="https://play.google.com/store" target="_blank" rel="noopener noreferrer">
+      <img src="/content/icons/disponible-en-google-play-badge.png" alt="Disponible en Google Play" class="footer-store__img" />
+    </a>
   </div>
 `;
 
@@ -67,6 +70,11 @@ function renderNav(page) {
       event.preventDefault();
       document.dispatchEvent(new CustomEvent('layout:logout'));
     });
+  } else {
+    const navKnowApp = document.getElementById('navKnowApp');
+    if (navKnowApp) {
+      navKnowApp.href = page === 'landing' ? '#app' : '/#app';
+    }
   }
 }
 

@@ -43,6 +43,14 @@ body[data-page='localidades'] h1 {
     gap: 20px;
 }
 
+body[data-page='localidades'] .rutas-usuarios {
+    justify-content: center;
+}
+
+body[data-page='localidades'] .rutas-container {
+    max-width: 560px;
+}
+
 /* Ajustar los contenedores de rutas y usuarios */
 .rutas-container,
 .usuarios-container {
@@ -958,6 +966,18 @@ body[data-page='login'] .page-main {
     justify-content: space-between;
     padding: 16px 0;
     color: #666;
+}
+
+.footer-store {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-store__img {
+    display: block;
+    width: 160px;
+    height: auto;
 }
 
 .footer-link { color: #d32f2f; text-decoration: none; }
