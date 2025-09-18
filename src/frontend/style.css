@@ -77,6 +77,22 @@ body[data-page='localidades'] .rutas-container {
     gap: 10px;
 }
 
+.list-item-clickable {
+    display: flex;
+    align-items: center;
+}
+
+.list-item-clickable > label,
+.list-item-clickable > span,
+.list-item-clickable > .ruta-content,
+.list-item-clickable > .usuario-label {
+    flex: 1;
+}
+
+.list-item-clickable > .delete-btn {
+    margin-left: auto;
+}
+
 /* Estilo para cada elemento de la lista */
 .list li {
     padding: 15px;

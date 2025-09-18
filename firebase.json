@@ -7,13 +7,12 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      {"source": "/gestionar-rutas", "destination": "/html/gestionar-rutas.html"},
-      {"source": "/rutas", "destination": "/html/rutas.html"},
-      {"source": "/localidades", "destination": "/html/localidades.html"},
-      {"source": "/login", "destination": "/html/login.html"},
-      {"source": "/contacto", "destination": "/html/contacto.html"},
-      {"source": "/mapa", "destination": "/html/mapa.html"},
-      {"source": "/", "destination": "/html/index.html"}
+      { "source": "/gestionar-rutas", "destination": "/html/gestionar-rutas.html" },
+      { "source": "/localidades", "destination": "/html/localidades.html" },
+      { "source": "/login", "destination": "/html/login.html" },
+      { "source": "/contacto", "destination": "/html/contacto.html" },
+      { "source": "/mapa", "destination": "/html/mapa.html" },
+      { "source": "/", "destination": "/html/index.html" }
     ],
     "headers": [
       {
@@ -25,6 +24,9 @@
           }
         ]
       }
+    ],
+    "redirects": [
+      { "source": "/rutas", "destination": "/gestionar-rutas", "type": 301 }
     ]
   }
 }
