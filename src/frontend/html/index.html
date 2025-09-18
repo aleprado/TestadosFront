@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testados — Gestión de rutas y toma de estados</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="icon" href="../favicon.png" type="image/png">
+    <meta name="description" content="Testados es una plataforma para gestionar rutas, usuarios y la toma de estados, con visualización en mapa y exportación a CSV.">
+</head>
+<body data-page="landing">
+    <header class="site-header" data-component="site-header"></header>
+
+    <main>
+        <section class="hero">
+            <div class="hero__content reveal">
+                <h1 id="heroTitle">Gestión de rutas y usuarios, simple y efectiva</h1>
+                <p id="heroDesc">Centraliza localidades, asigna usuarios, carga rutas desde archivos y visualiza el avance en mapas. Exporta resultados a CSV cuando lo necesites.</p>
+            </div>
+        </section>
+
+        <section class="features">
+            <h2 class="reveal">Características principales</h2>
+            <div id="featuresGrid" class="features-grid"></div>
+        </section>
+
+        <section id="app" class="app-overview">
+            <h2 id="appTitle" class="reveal">Conoce nuestra app</h2>
+            <p id="appSubtitle" class="section-subtitle reveal">Próximamente: manuales en video alojados en YouTube. Deja listos tus enlaces reemplazando los IDs de ejemplo.</p>
+            <div id="videoGrid" class="video-grid"></div>
+        </section>
+
+        
+    </main>
+
+    <footer class="site-footer" data-component="site-footer"></footer>
+    <div data-component="floating-whatsapp"></div>
+
+    <script type="module" src="../app/layout.js"></script>
+    <script type="module" src="../app/landing.js"></script>
+</body>
+</html>

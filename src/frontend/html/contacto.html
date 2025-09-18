@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto — Testados</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="icon" href="../favicon.png" type="image/png">
+</head>
+<body data-page="contacto">
+    <header class="site-header" data-component="site-header"></header>
+
+    <main>
+        <section class="hero" style="padding: 40px 0 20px;">
+            <div class="hero__content reveal">
+                <h1 id="pageTitle">Contacto</h1>
+                <p id="pageSubtitle" class="section-subtitle">¿Tienes dudas o quieres una demo? Completa el formulario y nos pondremos en contacto.</p>
+            </div>
+        </section>
+
+        <section class="contact contact-page">
+            <div class="contact-wrapper reveal">
+                <form id="contactForm" class="contact-form">
+                    <div class="form-row">
+                        <label for="name" id="labelName">Nombre</label>
+                        <input type="text" id="name" class="input-field" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="email" id="labelEmail">Email</label>
+                        <input type="email" id="email" class="input-field" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="company" id="labelCompany">Empresa</label>
+                        <input type="text" id="company" class="input-field">
+                    </div>
+                    <div class="form-row">
+                        <label for="subject" id="labelSubject">Asunto</label>
+                        <input type="text" id="subject" class="input-field" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="message" id="labelMessage">Mensaje</label>
+                        <textarea id="message" class="input-field" rows="6" required></textarea>
+                    </div>
+                    <div class="form-row" style="text-align: right;">
+                        <button type="submit" id="sendBtn" class="btn">Enviar</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer" data-component="site-footer"></footer>
+    <div data-component="floating-whatsapp"></div>
+
+    <script type="module" src="../app/layout.js"></script>
+    <script type="module" src="../app/contacto.js"></script>
+</body>
+</html>

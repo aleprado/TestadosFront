@@ -11,12 +11,13 @@
       {"source": "/rutas", "destination": "/html/rutas.html"},
       {"source": "/localidades", "destination": "/html/localidades.html"},
       {"source": "/login", "destination": "/html/login.html"},
+      {"source": "/contacto", "destination": "/html/contacto.html"},
       {"source": "/mapa", "destination": "/html/mapa.html"},
-      {"source": "/", "destination": "/html/login.html"}
+      {"source": "/", "destination": "/html/index.html"}
     ],
     "headers": [
       {
-        "source": "**/*.@(js|css|html)",
+        "source": "**/*.@(js|css|html|json|svg|png|jpg|jpeg)",
         "headers": [
           {
             "key": "Cache-Control",

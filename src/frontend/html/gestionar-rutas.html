@@ -8,38 +8,41 @@
     <link rel="icon" href="../favicon.png" type="image/png">
 </head>
 <body data-page="gestionar-rutas">
-<div class="container">
-    <!-- Botones de navegación y sesión -->
-    <div class="logout-button-container">
-        <button id="backButton" class="btn btn-secondary">Volver</button>
-        <button id="logoutButton" class="btn btn-secondary">Cerrar sesión</button>
+<header class="site-header" data-component="site-header"></header>
+
+<main class="page-main">
+    <div class="container">
+
+        <h1>Gestionar Rutas y Usuarios</h1>
+        <p class="help-text">Seleccione una ruta para ver los usuarios asignados. Use la opción "Asignar" para vincularlos a la ruta elegida.</p>
+
+        <section class="rutas-usuarios">
+            <div class="rutas-container">
+                <div class="rutas-header">
+                    <h2>Rutas</h2>
+                    <label for="fileInput" class="btn registrar-ruta-btn">Registrar Ruta</label>
+                    <input type="file" id="fileInput" class="hidden-input" multiple>
+                </div>
+                <ul id="rutasList" class="list large-list">
+                </ul>
+            </div>
+            <div class="usuarios-container">
+                <div class="usuarios-header">
+                    <h2>Usuarios</h2>
+                    <button id="registerUserButton" class="btn registrar-usuario-btn">Registrar Usuario</button>
+                </div>
+                <ul id="usuariosList" class="list large-list">
+                    <!-- Los elementos de usuarios se generarán dinámicamente aquí -->
+                </ul>
+            </div>
+        </section>
     </div>
+</main>
 
-    <h1>Gestionar Rutas y Usuarios</h1>
-    <p class="help-text">Seleccione una ruta para ver los usuarios asignados. Use la opción "Asignar" para vincularlos a la ruta elegida.</p>
+<footer class="site-footer" data-component="site-footer"></footer>
+<div data-component="floating-whatsapp"></div>
 
-    <section class="rutas-usuarios">
-        <div class="rutas-container">
-            <div class="rutas-header">
-                <h2>Rutas</h2>
-                <label for="fileInput" class="btn registrar-ruta-btn">Registrar Ruta</label>
-                <input type="file" id="fileInput" class="hidden-input" multiple>
-            </div>
-            <ul id="rutasList" class="list large-list">
-            </ul>
-        </div>
-        <div class="usuarios-container">
-            <div class="usuarios-header">
-                <h2>Usuarios</h2>
-                <button id="registerUserButton" class="btn registrar-usuario-btn">Registrar Usuario</button>
-            </div>
-            <ul id="usuariosList" class="list large-list">
-                <!-- Los elementos de usuarios se generarán dinámicamente aquí -->
-            </ul>
-        </div>
-    </section>
-</div>
-
+<script type="module" src="../app/layout.js"></script>
 <script type="module" src="../app/app.js?v=2025-08-18-22-45-01"></script>
 </body>
 </html>

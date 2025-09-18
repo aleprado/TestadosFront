@@ -8,31 +8,35 @@
     <link rel="icon" href="../favicon.png" type="image/png">
 </head>
 <body data-page="localidades">
-<!-- Título fuera del contenedor -->
-<h1>Selecciona una Localidad</h1>
-<!-- Contenedor específico para Localidades -->
-<div class="container">
-    <!-- Botón de Cerrar sesión -->
-    <div class="logout-button-container">
-        <button id="logoutButton" class="btn btn-secondary">Cerrar sesión</button>
-    </div>
+<header class="site-header" data-component="site-header"></header>
 
-    <section class="rutas-usuarios">
-        <div class="rutas-container">
-            <h2>Localidades</h2>
-            <ul id="localidadesList" class="list large-list"></ul>
+<main class="page-main">
+    <!-- Título fuera del contenedor -->
+    <h1>Selecciona una Localidad</h1>
+    <!-- Contenedor específico para Localidades -->
+    <div class="container">
+
+        <section class="rutas-usuarios">
+            <div class="rutas-container">
+                <h2>Localidades</h2>
+                <ul id="localidadesList" class="list large-list"></ul>
+            </div>
+        </section>
+
+        <h2>Agregar localidad</h2>
+
+        <div class="add-actions">
+            <input type="text" id="nuevaLocalidadInput" placeholder="Nombre de la Localidad" class="input-field">
+            <button id="agregarLocalidadButton" class="btn">Agregar Localidad</button>
         </div>
-    </section>
 
-    <h2>Agregar localidad</h2>
-
-    <div class="add-actions">
-        <input type="text" id="nuevaLocalidadInput" placeholder="Nombre de la Localidad" class="input-field">
-        <button id="agregarLocalidadButton" class="btn">Agregar Localidad</button>
     </div>
+</main>
 
-</div>
+<footer class="site-footer" data-component="site-footer"></footer>
+<div data-component="floating-whatsapp"></div>
 
+<script type="module" src="../app/layout.js"></script>
 <script type="module" src="../app/app.js?v=2025-08-18-22-45-01"></script>
 </body>
 </html>

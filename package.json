@@ -5,7 +5,8 @@
   "main": "src/frontend/app/app.js",
   "scripts": {
     "build": "echo 'Build completado - proyecto estático'",
-    "dev": "echo 'Ejecutar servidor local para desarrollo'",
+    "dev": "node dev-server.mjs",
+    "emulate": "firebase emulators:start --only hosting",
     "deploy": "firebase deploy"
   },
   "keywords": ["frontend", "testados", "firebase"],

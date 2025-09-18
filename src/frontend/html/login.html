@@ -8,13 +8,21 @@
     <link rel="icon" href="../favicon.png" type="image/png">
 </head>
 <body data-page="login">
-    <div class="loginContainer">
-        <h1>Iniciar Sesión</h1>
-        <input type="text" id="usernameInput" placeholder="Usuario" class="input-field">
-        <input type="password" id="passwordInput" placeholder="Contraseña" class="input-field">
-        <button id="loginButton" class="btn">Iniciar sesión</button>
-    </div>
+    <header class="site-header" data-component="site-header"></header>
 
+    <main class="page-main">
+        <div class="loginContainer">
+            <h1>Iniciar Sesión</h1>
+            <input type="text" id="usernameInput" placeholder="Usuario" class="input-field">
+            <input type="password" id="passwordInput" placeholder="Contraseña" class="input-field">
+            <button id="loginButton" class="btn">Iniciar sesión</button>
+        </div>
+    </main>
+
+    <footer class="site-footer" data-component="site-footer"></footer>
+    <div data-component="floating-whatsapp"></div>
+
+    <script type="module" src="../app/layout.js"></script>
     <!-- Cargar tu archivo JavaScript como un módulo -->
     <script type="module" src="../app/app.js?v=2025-08-18-22-45-01"></script>
 </body>

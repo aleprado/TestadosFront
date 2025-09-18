@@ -7,22 +7,32 @@
     <link rel="stylesheet" href="../style.css">
 </head>
 <body data-page="mapa">
-<div id="mapa"></div>
-<div id="leyenda-colores" class="leyenda-mapa">
-    <div class="leyenda-titulo">Leyenda de Puntos</div>
-    <div class="leyenda-item">
-        <div class="leyenda-color verde"></div>
-        <span>Sin novedad</span>
+<header class="site-header" data-component="site-header"></header>
+
+<main class="page-main page-main--map">
+    <div id="mapa"></div>
+    <div id="leyenda-colores" class="leyenda-mapa">
+        <div class="leyenda-titulo">Leyenda de Puntos</div>
+        <div class="leyenda-item">
+            <div class="leyenda-color verde"></div>
+            <span>Sin novedad</span>
+        </div>
+        <div class="leyenda-item">
+            <div class="leyenda-color amarillo"></div>
+            <span>Con novedad</span>
+        </div>
+        <div class="leyenda-item">
+            <div class="leyenda-color rojo"></div>
+            <span>Con imagen</span>
+        </div>
     </div>
-    <div class="leyenda-item">
-        <div class="leyenda-color amarillo"></div>
-        <span>Con novedad</span>
-    </div>
-    <div class="leyenda-item">
-        <div class="leyenda-color rojo"></div>
-        <span>Con imagen</span>
-    </div>
-</div>
+</main>
+
+<footer class="site-footer" data-component="site-footer"></footer>
+<div data-component="floating-whatsapp"></div>
+
+<script type="module" src="../app/layout.js"></script>
+<script type="module" src="../app/app.js?v=2025-08-18-22-45-01"></script>
 
 <!-- Definir initMap globalmente ANTES de cargar Google Maps -->
 <script>

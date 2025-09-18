@@ -19,21 +19,27 @@ import { db, exportOnDemandEndpoint, auth, storageUpload } from "./config.js";
 let rutaSeleccionada = null;
 let usuariosCargados = false;
 
+document.addEventListener('layout:logout', () => {
+    logout();
+});
+
+document.addEventListener('layout:back', () => {
+    const page = document.body.dataset.page;
+    if (page === 'gestionar-rutas') {
+        window.location.href = '/localidades';
+    } else if (page === 'mapa') {
+        window.location.href = '/gestionar-rutas';
+    } else if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = '/';
+    }
+});
+
 // ####################### LOGIN #######################
 
 document.addEventListener("DOMContentLoaded", async () => {
     const page = document.body.dataset.page;
-
-    // Botón de cierre de sesión disponible en todas las páginas
-    const logoutButton = document.getElementById("logoutButton");
-    logoutButton?.addEventListener("click", () => {
-        logout();
-    });
-
-    const backButton = document.getElementById("backButton");
-    backButton?.addEventListener("click", () => {
-        window.location.href = "/localidades";
-    });
 
     if (page === "login") {
         const loginButton = document.getElementById("loginButton");

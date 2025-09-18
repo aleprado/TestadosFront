@@ -1,0 +1,19 @@
+{
+  "brand": "Testados",
+  "title": "Contacto",
+  "subtitle": "¿Tienes dudas o quieres una demo? Completa el formulario y nos pondremos en contacto.",
+  "method": "mailto",
+  "recipient": "contacto@tu-dominio.com",
+  "formspreeEndpoint": "",
+  "fields": {
+    "name": { "label": "Nombre", "placeholder": "Tu nombre" },
+    "email": { "label": "Email", "placeholder": "tu@correo.com" },
+    "company": { "label": "Empresa", "placeholder": "Opcional" },
+    "subject": { "label": "Asunto", "placeholder": "Motivo de contacto" },
+    "message": { "label": "Mensaje", "placeholder": "Cuéntanos en qué podemos ayudarte" }
+  },
+  "buttonText": "Enviar",
+  "successMessage": "¡Gracias! Te responderemos pronto.",
+  "errorMessage": "No se pudo enviar el mensaje. Intenta nuevamente."
+}
+
