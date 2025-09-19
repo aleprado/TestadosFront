@@ -1,113 +1,156 @@
 :root {
     --layout-header-height: 0px;
     --layout-footer-height: 0px;
+    --color-primary: #d32f2f;
+    --color-primary-dark: #c62828;
+    --color-text: #333333;
+    --color-muted: #666666;
+    --color-border: #e0e0e0;
+    --color-surface: #ffffff;
+    --shadow-panel: 0 12px 30px rgba(0,0,0,0.08);
+    --shadow-hover: 0 18px 36px rgba(211, 47, 47, 0.18);
+    --radius-sm: 6px;
+    --radius-md: 12px;
 }
 
 /* Estilos de encabezados */
 body[data-page='gestionar-rutas'] h1,
 body[data-page='localidades'] h1 {
     text-align: center;
-    font-weight: 300;
-    font-size: 2.2rem;
-    color: #333;
-    margin: 24px 0;
+    font-weight: 600;
+    font-size: clamp(30px, 4.5vw, 38px);
+    color: var(--color-text);
+    margin: 48px 0 48px;
 }
 
 .help-text {
     text-align: center;
     font-size: 1rem;
-    color: #555;
-    margin-bottom: 20px;
-    background-color: #f0f0f0;
-    padding: 10px;
-    border-radius: 5px;
+    color: var(--color-text);
+    margin: 0 auto 32px;
+    max-width: 760px;
+    padding: 14px 20px;
+    background: rgba(240, 239, 164, 0.2);
+    border-left: 4px solid var(--color-primary);
+    border-radius: var(--radius-sm);
 }
 
 /* Ajuste del contenedor principal */
+
 .container {
     width: min(1100px, 92%);
-    min-height: max(440px, calc(100vh - var(--layout-header-height) - var(--layout-footer-height) - 120px));
-    margin: 24px auto 40px;
+    margin: 0 auto 48px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    gap: 24px;
+    gap: 28px;
 }
 
-/* Rutas y usuarios ocupando más espacio */
-.rutas-usuarios {
-    display: flex;
-    justify-content: space-between;
-    flex-grow: 1;
-    margin: 20px 0;
-    gap: 20px;
+.rutas-usuarios,
+.split-panels {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
 body[data-page='localidades'] .rutas-usuarios {
-    justify-content: center;
+    justify-items: center;
 }
 
 body[data-page='localidades'] .rutas-container {
-    max-width: 560px;
+    width: min(560px, 100%);
 }
 
-/* Ajustar los contenedores de rutas y usuarios */
+.panel,
 .rutas-container,
 .usuarios-container {
-    flex: 1;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 20px;
-    overflow-y: auto;
-    background-color: #f9f9f9;
-    height: calc(100% - 40px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    justify-content: center;
-}
-
-/* Listas grandes para mostrar elementos más amplios */
-.large-list {
-    width: 100%;
-    height: 100%;
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-panel);
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
 }
 
-.list-item-clickable {
+.panel__header {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.panel__title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.panel__actions {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+}
+
+.panel__body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.panel--form .panel__body {
+    flex-direction: column;
+    gap: 16px;
+}
+
+.add-localidad {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
     align-items: center;
 }
 
-.list-item-clickable > label,
-.list-item-clickable > span,
-.list-item-clickable > .ruta-content,
-.list-item-clickable > .usuario-label {
-    flex: 1;
+.add-localidad__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
 }
 
-.list-item-clickable > .delete-btn {
-    margin-left: auto;
+.add-localidad__actions .input-field {
+    flex: 1 1 280px;
 }
 
-/* Estilo para cada elemento de la lista */
-.list li {
-    padding: 15px;
-    font-size: 18px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #fff;
+.data-list,
+.large-list,
+.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.data-list__item,
+.list-item
+{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 18px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* Hover y selección para resaltar */
-.list li:hover {
-    background-color: #e0f7fa;
-    transform: scale(1.02);
+.data-list__item:hover,
+.list-item:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
 }
 
 /* Resaltar todo el contenedor del usuario */
@@ -184,53 +227,13 @@ body[data-page='localidades'] .rutas-container {
 }
 
 .actions .btn {
-    padding: 15px 34px;
+    padding: 16px 36px;
     font-size: 20px;
-    border-radius: 12px;
-    cursor: pointer;
-    background-color: #d32f2f;
-    color: #fff;
-    border: none;
-    transition: background-color 0.2s ease;
-    box-shadow: 0 16px 30px rgba(211, 47, 47, 0.18);
 }
 
 .actions .btn:hover {
-    background-color: #c62828;
+    background: var(--color-primary-dark);
 }
-
-.localidadesContainer {
-    width: 90%;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-#localidadesList {
-    width: 100%;
-    max-width: 600px;
-    margin: 20px 0;
-    padding: 0;
-    list-style: none;
-}
-
-#localidadesList li {
-    padding: 15px;
-    font-size: 18px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #fff;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-#localidadesList li:hover {
-    background-color: #e0f7fa;
-}
-
 
 /* Ajuste del contenedor principal */
 .loginContainer {
@@ -296,23 +299,44 @@ input[type="checkbox"] {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 12px 26px;
+    gap: 8px;
+    padding: 12px 24px;
     font-size: 16px;
-    border-radius: 999px;
-    background-color: #d32f2f;
+    font-weight: 600;
+    line-height: 1;
+    border-radius: var(--radius-md);
+    background: var(--color-primary);
     color: #fff;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 12px 24px rgba(211, 47, 47, 0.18);
     text-decoration: none;
-    font-weight: 600;
+    box-shadow: var(--shadow-panel);
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn:hover {
-    background-color: #c62828;
+    background: var(--color-primary-dark);
     transform: translateY(-1px);
-    box-shadow: 0 16px 32px rgba(211, 47, 47, 0.22);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid rgba(211, 47, 47, 0.5);
+    box-shadow: none;
+}
+
+.btn--ghost:hover {
+    background: rgba(211, 47, 47, 0.08);
+    box-shadow: none;
 }
 
 .blurred {
@@ -322,25 +346,94 @@ input[type="checkbox"] {
 }
 
 /* Contenedor principal para cada ruta */
-.ruta-item {
+
+.data-row {
     display: flex;
     align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    gap: 10px;
+    gap: 16px;
 }
 
-.ruta-actions {
+.data-row__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.data-row__title {
+    font-weight: 600;
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+.data-row__actions {
     margin-left: auto;
     display: flex;
     align-items: center;
+    gap: 12px;
+}
+
+.ruta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.ruta-heading {
+    font-weight: 600;
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+.ruta-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.ruta-metrics {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+.ruta-progress {
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.ruta-meta-count {
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.ruta-meta-count.has-assignees {
+    color: #4caf50;
+}
+
+.ruta-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.ruta-actions .badge {
+    font-weight: 600;
+    color: var(--color-primary);
 }
 
 .progreso-link {
     text-decoration: none;
-    color: #d32f2f;
-    display: flex;
+    color: var(--color-primary);
+    display: inline-flex;
     align-items: center;
+    font-weight: 600;
 }
 
 .progreso-disabled {
@@ -349,87 +442,82 @@ input[type="checkbox"] {
 }
 
 
+.ruta-assignees {
+    padding: 6px 0 0 8px;
+    border-left: 2px solid var(--color-border);
+    margin-left: 8px;
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease, opacity 0.25s ease;
+}
+
+.ruta-assignees.is-open {
+    max-height: 200px;
+    opacity: 1;
+}
+
+.ruta-assignees__list {
+    margin: 6px 0 0 16px;
+    padding: 0;
+    list-style: disc;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ruta-assignees__label {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.ruta-item--assigned .ruta-meta-row {
+    border-left: 3px solid rgba(76, 175, 80, 0.4);
+    padding-left: 12px;
+}
+
+.ruta-seleccionada {
+    border: 2px solid rgba(76, 175, 80, 0.45);
+    background-color: #e8f5e9;
+    box-shadow: var(--shadow-hover);
+}
+
 .progreso-link::after {
     content: "\2B07";
     font-size: 14px;
     margin-left: 4px;
 }
 
-/* Contenedor de los botones de cerrar sesión */
 .delete-btn {
     background: none;
     border: none;
-    color: #d32f2f;
+    color: var(--color-primary);
     cursor: pointer;
-    font-size: 16px;
-    margin-left: 0;
-}
-
-.delete-btn::before {
-    content: "|";
-    color: #999;
-    margin-right: 6px;
+    font-size: 18px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
 }
 
 .delete-btn:hover {
-    color: #c62828;
-}
-
-.usuario-item {
-    display: flex;
-    align-items: center;
-}
-
-.usuario-item .usuario-label {
-    flex: 1;
+    background-color: rgba(211, 47, 47, 0.1);
+    color: var(--color-primary-dark);
 }
 
 .usuario-actions {
-    margin-left: auto;
     display: flex;
-    align-items: center;
     gap: 10px;
 }
 
 .estado-asignacion {
     cursor: pointer;
     font-weight: bold;
-}
-
-.asignada-label {
-    color: #4caf50;
-    font-weight: bold;
-    margin-right: 10px;
-}
-
-.ruta-seleccionada {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    transform: scale(1.05);
-    border: 2px solid #4caf50;
-    background-color: #e8f5e9;
-}
-
-/* Encabezado de rutas con botón a la derecha */
-.rutas-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-.registrar-ruta-btn {
-    margin-left: auto;
-}
-
-.usuarios-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-.registrar-usuario-btn {
-    margin-left: auto;
 }
 
 
@@ -494,27 +582,39 @@ input[type="checkbox"] {
     font-weight: 600;
     margin-top: 10px;
 }
-.map-btn{
-    background:none;
-    border:none;
-    color:#d32f2f;
-    cursor:pointer;
-    font-size:16px;
+.map-btn {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
 }
-.map-btn svg{
-    width:1em;
-    height:1em;
-    fill:currentColor;
-    vertical-align:middle;
+
+.map-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
 }
-.map-btn::before{
-    content:"|";
-    color:#999;
-    margin-right:6px;
+
+.download-btn {
+    font-size: 18px;
+    line-height: 1;
 }
-.map-btn:disabled{
-    color:#999;
-    cursor:default;
+
+.map-btn:hover {
+    background-color: rgba(211, 47, 47, 0.1);
+}
+
+.map-btn:disabled {
+    color: #999;
+    cursor: default;
+    background: transparent;
 }
 #mapa{
     width:100%;
@@ -847,6 +947,7 @@ input[type="checkbox"] {
     width: min(1100px, 94vw);
     margin: 0 auto;
     padding: 40px 0;
+    min-height: calc(100vh - var(--layout-header-height) - var(--layout-footer-height));
 }
 
 .page-main--map {

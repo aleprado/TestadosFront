@@ -17,7 +17,6 @@ import { showPopup, showUserFormPopup, mostrarMapaPopup, showLoading, hideLoadin
 import { db, exportOnDemandEndpoint, auth, storageUpload } from "./config.js";
 
 let rutaSeleccionada = null;
-let usuariosCargados = false;
 
 document.addEventListener('layout:logout', () => {
     logout();
@@ -112,7 +111,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             await loadRutasPorLocalidad(cliente, localidad);
             document.getElementById("usuariosList").innerHTML = "Elige una ruta";
 
-            document.getElementById("fileInput")?.addEventListener("change", () => {
+            const fileInput = document.getElementById("fileInput");
+            const triggerUpload = document.getElementById("triggerRutaUpload");
+            triggerUpload?.addEventListener("click", () => fileInput?.click());
+
+            fileInput?.addEventListener("change", () => {
                 subirRutas();
             });
 
@@ -133,10 +136,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                         listItem.classList.add("ruta-seleccionada");
                         const usuariosList = document.getElementById("usuariosList");
                         usuariosList.classList.add("blurred");
-                        if (!usuariosCargados) {
+                        try {
                             await loadUsuariosPorLocalidad(cliente, localidad);
-                            usuariosCargados = true;                        }
-                        usuariosList.classList.remove("blurred");
+                        } finally {
+                            usuariosList.classList.remove("blurred");
+                        }
                     }
                 }
             });
@@ -266,16 +270,26 @@ export async function loadLocalidades(cliente) {
         localidadesSnapshot.forEach((localidadDoc) => {
             const localidad = localidadDoc.id;
             const listItem = document.createElement("li");
-            listItem.classList.add("list-item-clickable");
+            listItem.classList.add("data-list__item", "list-item-clickable", "localidad-item");
             listItem.addEventListener("click", () => {
                 localStorage.setItem("localidad", localidad);
                 console.log("guardada localidad: " + localidad);
                 window.location.href = "/gestionar-rutas";
             });
 
-            const label = document.createElement("label");
-            label.textContent = localidad;
-            listItem.appendChild(label);
+            const fila = document.createElement('div');
+            fila.classList.add('data-row');
+
+            const body = document.createElement('div');
+            body.classList.add('data-row__body');
+            const title = document.createElement('span');
+            title.classList.add('data-row__title');
+            title.textContent = localidad;
+            body.appendChild(title);
+            fila.appendChild(body);
+
+            const acciones = document.createElement('div');
+            acciones.classList.add('data-row__actions');
 
             const deleteBtn = document.createElement("button");
             deleteBtn.textContent = "\u2716";
@@ -284,7 +298,10 @@ export async function loadLocalidades(cliente) {
                 e.stopPropagation();
                 eliminarLocalidad(cliente, localidad);
             });
-            listItem.appendChild(deleteBtn);
+            acciones.appendChild(deleteBtn);
+
+            fila.appendChild(acciones);
+            listItem.appendChild(fila);
 
             localidadesProcesadas.push(listItem);
         });
@@ -353,49 +370,50 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 const conMedicion = lecturas.docs.filter(d=>d.data().lectura_actual).length;
                 const completado = total ? conMedicion/total*100 : 0;
 
-                const asignada = await rutaTieneAsignados(rutaRef);
-
+                const usuariosAsignados = await obtenerUsuariosAsignados(rutaRef);
                 const listItem = document.createElement("li");
-                listItem.classList.add("list-item-clickable", "ruta-item");
+                listItem.classList.add("data-list__item", "ruta-item", "list-item-clickable");
                 listItem.setAttribute("data-ruta-id", rutaId);
 
-                const contenido = document.createElement("div");
-                contenido.classList.add("ruta-content");
-                const nombre = document.createElement("span");
-                nombre.classList.add("ruta-label");
-                nombre.textContent = rutaId;
-                contenido.appendChild(nombre);
-                listItem.appendChild(contenido);
+                const heading = document.createElement('div');
+                heading.classList.add('ruta-heading');
+                heading.textContent = rutaId;
+                listItem.appendChild(heading);
 
-                const actions = document.createElement("div");
-                actions.classList.add("ruta-actions");
+                const metaRow = document.createElement('div');
+                metaRow.classList.add('ruta-meta-row');
 
-                if (asignada) {
-                    const etiqueta = document.createElement("span");
-                    etiqueta.classList.add("asignada-label");
-                    etiqueta.textContent = "Asignada";
-                    actions.appendChild(etiqueta);
-                }
+                const metrics = document.createElement('div');
+                metrics.classList.add('ruta-metrics');
 
-                const progressLink = document.createElement("a");
-                progressLink.href = "#";
-                progressLink.target = "_blank";
-                progressLink.classList.add("progreso-link");
-                if (completado === 0) {
-                    progressLink.classList.add("progreso-disabled");
-                }
+                const progressLink = document.createElement("span");
+                progressLink.classList.add("ruta-progress");
                 progressLink.textContent = `${completado.toFixed(2)}%`;
-                progressLink.addEventListener("click", (e) => {
+                metrics.appendChild(progressLink);
+
+                const assigneeCount = document.createElement('span');
+                assigneeCount.classList.add('ruta-meta-count');
+                if (usuariosAsignados.length) {
+                    assigneeCount.textContent = `${usuariosAsignados.length} usuari${usuariosAsignados.length === 1 ? 'o' : 'os'} asignad${usuariosAsignados.length === 1 ? 'o' : 'os'}`;
+                    assigneeCount.classList.add('has-assignees');
+                } else {
+                    assigneeCount.textContent = 'Sin asignar';
+                }
+                metrics.appendChild(assigneeCount);
+
+                metaRow.appendChild(metrics);
+
+                const actions = document.createElement('div');
+                actions.classList.add('ruta-actions');
+
+                const downloadBtn = document.createElement("button");
+                downloadBtn.classList.add("map-btn", "download-btn");
+                downloadBtn.textContent = '⬇';
+                downloadBtn.addEventListener("click", (e) => {
                     e.preventDefault();
-                    // ✅ DEBUG: Log antes de llamar a la función
-                    console.log("🔍 DEBUG click en progressLink:");
-                    console.log("  - cliente:", cliente);
-                    console.log("  - localidad:", localidad);
-                    console.log("  - rutaId:", rutaId);
-                    console.log("  - tipos:", typeof cliente, typeof localidad, typeof rutaId);
                     exportarYDescargar(cliente, localidad, rutaId);
                 });
-                actions.appendChild(progressLink);
+                actions.appendChild(downloadBtn);
 
                 const mapaBtn = document.createElement("button");
                 mapaBtn.innerHTML =
@@ -418,7 +436,9 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 });
                 actions.appendChild(deleteBtn);
 
-                listItem.appendChild(actions);
+                metaRow.appendChild(actions);
+                listItem.appendChild(metaRow);
+                renderRutaAsignaciones(listItem, usuariosAsignados);
                 rutasList.appendChild(listItem);
             }
         }
@@ -483,25 +503,28 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
         // Renderizar todos los usuarios de una vez
         for (const usuario of usuarios) {
             const listItem = document.createElement("li");
-            listItem.classList.add("list-item-clickable", "usuario-item");
+            listItem.classList.add("data-list__item", "list-item-clickable", "usuario-item");
             listItem.setAttribute("data-user-id", usuario.id);
 
-            const label = document.createElement("label");
-            label.classList.add("usuario-label");
+            const fila = document.createElement('div');
+            fila.classList.add('data-row');
+
+            const body = document.createElement('div');
+            body.classList.add('data-row__body');
 
             const span = document.createElement("span");
+            span.classList.add('data-row__title', 'usuario-label');
             span.textContent = `${usuario.data.nombre} (${usuario.data.email})`;
-
-            label.appendChild(span);
-            listItem.appendChild(label);
+            body.appendChild(span);
+            fila.appendChild(body);
 
             const acciones = document.createElement("div");
-            acciones.classList.add("usuario-actions");
+            acciones.classList.add("data-row__actions", "usuario-actions");
 
             // ✅ RESTAURAR: Verificar si el usuario ya tiene asignada la ruta actual
             const rutasAsignadas = usuario.data.rutas.map((ruta) => ruta.path || ruta);
             const asignado = rutasAsignadas.includes(`Rutas/${rutaSeleccionada}`);
-            
+
             const estado = document.createElement("span");
             estado.classList.add("estado-asignacion");
             estado.textContent = asignado ? "Desasignar" : "Asignar";
@@ -545,7 +568,8 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
             });
             acciones.appendChild(deleteBtn);
 
-            listItem.appendChild(acciones);
+            fila.appendChild(acciones);
+            listItem.appendChild(fila);
             usuariosList.appendChild(listItem);
         }
 
@@ -564,10 +588,61 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
 
 
 
-async function rutaTieneAsignados(rutaRef) {
+async function obtenerUsuariosAsignados(rutaRef) {
     const consulta = query(collection(db, "Usuarios"), where("rutas", "array-contains", rutaRef));
     const resultado = await getDocs(consulta);
-    return !resultado.empty;
+    return resultado.docs.map((docSnap) => {
+        const data = docSnap.data() || {};
+        return {
+            id: docSnap.id,
+            nombre: data.nombre || docSnap.id,
+            email: data.email || '',
+        };
+    });
+}
+
+function renderRutaAsignaciones(listItem, usuarios) {
+    let container = listItem.querySelector('.ruta-assignees');
+    if (!container) {
+        container = document.createElement('div');
+        container.classList.add('ruta-assignees');
+        listItem.appendChild(container);
+    }
+
+    container.innerHTML = '';
+    if (!usuarios || usuarios.length === 0) {
+        container.classList.remove('is-open');
+        listItem.classList.remove('ruta-item--assigned');
+        const count = listItem.querySelector('.ruta-meta-count');
+        if (count) {
+            count.textContent = 'Sin asignar';
+            count.classList.remove('has-assignees');
+        }
+        return;
+    }
+
+    listItem.classList.add('ruta-item--assigned');
+    container.classList.add('is-open');
+
+    const count = listItem.querySelector('.ruta-meta-count');
+    if (count) {
+        count.textContent = `${usuarios.length} usuari${usuarios.length === 1 ? 'o' : 'os'} asignad${usuarios.length === 1 ? 'o' : 'os'}`;
+        count.classList.add('has-assignees');
+    }
+
+    const label = document.createElement('span');
+    label.classList.add('ruta-assignees__label');
+    label.textContent = 'Asignada a:';
+    container.appendChild(label);
+
+    const list = document.createElement('ul');
+    list.classList.add('ruta-assignees__list');
+    usuarios.forEach(({ nombre, email }) => {
+        const li = document.createElement('li');
+        li.textContent = email ? `${nombre} (${email})` : nombre;
+        list.appendChild(li);
+    });
+    container.appendChild(list);
 }
 
 export async function handleUserAssignment(userId, asignar) {
@@ -586,21 +661,10 @@ export async function handleUserAssignment(userId, asignar) {
         : { rutas: arrayRemove(rutaRef) };
 
         await updateDoc(usuarioRef, updateData);
-        const asignada = await rutaTieneAsignados(rutaRef);
         const item = document.querySelector(`li[data-ruta-id="${rutaId}"]`);
         if (item) {
-            const contenedor = item.querySelector(".ruta-actions");
-            let etiqueta = contenedor.querySelector(".asignada-label");
-            if (asignada) {
-                if (!etiqueta) {
-                    etiqueta = document.createElement("span");
-                    etiqueta.classList.add("asignada-label");
-                    etiqueta.textContent = "Asignada";
-                    contenedor.prepend(etiqueta);
-                }
-            } else {
-                etiqueta?.remove();
-            }
+            const usuariosAsignados = await obtenerUsuariosAsignados(rutaRef);
+            renderRutaAsignaciones(item, usuariosAsignados);
         }
         console.log(`${asignar ? "Asignada" : "Eliminada"} la ruta ${rutaId} al usuario ${userId}`);
     } catch (error) {
@@ -689,7 +753,6 @@ async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario)
 
         showPopup("Usuario registrado exitosamente.");
         await loadUsuariosPorLocalidad(cliente, localidad);
-        usuariosCargados = true;
     } catch (error) {
         console.error("Error al registrar el usuario:", error);
         showPopup("Error al registrar el usuario.");
@@ -735,7 +798,6 @@ async function eliminarRuta(cliente, localidad, rutaId) {
 
         await loadRutasPorLocalidad(cliente, localidad);
         await loadUsuariosPorLocalidad(cliente, localidad);
-        usuariosCargados = true;
     } catch (error) {
         console.error("Error al eliminar la ruta:", error);
         showPopup("Error al eliminar la ruta.");
@@ -754,7 +816,6 @@ async function eliminarUsuario(cliente, localidad, userId) {
         await deleteDoc(usuarioRef);
 
         await loadUsuariosPorLocalidad(cliente, localidad);
-        usuariosCargados = true;
     } catch (error) {
         console.error("Error al eliminar el usuario:", error);
         showPopup("Error al eliminar el usuario.");

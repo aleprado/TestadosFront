@@ -16,18 +16,23 @@
     <!-- Contenedor específico para Localidades -->
     <div class="container">
 
-        <section class="rutas-usuarios">
-            <div class="rutas-container">
-                <ul id="localidadesList" class="list large-list"></ul>
+        <section class="rutas-usuarios split-panels">
+            <div class="rutas-container panel">
+                <div class="panel__header">
+                </div>
+                <div class="panel__body">
+                    <ul id="localidadesList" class="data-list"></ul>
+                </div>
             </div>
         </section>
 
-        <h2>Agregar localidad</h2>
-
-        <div class="add-actions">
-            <input type="text" id="nuevaLocalidadInput" placeholder="Nombre de la Localidad" class="input-field">
-            <button id="agregarLocalidadButton" class="btn">Agregar Localidad</button>
-        </div>
+        <section class="add-localidad">
+            <h2 class="panel__title">Agregar localidad</h2>
+            <div class="add-localidad__actions">
+                <input type="text" id="nuevaLocalidadInput" placeholder="Nombre de la Localidad" class="input-field">
+                <button id="agregarLocalidadButton" class="btn btn--ghost">Agregar Localidad</button>
+            </div>
+        </section>
 
     </div>
 </main>

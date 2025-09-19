@@ -16,24 +16,31 @@
         <h1>Gestionar Rutas y Usuarios</h1>
         <p class="help-text">Seleccione una ruta para ver los usuarios asignados. Use la opción "Asignar" para vincularlos a la ruta elegida.</p>
 
-        <section class="rutas-usuarios">
-            <div class="rutas-container">
-                <div class="rutas-header">
-                    <h2>Rutas</h2>
-                    <label for="fileInput" class="btn registrar-ruta-btn">Registrar Ruta</label>
-                    <input type="file" id="fileInput" class="hidden-input" multiple>
+        <section class="rutas-usuarios split-panels">
+            <div class="rutas-container panel">
+                <div class="panel__header">
+                    <h2 class="panel__title">Rutas</h2>
+                    <div class="panel__actions">
+                        <button type="button" id="triggerRutaUpload" class="btn btn--ghost registrar-ruta-btn">Registrar Ruta</button>
+                        <input type="file" id="fileInput" class="hidden-input" multiple>
+                    </div>
                 </div>
-                <ul id="rutasList" class="list large-list">
-                </ul>
+                <div class="panel__body">
+                    <ul id="rutasList" class="data-list"></ul>
+                </div>
             </div>
-            <div class="usuarios-container">
-                <div class="usuarios-header">
-                    <h2>Usuarios</h2>
-                    <button id="registerUserButton" class="btn registrar-usuario-btn">Registrar Usuario</button>
+            <div class="usuarios-container panel">
+                <div class="panel__header">
+                    <h2 class="panel__title">Usuarios</h2>
+                    <div class="panel__actions">
+                        <button id="registerUserButton" class="btn btn--ghost registrar-usuario-btn">Registrar Usuario</button>
+                    </div>
                 </div>
-                <ul id="usuariosList" class="list large-list">
-                    <!-- Los elementos de usuarios se generarán dinámicamente aquí -->
-                </ul>
+                <div class="panel__body">
+                    <ul id="usuariosList" class="data-list">
+                        <!-- Los elementos de usuarios se generarán dinámicamente aquí -->
+                    </ul>
+                </div>
             </div>
         </section>
     </div>
