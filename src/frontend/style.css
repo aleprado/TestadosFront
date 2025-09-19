@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
 :root {
     --layout-header-height: 0px;
     --layout-footer-height: 0px;
@@ -13,7 +15,19 @@
     --radius-md: 12px;
 }
 
+body {
+    font-family: 'Manrope', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.55;
+}
+
 /* Estilos de encabezados */
+h1, h2, h3, h4, .panel__title,
+.hero h1, .hero h2,
+.section-subtitle {
+    font-family: 'Manrope', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+}
+
 body[data-page='gestionar-rutas'] h1,
 body[data-page='localidades'] h1 {
     text-align: center;

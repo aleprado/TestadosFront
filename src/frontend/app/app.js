@@ -17,6 +17,7 @@ import { showPopup, showUserFormPopup, mostrarMapaPopup, showLoading, hideLoadin
 import { db, exportOnDemandEndpoint, auth, storageUpload } from "./config.js";
 
 let rutaSeleccionada = null;
+let usuariosLoadToken = 0;
 
 document.addEventListener('layout:logout', () => {
     logout();
@@ -409,8 +410,10 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 const downloadBtn = document.createElement("button");
                 downloadBtn.classList.add("map-btn", "download-btn");
                 downloadBtn.textContent = '⬇';
+                if (completado === 0) downloadBtn.disabled = true;
                 downloadBtn.addEventListener("click", (e) => {
                     e.preventDefault();
+                    if (downloadBtn.disabled) return;
                     exportarYDescargar(cliente, localidad, rutaId);
                 });
                 actions.appendChild(downloadBtn);
@@ -464,7 +467,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
     const usuariosList = document.getElementById("usuariosList");
     if (!usuariosList) return;
 
-    // Mostrar spinner mientras se cargan los usuarios
+    const token = ++usuariosLoadToken;
     usuariosList.innerHTML = '<div class="loading-spinner">Cargando usuarios...</div>';
     
     try {
@@ -472,22 +475,24 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
         const localidadDoc = await getDoc(localidadRef);
 
         if (!localidadDoc.exists()) {
-            usuariosList.innerHTML = "No se encontró la localidad.";
+            if (token === usuariosLoadToken) {
+                usuariosList.innerHTML = "No se encontró la localidad.";
+            }
             return;
         }
 
         const usuariosRefs = localidadDoc.data().usuarios || [];
+        if (token !== usuariosLoadToken) return;
+
         usuariosList.innerHTML = "";
 
-        // Mostrar progreso si hay muchos usuarios
-        if (usuariosRefs.length > 5) {
+        if (usuariosRefs.length > 5 && token === usuariosLoadToken) {
             const progressDiv = document.createElement('div');
             progressDiv.id = 'usuarios-progress';
             progressDiv.innerHTML = `<div class="loading-spinner">Procesando ${usuariosRefs.length} usuarios...</div>`;
             usuariosList.appendChild(progressDiv);
         }
 
-        // ✅ SOLUCIÓN OPTIMIZADA: Cargar todos los usuarios en paralelo (más rápida)
         const usuariosPromises = usuariosRefs.map(async (usuarioRef) => {
             try {
                 const usuarioDoc = await getDoc(usuarioRef);
@@ -499,9 +504,12 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
         });
 
         const usuarios = (await Promise.all(usuariosPromises)).filter(u => u !== null);
+        if (token !== usuariosLoadToken) return;
 
-        // Renderizar todos los usuarios de una vez
+        usuariosList.innerHTML = "";
+
         for (const usuario of usuarios) {
+            if (token !== usuariosLoadToken) return;
             const listItem = document.createElement("li");
             listItem.classList.add("data-list__item", "list-item-clickable", "usuario-item");
             listItem.setAttribute("data-user-id", usuario.id);
@@ -521,7 +529,6 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
             const acciones = document.createElement("div");
             acciones.classList.add("data-row__actions", "usuario-actions");
 
-            // ✅ RESTAURAR: Verificar si el usuario ya tiene asignada la ruta actual
             const rutasAsignadas = usuario.data.rutas.map((ruta) => ruta.path || ruta);
             const asignado = rutasAsignadas.includes(`Rutas/${rutaSeleccionada}`);
 
@@ -533,8 +540,6 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
             estado.addEventListener("click", async (e) => {
                 e.stopPropagation();
                 const nuevoEstado = estado.dataset.asignado !== "true";
-                
-                // ✅ SOLUCIÓN: Mostrar spinner en el botón mientras se procesa
                 const estadoOriginal = estado.textContent;
                 const colorOriginal = estado.style.color;
                 estado.textContent = "⏳";
@@ -548,7 +553,6 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
                     estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
                     estado.dataset.asignado = String(nuevoEstado);
                 } catch (error) {
-                    // Restaurar estado original en caso de error
                     estado.textContent = estadoOriginal;
                     estado.style.color = colorOriginal;
                     console.error("Error en asignación:", error);
@@ -576,12 +580,15 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
 
     } catch (error) {
         console.error("Error al cargar usuarios:", error);
-        usuariosList.innerHTML = "Error al cargar usuarios.";
+        if (token === usuariosLoadToken) {
+            usuariosList.innerHTML = "Error al cargar usuarios.";
+        }
     } finally {
-        // Eliminar el spinner de progreso si existía
-        const progressDiv = document.getElementById('usuarios-progress');
-        if (progressDiv) {
-            progressDiv.remove();
+        if (token === usuariosLoadToken) {
+            const progressDiv = document.getElementById('usuarios-progress');
+            if (progressDiv) {
+                progressDiv.remove();
+            }
         }
     }
 }
