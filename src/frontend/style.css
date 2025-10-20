@@ -1075,6 +1075,15 @@ body[data-page='login'] .page-main {
 
 .hero__actions .btn--primary:hover { background-color: #c62828; }
 
+@media (max-width: 768px) {
+    .hero {
+        padding: 120px 0 140px;
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
 /* Features */
 .features { padding: 110px 0 160px; }
 .features h2 {
