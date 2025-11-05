@@ -21,11 +21,9 @@
   ],
   "app": {
     "title": "Conoce nuestra app",
-    "subtitle": "Próximamente: manuales en video alojados en YouTube. Deja listos tus enlaces reemplazando los IDs de ejemplo.",
+    "subtitle": "Manuales en video.",
     "videos": [
-      { "id": "VIDEO_ID_1", "title": "Introducción a Testados" },
-      { "id": "VIDEO_ID_2", "title": "Gestión de localidades y rutas" },
-      { "id": "VIDEO_ID_3", "title": "Asignación de usuarios y exportación" }
+      { "id": "v5Q1eRaKHOg", "title": "Introducción a PD TomaEstados" }
     ]
   },
   "contact": {
@@ -33,7 +31,7 @@
     "subtitle": "¿Tienes dudas o quieres una demo? Escríbenos por WhatsApp y te respondemos a la brevedad.",
     "ctaText": "Contactar por WhatsApp",
     "whatsapp": {
-      "number": "5491122334455",
+      "number": "+5492364509709",
       "message": "Hola, me interesa Testados. ¿Podemos hablar?"
     }
   }
