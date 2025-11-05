@@ -909,12 +909,21 @@ input[type="checkbox"] {
     .site-nav {
         width: 100%;
         justify-content: flex-start;
-        flex-wrap: wrap;
-        gap: 8px;
+        flex-wrap: nowrap;
+        gap: 6px;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .site-nav::-webkit-scrollbar {
+        display: none;
     }
 
     .site-nav .nav-link {
-        padding: 8px 12px;
+        padding: 7px 10px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        flex: 0 0 auto;
     }
 }
 
@@ -1074,6 +1083,15 @@ body[data-page='login'] .page-main {
 }
 
 .hero__actions .btn--primary:hover { background-color: #c62828; }
+
+@media (max-width: 768px) {
+    .hero {
+        padding: 120px 0 140px;
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
 
 /* Features */
 .features { padding: 110px 0 160px; }
