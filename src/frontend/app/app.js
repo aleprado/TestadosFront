@@ -9,7 +9,8 @@ import {
     setDoc,
     query,
     where,
-    deleteDoc
+    deleteDoc,
+    writeBatch
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login, logout } from "./auth.js";
@@ -775,6 +776,31 @@ function mostrarLoaderUsuarios(mostrar) {
     }
 }
 
+async function borrarSubcoleccion(docRef, nombre) {
+    // Firestore no elimina subcolecciones al borrar el doc; limpiamos primero.
+    const subRef = collection(docRef, nombre);
+    const snapshot = await getDocs(subRef);
+    if (snapshot.empty) return;
+
+    let batch = writeBatch(db);
+    let operaciones = 0;
+
+    for (const docSnap of snapshot.docs) {
+        batch.delete(docSnap.ref);
+        operaciones += 1;
+
+        if (operaciones === 500) {
+            await batch.commit();
+            batch = writeBatch(db);
+            operaciones = 0;
+        }
+    }
+
+    if (operaciones > 0) {
+        await batch.commit();
+    }
+}
+
 async function eliminarRuta(cliente, localidad, rutaId) {
     try {
         const confirmacion = await showPopup(`\u00bfEliminar la ruta ${rutaId}?`, { confirm: true });
@@ -801,6 +827,7 @@ async function eliminarRuta(cliente, localidad, rutaId) {
         }
 
         await updateDoc(localidadRef, { rutas: arrayRemove(rutaRef) });
+        await borrarSubcoleccion(rutaRef, "RutaRecorrido");
         await deleteDoc(rutaRef);
 
         await loadRutasPorLocalidad(cliente, localidad);
@@ -851,6 +878,7 @@ async function eliminarLocalidad(cliente, localidad) {
         const usuariosRefs = localidadDoc.data().usuarios || [];
 
         for (const rutaRef of rutasRefs) {
+            await borrarSubcoleccion(rutaRef, "RutaRecorrido");
             await deleteDoc(rutaRef);
         }
 
