@@ -688,8 +688,8 @@ input[type="checkbox"] {
 }
 
 .gm-style .gm-ui-hover-effect {
-    top: 12px !important;
-    right: 12px !important;
+    top: 6px !important;
+    right: 6px !important;
     width: 28px !important;
     height: 28px !important;
     border-radius: 50%;
@@ -707,7 +707,7 @@ input[type="checkbox"] {
 .mapa-info {
     min-width: 230px;
     max-width: 280px;
-    padding: 10px 14px 12px;
+    padding: 6px 14px 12px;
     color: #2f2f2f;
     font-size: 0.9rem;
 }
@@ -719,7 +719,7 @@ input[type="checkbox"] {
     gap: 8px;
     padding-bottom: 8px;
     margin-bottom: 8px;
-    padding-right: 34px;
+    padding-right: 32px;
     border-bottom: 1px solid #eee;
 }
 
