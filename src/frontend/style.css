@@ -147,6 +147,12 @@ body[data-page='localidades'] .rutas-container {
     gap: 12px;
 }
 
+.data-list--loading {
+    min-height: 220px;
+    justify-content: center;
+    align-items: center;
+}
+
 .data-list__item,
 .list-item
 {

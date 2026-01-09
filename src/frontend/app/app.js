@@ -122,8 +122,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         try {
+            rutaSeleccionada = null;
             await loadRutasPorLocalidad(cliente, localidad);
-            document.getElementById("usuariosList").innerHTML = "Elige una ruta";
+            await loadUsuariosPorLocalidad(cliente, localidad);
 
             const fileInput = document.getElementById("fileInput");
             const triggerUpload = document.getElementById("triggerRutaUpload");
@@ -260,6 +261,7 @@ export async function loadLocalidades(cliente) {
     if (!localidadesList) return;
 
     // Mostrar spinner mientras se cargan las localidades
+    localidadesList.classList.add("data-list--loading");
     localidadesList.innerHTML = '<div class="loading-spinner">Cargando localidades...</div>';
     
     try {
@@ -270,6 +272,7 @@ export async function loadLocalidades(cliente) {
         const localidadesSnapshot = await getDocs(localidadesRef);
 
         if (localidadesSnapshot.empty) {
+            localidadesList.classList.remove("data-list--loading");
             localidadesList.innerHTML = "No se encontraron localidades.";
             return;
         }
@@ -327,6 +330,7 @@ export async function loadLocalidades(cliente) {
         });
         
         // ✅ OPTIMIZACIÓN: Limpiar la lista solo después de procesar todas las localidades
+        localidadesList.classList.remove("data-list--loading");
         localidadesList.innerHTML = '';
         localidadesProcesadas.forEach(item => localidadesList.appendChild(item));
         
@@ -337,6 +341,7 @@ export async function loadLocalidades(cliente) {
         }
     } catch (error) {
         console.error("Error al obtener localidades:", error);
+        localidadesList.classList.remove("data-list--loading");
         localidadesList.innerHTML = "Error al cargar localidades.";
     }
 }
@@ -414,6 +419,7 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
 
     let loadingItem = null;
     if (showSpinner) {
+        rutasList.classList.add("data-list--loading");
         rutasList.innerHTML = '';
         loadingItem = document.createElement('div');
         loadingItem.classList.add('loading-spinner');
@@ -427,6 +433,7 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
         const localidadDoc = await getDoc(localidadRef);
 
         if (!localidadDoc.exists()) {
+            rutasList.classList.remove("data-list--loading");
             rutasList.innerHTML = "No se encontró la localidad.";
             return;
         }
@@ -536,10 +543,12 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
             }
         }
 
+        rutasList.classList.remove("data-list--loading");
         rutasList.innerHTML = '';
         rutasProcesadas.forEach(ruta => rutasList.appendChild(ruta));
     } catch (error) {
         console.error("Error al cargar rutas:", error);
+        rutasList.classList.remove("data-list--loading");
         rutasList.innerHTML = "Error al cargar rutas.";
     }
 }
@@ -550,6 +559,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
 
     const token = ++usuariosLoadToken;
     if (showSpinner) {
+        usuariosList.classList.add("data-list--loading");
         usuariosList.innerHTML = '<div class="loading-spinner">Cargando usuarios...</div>';
     }
     
@@ -559,6 +569,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
 
         if (!localidadDoc.exists()) {
             if (token === usuariosLoadToken) {
+                usuariosList.classList.remove("data-list--loading");
                 usuariosList.innerHTML = "No se encontró la localidad.";
             }
             return;
@@ -567,6 +578,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
         const usuariosRefs = localidadDoc.data().usuarios || [];
         if (token !== usuariosLoadToken) return;
 
+        usuariosList.classList.remove("data-list--loading");
         usuariosList.innerHTML = "";
 
         if (showSpinner && usuariosRefs.length > 5 && token === usuariosLoadToken) {
@@ -589,6 +601,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
         const usuarios = (await Promise.all(usuariosPromises)).filter(u => u !== null);
         if (token !== usuariosLoadToken) return;
 
+        usuariosList.classList.remove("data-list--loading");
         usuariosList.innerHTML = "";
 
         for (const usuario of usuarios) {
@@ -612,41 +625,43 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
             const acciones = document.createElement("div");
             acciones.classList.add("data-row__actions", "usuario-actions");
 
-            const rutasAsignadas = usuario.data.rutas.map((ruta) => ruta.path || ruta);
-            const asignado = rutasAsignadas.includes(`Rutas/${rutaSeleccionada}`);
+            if (rutaSeleccionada) {
+                const rutasAsignadas = (usuario.data.rutas || []).map((ruta) => ruta.path || ruta);
+                const asignado = rutasAsignadas.includes(`Rutas/${rutaSeleccionada}`);
 
-            const estado = document.createElement("span");
-            estado.classList.add("estado-asignacion");
-            estado.textContent = asignado ? "Desasignar" : "Asignar";
-            estado.title = asignado ? "Desasignar ruta" : "Asignar ruta";
-            estado.dataset.asignado = String(asignado);
-            estado.style.color = asignado ? "#4caf50" : "#2196f3";
-            estado.addEventListener("click", async (e) => {
-                e.stopPropagation();
-                const nuevoEstado = estado.dataset.asignado !== "true";
-                const estadoOriginal = estado.textContent;
-                const colorOriginal = estado.style.color;
-                estado.textContent = "⏳";
-                estado.style.color = "#ff9800";
-                estado.disabled = true;
-                estado.setAttribute("data-loading", "true");
-                
-                try {
-                    await handleUserAssignment(usuario.id, nuevoEstado);
-                    estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
-                    estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
-                    estado.dataset.asignado = String(nuevoEstado);
-                    estado.title = nuevoEstado ? "Desasignar ruta" : "Asignar ruta";
-                } catch (error) {
-                    estado.textContent = estadoOriginal;
-                    estado.style.color = colorOriginal;
-                    console.error("Error en asignación:", error);
-                } finally {
-                    estado.disabled = false;
-                    estado.removeAttribute("data-loading");
-                }
-            });
-            acciones.appendChild(estado);
+                const estado = document.createElement("span");
+                estado.classList.add("estado-asignacion");
+                estado.textContent = asignado ? "Desasignar" : "Asignar";
+                estado.title = asignado ? "Desasignar ruta" : "Asignar ruta";
+                estado.dataset.asignado = String(asignado);
+                estado.style.color = asignado ? "#4caf50" : "#2196f3";
+                estado.addEventListener("click", async (e) => {
+                    e.stopPropagation();
+                    const nuevoEstado = estado.dataset.asignado !== "true";
+                    const estadoOriginal = estado.textContent;
+                    const colorOriginal = estado.style.color;
+                    estado.textContent = "⏳";
+                    estado.style.color = "#ff9800";
+                    estado.disabled = true;
+                    estado.setAttribute("data-loading", "true");
+                    
+                    try {
+                        await handleUserAssignment(usuario.id, nuevoEstado);
+                        estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
+                        estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
+                        estado.dataset.asignado = String(nuevoEstado);
+                        estado.title = nuevoEstado ? "Desasignar ruta" : "Asignar ruta";
+                    } catch (error) {
+                        estado.textContent = estadoOriginal;
+                        estado.style.color = colorOriginal;
+                        console.error("Error en asignación:", error);
+                    } finally {
+                        estado.disabled = false;
+                        estado.removeAttribute("data-loading");
+                    }
+                });
+                acciones.appendChild(estado);
+            }
 
             const deleteBtn = document.createElement("button");
             deleteBtn.textContent = "\u2716";
@@ -667,6 +682,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
     } catch (error) {
         console.error("Error al cargar usuarios:", error);
         if (token === usuariosLoadToken) {
+            usuariosList.classList.remove("data-list--loading");
             usuariosList.innerHTML = "Error al cargar usuarios.";
         }
     } finally {
