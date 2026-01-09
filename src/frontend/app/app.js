@@ -155,11 +155,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                         document.querySelectorAll(".ruta-item").forEach((el) => el.classList.remove("ruta-seleccionada"));
                         listItem.classList.add("ruta-seleccionada");
                         const usuariosList = document.getElementById("usuariosList");
-                        usuariosList.classList.add("blurred");
                         try {
                             await loadUsuariosPorLocalidad(cliente, localidad);
                         } finally {
-                            usuariosList.classList.remove("blurred");
                         }
                     }
                 }
@@ -895,7 +893,6 @@ async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario)
             usuarios: arrayUnion(usuarioRef)
         });
 
-        showPopup("Usuario registrado exitosamente.");
         await loadUsuariosPorLocalidad(cliente, localidad);
         const item = buscarItemPorDataset('li[data-user-id]', 'userId', nombreUsuario);
         if (item) {
