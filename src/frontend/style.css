@@ -557,6 +557,16 @@ input[type="checkbox"] {
 .estado-asignacion {
     cursor: pointer;
     font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.estado-asignacion:hover {
+    background-color: rgba(211, 47, 47, 0.1);
 }
 
 

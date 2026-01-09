@@ -194,7 +194,7 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
         console.log("  - rutaId:", rutaId);
         console.log("  - tipos:", typeof cliente, typeof localidad, typeof rutaId);
         
-        showLoading("Generando CSV, por favor espera...");
+        showLoading(`Generando CSV de ${rutaId}...`);
         
         // ✅ SOLUCIÓN: Enviar parámetros en el body JSON en lugar de en la URL
         const response = await fetch(exportOnDemandEndpoint, {
@@ -236,13 +236,13 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
                 link.href = urlDirecta;
                 link.download = nombreArchivo;
                 document.body.appendChild(link);
+                showLoading(`Descargando ${nombreArchivo}...`);
                 link.click();
                 document.body.removeChild(link);
-                
-                showPopup("✅ CSV generado y descargado correctamente");
+                showPopup("CSV generado y descargado correctamente");
             } catch (error) {
                 console.error('Error generando URL directa:', error);
-                showPopup("❌ Error al descargar el archivo.");
+                showPopup("Error al descargar el archivo.");
             }
         } else {
             showPopup("No se recibió información del archivo generado.");
@@ -313,6 +313,7 @@ export async function loadLocalidades(cliente) {
             const deleteBtn = document.createElement("button");
             deleteBtn.textContent = "\u2716";
             deleteBtn.classList.add("delete-btn");
+            deleteBtn.title = "Eliminar localidad";
             deleteBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
                 eliminarLocalidad(cliente, localidad);
@@ -488,7 +489,12 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
                 const downloadBtn = document.createElement("button");
                 downloadBtn.classList.add("map-btn", "download-btn");
                 downloadBtn.textContent = '⬇';
-                if (completado === 0) downloadBtn.disabled = true;
+                if (completado === 0) {
+                    downloadBtn.disabled = true;
+                    downloadBtn.title = "Descarga disponible al completar la ruta";
+                } else {
+                    downloadBtn.title = "Descargar CSV";
+                }
                 downloadBtn.addEventListener("click", (e) => {
                     e.preventDefault();
                     if (downloadBtn.disabled) return;
@@ -500,7 +506,12 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
                 mapaBtn.innerHTML =
                     '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"></path></svg>';
                 mapaBtn.classList.add("map-btn");
-                mapaBtn.disabled = completado === 0;
+                if (completado === 0) {
+                    mapaBtn.disabled = true;
+                    mapaBtn.title = "Mapa disponible al completar la ruta";
+                } else {
+                    mapaBtn.title = "Ver mapa";
+                }
                 mapaBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
                     if (mapaBtn.disabled) return;
@@ -511,6 +522,7 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
                 const deleteBtn = document.createElement("button");
                 deleteBtn.textContent = "\u2716";
                 deleteBtn.classList.add("delete-btn");
+                deleteBtn.title = "Eliminar ruta";
                 deleteBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
                     eliminarRuta(cliente, localidad, rutaId);
@@ -606,6 +618,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
             const estado = document.createElement("span");
             estado.classList.add("estado-asignacion");
             estado.textContent = asignado ? "Desasignar" : "Asignar";
+            estado.title = asignado ? "Desasignar ruta" : "Asignar ruta";
             estado.dataset.asignado = String(asignado);
             estado.style.color = asignado ? "#4caf50" : "#2196f3";
             estado.addEventListener("click", async (e) => {
@@ -623,6 +636,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
                     estado.textContent = nuevoEstado ? "Desasignar" : "Asignar";
                     estado.style.color = nuevoEstado ? "#4caf50" : "#2196f3";
                     estado.dataset.asignado = String(nuevoEstado);
+                    estado.title = nuevoEstado ? "Desasignar ruta" : "Asignar ruta";
                 } catch (error) {
                     estado.textContent = estadoOriginal;
                     estado.style.color = colorOriginal;
@@ -637,6 +651,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
             const deleteBtn = document.createElement("button");
             deleteBtn.textContent = "\u2716";
             deleteBtn.classList.add("delete-btn");
+            deleteBtn.title = "Eliminar usuario";
             deleteBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
                 eliminarUsuario(cliente, localidad, usuario.id);
