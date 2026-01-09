@@ -44,16 +44,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (page === "login") {
         const loginButton = document.getElementById("loginButton");
-        loginButton?.addEventListener("click", () => {
-            const username = document.getElementById("usernameInput").value;
-            const password = document.getElementById("passwordInput").value;
+        const usernameInput = document.getElementById("usernameInput");
+        const passwordInput = document.getElementById("passwordInput");
+        const submitLogin = () => {
+            const username = usernameInput?.value;
+            const password = passwordInput?.value;
 
             if (username && password) {
                 login(username, password);
             } else {
                 showPopup("Por favor, ingrese usuario y contraseña.");
             }
-        });
+        };
+
+        loginButton?.addEventListener("click", submitLogin);
+        const handleEnter = (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                submitLogin();
+            }
+        };
+        usernameInput?.addEventListener("keydown", handleEnter);
+        passwordInput?.addEventListener("keydown", handleEnter);
     }
 
     // ####################### LOCALIDADES #######################
@@ -115,7 +127,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             const fileInput = document.getElementById("fileInput");
             const triggerUpload = document.getElementById("triggerRutaUpload");
-            triggerUpload?.addEventListener("click", () => fileInput?.click());
+            triggerUpload?.addEventListener("click", () => {
+                if (fileInput) {
+                    fileInput.value = "";
+                }
+                fileInput?.click();
+            });
 
             fileInput?.addEventListener("change", () => {
                 subirRutas();
@@ -793,6 +810,9 @@ async function subirRutas() {
 
     if (rutasEsperadas.length === 0) {
         hideLoading();
+        if (archivoInput) {
+            archivoInput.value = "";
+        }
         return;
     }
 
@@ -816,6 +836,10 @@ async function subirRutas() {
 
     if (!procesadas) {
         showPopup("Las rutas se subieron, pero aun estan en proceso. Revisa en unos segundos.");
+    }
+
+    if (archivoInput) {
+        archivoInput.value = "";
     }
 }
 
