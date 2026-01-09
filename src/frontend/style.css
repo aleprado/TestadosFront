@@ -670,6 +670,122 @@ input[type="checkbox"] {
     height:100%;
     min-height: calc(100vh - var(--layout-header-height) - var(--layout-footer-height));
 }
+
+.gm-style .gm-style-iw-c {
+    padding: 0;
+    border-radius: 14px;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.2);
+}
+
+.gm-style .gm-style-iw-d {
+    overflow: hidden !important;
+    max-height: none !important;
+}
+
+.gm-style .gm-style-iw-t::after {
+    background: #fff;
+}
+
+.gm-style .gm-ui-hover-effect {
+    top: 8px !important;
+    right: 8px !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50%;
+    background: rgba(17, 24, 39, 0.08);
+}
+
+.gm-style .gm-ui-hover-effect:hover {
+    background: rgba(17, 24, 39, 0.16);
+}
+
+.gm-style .gm-ui-hover-effect > span {
+    filter: brightness(0.25);
+}
+
+.mapa-info {
+    min-width: 230px;
+    max-width: 280px;
+    padding: 12px 14px 14px;
+    color: #2f2f2f;
+    font-size: 0.9rem;
+}
+
+.mapa-info__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    padding-right: 30px;
+    border-bottom: 1px solid #eee;
+}
+
+.mapa-info__title {
+    font-weight: 700;
+    color: #222;
+    font-size: 0.95rem;
+}
+
+.mapa-info__badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.mapa-info__badge--ok {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.mapa-info__badge--warning {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.mapa-info__badge--danger {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.mapa-info__body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mapa-info__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.mapa-info__label {
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.mapa-info__value {
+    color: #1f2937;
+    text-align: right;
+    word-break: break-word;
+}
+
+.mapa-info__image {
+    margin-top: 10px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    display: block;
+}
+
+.mapa-info__image img {
+    width: 100%;
+    display: block;
+}
 .mapa-popup{
     width:80vw;
     height:80vh;
@@ -789,9 +905,7 @@ input[type="checkbox"] {
 
 /* Leyenda de colores del mapa */
 .leyenda-mapa {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+    position: relative;
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -800,6 +914,14 @@ input[type="checkbox"] {
     font-family: Arial, sans-serif;
     min-width: 180px;
     border: 1px solid #e0e0e0;
+    margin: 12px;
+}
+
+@media (max-width: 720px) {
+    .leyenda-mapa {
+        margin: 10px;
+        min-width: 160px;
+    }
 }
 
 .leyenda-titulo {

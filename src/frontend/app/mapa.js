@@ -23,6 +23,11 @@ function initMapFromModule() {
             center: { lat: 0, lng: 0 },
             mapTypeId: google.maps.MapTypeId.ROADMAP
         });
+
+        const leyenda = document.getElementById('leyenda-colores');
+        if (leyenda) {
+            mapa.controls[google.maps.ControlPosition.TOP_LEFT].push(leyenda);
+        }
         
         // Iniciar la carga de datos una vez que el mapa esté listo
         dibujar();
@@ -107,26 +112,67 @@ function determinarColor(punto) {
     }
 }
 
-function crearTooltip(punto) {
-    let contenido = `Lectura: ${punto.fecha || 'N/A'}<br>Medidor: ${punto.medidor || 'N/A'}`
-
-    if (punto.lectura_actual && punto.lectura_actual.trim() !== '') {
-        contenido += `<br>Lectura: ${punto.lectura_actual}`
-    }
-
-    if (punto.novedad && punto.novedad.trim() !== '') {
-        contenido += `<br>Novedad: ${punto.novedad}`
-    }
-    
+function obtenerEstadoPunto(punto) {
     if (punto.imageUrl && punto.imageUrl.trim() !== '') {
-        contenido += `<br><a href="${punto.imageUrl}" target="_blank" title="Haz clic para ver imagen completa">
-            <img src="${punto.imageUrl}" alt="Imagen del punto" style="max-width: 200px; max-height: 150px; margin-top: 10px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px; transition: border-color 0.3s;" 
-                 onerror="this.style.display='none'"
-                 onmouseover="this.style.borderColor='#1976d2'"
-                 onmouseout="this.style.borderColor='#ddd'">
-        </a>`
+        return { label: 'Con imagen', className: 'mapa-info__badge--danger' }
     }
-    
+    if (punto.novedad && punto.novedad.trim() !== '') {
+        return { label: 'Con novedad', className: 'mapa-info__badge--warning' }
+    }
+    return { label: 'Sin novedad', className: 'mapa-info__badge--ok' }
+}
+
+function crearTooltip(punto) {
+    const estado = obtenerEstadoPunto(punto)
+    const fecha = punto.fecha || 'N/A'
+    const medidor = punto.medidor || 'N/A'
+    const lectura = punto.lectura_actual && punto.lectura_actual.trim() !== '' ? punto.lectura_actual : 'N/A'
+    const novedad = punto.novedad && punto.novedad.trim() !== '' ? punto.novedad : ''
+    const imagen = punto.imageUrl && punto.imageUrl.trim() !== '' ? punto.imageUrl : ''
+
+    let contenido = `
+        <div class="mapa-info">
+            <div class="mapa-info__header">
+                <div class="mapa-info__title">Detalle del punto</div>
+                <span class="mapa-info__badge ${estado.className}">${estado.label}</span>
+            </div>
+            <div class="mapa-info__body">
+                <div class="mapa-info__row">
+                    <span class="mapa-info__label">Fecha</span>
+                    <span class="mapa-info__value">${fecha}</span>
+                </div>
+                <div class="mapa-info__row">
+                    <span class="mapa-info__label">Medidor</span>
+                    <span class="mapa-info__value">${medidor}</span>
+                </div>
+                <div class="mapa-info__row">
+                    <span class="mapa-info__label">Lectura</span>
+                    <span class="mapa-info__value">${lectura}</span>
+                </div>
+    `
+
+    if (novedad) {
+        contenido += `
+                <div class="mapa-info__row">
+                    <span class="mapa-info__label">Novedad</span>
+                    <span class="mapa-info__value">${novedad}</span>
+                </div>
+        `
+    }
+
+    if (imagen) {
+        contenido += `
+                <a class="mapa-info__image" href="${imagen}" target="_blank" rel="noopener noreferrer" title="Ver imagen completa">
+                    <img src="${imagen}" alt="Imagen del punto" onerror="this.style.display='none'">
+                </a>
+        `
+    }
+
+    contenido += `
+            </div>
+        </div>
+    `
+
     return contenido
 }
 
@@ -250,5 +296,3 @@ async function dibujar(){
         }
     }
 }
-
-
