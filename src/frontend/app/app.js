@@ -323,21 +323,59 @@ export async function loadLocalidades(cliente) {
     }
 }
 
-async function esperarActualizacionRutas(cliente, localidad, cantidadAnterior) {
-    for (let i = 0; i < 10; i++) {
-        await loadRutasPorLocalidad(cliente, localidad);
-        const lista = document.getElementById("rutasList");
-        if (lista && lista.children.length > cantidadAnterior) return;
-        await new Promise((r) => setTimeout(r, 2000));
-    }
+function obtenerNombreRutaDesdeArchivo(archivo) {
+    const nombre = archivo.name;
+    const punto = nombre.lastIndexOf(".");
+    return punto === -1 ? nombre : nombre.slice(0, punto);
 }
 
-export async function loadRutasPorLocalidad(cliente, localidad) {
+function buscarItemPorDataset(selector, key, valor) {
+    const items = document.querySelectorAll(selector);
+    for (const item of items) {
+        if (item.dataset[key] === valor) return item;
+    }
+    return null;
+}
+
+function resaltarTemporal(item, duracion = 2400) {
+    if (!item) return;
+    item.classList.add("data-list__item--flash");
+    setTimeout(() => {
+        item.classList.remove("data-list__item--flash");
+    }, duracion);
+}
+
+async function esperarActualizacionRutas(cliente, localidad, rutasEsperadas = []) {
+    if (rutasEsperadas.length === 0) return true;
+
+    const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
+
+    for (let i = 0; i < 10; i++) {
+        const localidadDoc = await getDoc(localidadRef);
+        if (localidadDoc.exists()) {
+            const rutasRefs = localidadDoc.data().rutas || [];
+            const idsDisponibles = new Set(rutasRefs.map((ref) => ref.id || ref.path.split("/").pop()));
+            const pendientes = rutasEsperadas.filter((id) => !idsDisponibles.has(id));
+            if (pendientes.length === 0) return true;
+        }
+        await new Promise((r) => setTimeout(r, 2000));
+    }
+
+    return false;
+}
+
+export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = true } = {}) {
     const rutasList = document.getElementById("rutasList");
     if (!rutasList) return;
 
-    // Mostrar spinner mientras se cargan las rutas
-    rutasList.innerHTML = '<div class="loading-spinner">Cargando rutas...</div>';
+    let loadingItem = null;
+    if (showSpinner) {
+        rutasList.innerHTML = '';
+        loadingItem = document.createElement('div');
+        loadingItem.classList.add('loading-spinner');
+        loadingItem.textContent = 'Cargando rutas...';
+        rutasList.appendChild(loadingItem);
+    }
     
     try {
         // Referencia a la localidad
@@ -351,16 +389,12 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
 
         // Obtener las referencias de las rutas
         const rutasRefs = localidadDoc.data().rutas || [];
-        
-        // ✅ SOLUCIÓN: No limpiar la lista hasta que tengamos todas las rutas procesadas
-        // Solo mostrar progreso si hay muchas rutas
-        if (rutasRefs.length > 5) {
-            const progressDiv = document.createElement('div');
-            progressDiv.id = 'rutas-progress';
-            progressDiv.innerHTML = `<div class="loading-spinner">Procesando ${rutasRefs.length} rutas...</div>`;
-            rutasList.appendChild(progressDiv);
+
+        if (loadingItem && rutasRefs.length > 5) {
+            loadingItem.textContent = `Procesando ${rutasRefs.length} rutas...`;
         }
 
+        const rutasProcesadas = [];
         for (const rutaRef of rutasRefs) {
             const rutaDoc = await getDoc(rutaRef);
 
@@ -443,21 +477,12 @@ export async function loadRutasPorLocalidad(cliente, localidad) {
                 metaRow.appendChild(actions);
                 listItem.appendChild(metaRow);
                 renderRutaAsignaciones(listItem, usuariosAsignados);
-                rutasList.appendChild(listItem);
+                rutasProcesadas.push(listItem);
             }
         }
 
-        // ✅ SOLUCIÓN: Limpiar la lista solo después de procesar todas las rutas
-        // y reemplazar el contenido con las rutas procesadas
-        const rutasProcesadas = Array.from(rutasList.children).filter(child => child.classList.contains('ruta-item'));
         rutasList.innerHTML = '';
         rutasProcesadas.forEach(ruta => rutasList.appendChild(ruta));
-
-        // Eliminar el spinner de progreso si existía
-        const progressDiv = document.getElementById('rutas-progress');
-        if (progressDiv) {
-            progressDiv.remove();
-        }
     } catch (error) {
         console.error("Error al cargar rutas:", error);
         rutasList.innerHTML = "Error al cargar rutas.";
@@ -695,8 +720,6 @@ async function subirRutas() {
 
     const archivoInput = document.getElementById("fileInput");
     const archivos = archivoInput?.files;
-    const listaRutas = document.getElementById("rutasList");
-    const cantidadAnterior = listaRutas ? listaRutas.children.length : 0;
 
     if (!archivos || archivos.length === 0) {
         showPopup("Selecciona un archivo para subir.");
@@ -704,6 +727,8 @@ async function subirRutas() {
     }
 
     const extensionesValidas = [".txt", ".csv"];
+    const rutasEsperadas = [];
+    showLoading("Subiendo rutas...");
     for (const archivo of archivos) {
         if (!extensionesValidas.some((ext) => archivo.name.endsWith(ext))) {
             showPopup("Solo se permiten archivos .txt o .csv.");
@@ -711,31 +736,65 @@ async function subirRutas() {
         }
 
         try {
+            showLoading(`Subiendo ${archivo.name}...`);
             const referenciaArchivo = ref(
                 storageUpload,
                 `/${cliente}/${localidad}/${archivo.name}`
             );
             const tareaSubida = uploadBytesResumable(referenciaArchivo, archivo);
 
-            await new Promise((resolve) => {
+            const subidaExitosa = await new Promise((resolve) => {
                 tareaSubida.on(
                     "state_changed",
                     null,
                     (error) => {
                         console.error("Error durante la subida del archivo:", error);
                         showPopup("Error al subir el archivo.");
-                        resolve();
+                        resolve(false);
                     },
-                    () => resolve()
+                    () => resolve(true)
                 );
             });
-
-            showPopup("Ruta cargada exitosamente.");
+            if (subidaExitosa) {
+                rutasEsperadas.push(obtenerNombreRutaDesdeArchivo(archivo));
+            }
         } catch (error) {
             console.error("Error general al subir el archivo:", error);
         }
     }
-    await esperarActualizacionRutas(cliente, localidad, cantidadAnterior);
+
+    if (rutasEsperadas.length === 0) {
+        hideLoading();
+        return;
+    }
+
+    showLoading(
+        rutasEsperadas.length === 1
+            ? "Procesando ruta..."
+            : `Procesando ${rutasEsperadas.length} rutas...`
+    );
+    const procesadas = await esperarActualizacionRutas(cliente, localidad, rutasEsperadas);
+    await loadRutasPorLocalidad(cliente, localidad, { showSpinner: false });
+    hideLoading();
+
+    const primerRuta = rutasEsperadas[0];
+    const item = primerRuta
+        ? buscarItemPorDataset('li[data-ruta-id]', 'rutaId', primerRuta)
+        : null;
+    if (item) {
+        item.scrollIntoView({ behavior: "smooth", block: "center" });
+        resaltarTemporal(item);
+    }
+
+    if (procesadas) {
+        showPopup(
+            rutasEsperadas.length === 1
+                ? "Ruta cargada y lista."
+                : "Rutas cargadas y listas."
+        );
+    } else {
+        showPopup("Las rutas se subieron, pero aun estan en proceso. Revisa en unos segundos.");
+    }
 }
 
 async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario) {
@@ -761,6 +820,11 @@ async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario)
 
         showPopup("Usuario registrado exitosamente.");
         await loadUsuariosPorLocalidad(cliente, localidad);
+        const item = buscarItemPorDataset('li[data-user-id]', 'userId', nombreUsuario);
+        if (item) {
+            item.scrollIntoView({ behavior: "smooth", block: "center" });
+            resaltarTemporal(item);
+        }
     } catch (error) {
         console.error("Error al registrar el usuario:", error);
         showPopup("Error al registrar el usuario.");
