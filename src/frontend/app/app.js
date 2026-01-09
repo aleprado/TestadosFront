@@ -329,6 +329,32 @@ function obtenerNombreRutaDesdeArchivo(archivo) {
     return punto === -1 ? nombre : nombre.slice(0, punto);
 }
 
+function obtenerValoresRutaParaRemover(rutaRef) {
+    const rutaPath = rutaRef?.path;
+    if (!rutaPath) return [rutaRef];
+    return [rutaRef, rutaPath, `/${rutaPath}`];
+}
+
+async function obtenerUsuariosConRuta(rutaRef) {
+    const usuariosRef = collection(db, "Usuarios");
+    const rutaPath = rutaRef?.path;
+    const consultas = [query(usuariosRef, where("rutas", "array-contains", rutaRef))];
+    if (rutaPath) {
+        consultas.push(query(usuariosRef, where("rutas", "array-contains", rutaPath)));
+        consultas.push(query(usuariosRef, where("rutas", "array-contains", `/${rutaPath}`)));
+    }
+
+    const resultados = await Promise.all(consultas.map((c) => getDocs(c)));
+    const usuarios = new Map();
+    resultados.forEach((snapshot) => {
+        snapshot.forEach((docSnap) => {
+            usuarios.set(docSnap.id, docSnap.ref);
+        });
+    });
+
+    return Array.from(usuarios.values());
+}
+
 function buscarItemPorDataset(selector, key, valor) {
     const items = document.querySelectorAll(selector);
     for (const item of items) {
@@ -489,12 +515,14 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
     }
 }
 
-export async function loadUsuariosPorLocalidad(cliente, localidad) {
+export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner = true } = {}) {
     const usuariosList = document.getElementById("usuariosList");
     if (!usuariosList) return;
 
     const token = ++usuariosLoadToken;
-    usuariosList.innerHTML = '<div class="loading-spinner">Cargando usuarios...</div>';
+    if (showSpinner) {
+        usuariosList.innerHTML = '<div class="loading-spinner">Cargando usuarios...</div>';
+    }
     
     try {
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
@@ -512,7 +540,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
 
         usuariosList.innerHTML = "";
 
-        if (usuariosRefs.length > 5 && token === usuariosLoadToken) {
+        if (showSpinner && usuariosRefs.length > 5 && token === usuariosLoadToken) {
             const progressDiv = document.createElement('div');
             progressDiv.id = 'usuarios-progress';
             progressDiv.innerHTML = `<div class="loading-spinner">Procesando ${usuariosRefs.length} usuarios...</div>`;
@@ -610,7 +638,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad) {
             usuariosList.innerHTML = "Error al cargar usuarios.";
         }
     } finally {
-        if (token === usuariosLoadToken) {
+        if (showSpinner && token === usuariosLoadToken) {
             const progressDiv = document.getElementById('usuarios-progress');
             if (progressDiv) {
                 progressDiv.remove();
@@ -689,9 +717,9 @@ export async function handleUserAssignment(userId, asignar) {
         const usuarioRef = doc(db, "Usuarios", userId);
         const rutaRef = doc(db, "Rutas", rutaId);
 
-    const updateData = asignar
-        ? { rutas: arrayUnion(rutaRef) }
-        : { rutas: arrayRemove(rutaRef) };
+        const updateData = asignar
+            ? { rutas: arrayUnion(rutaRef) }
+            : { rutas: arrayRemove(...obtenerValoresRutaParaRemover(rutaRef)) };
 
         await updateDoc(usuarioRef, updateData);
         const item = document.querySelector(`li[data-ruta-id="${rutaId}"]`);
@@ -860,14 +888,16 @@ async function borrarSubcoleccion(docRef, nombre) {
 }
 
 async function eliminarRuta(cliente, localidad, rutaId) {
-    try {
-        const confirmacion = await showPopup(`\u00bfEliminar la ruta ${rutaId}?`, { confirm: true });
-        if (!confirmacion) return;
+    const confirmacion = await showPopup(`\u00bfEliminar la ruta ${rutaId}?`, { confirm: true });
+    if (!confirmacion) return;
 
+    let errorMessage = null;
+    showLoading(`Eliminando ruta ${rutaId}...`);
+    try {
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
         const localidadDoc = await getDoc(localidadRef);
         if (!localidadDoc.exists()) {
-            showPopup("La localidad no existe.");
+            errorMessage = "La localidad no existe.";
             return;
         }
 
@@ -879,48 +909,54 @@ async function eliminarRuta(cliente, localidad, rutaId) {
             return;
         }
 
-        const usuariosRefs = localidadDoc.data().usuarios || [];
-        const usuariosFaltantes = [];
-        for (const usuarioRef of usuariosRefs) {
-            const usuarioDoc = await getDoc(usuarioRef);
-            if (!usuarioDoc.exists()) {
-                usuariosFaltantes.push(usuarioRef);
-                continue;
-            }
-            await updateDoc(usuarioRef, { rutas: arrayRemove(rutaRef) });
+        const valoresRuta = obtenerValoresRutaParaRemover(rutaRef);
+        const usuariosAsignados = await obtenerUsuariosConRuta(rutaRef);
+        for (const usuarioRef of usuariosAsignados) {
+            await updateDoc(usuarioRef, { rutas: arrayRemove(...valoresRuta) });
         }
 
-        const updateLocalidad = { rutas: arrayRemove(rutaRef) };
-        if (usuariosFaltantes.length) {
-            updateLocalidad.usuarios = arrayRemove(...usuariosFaltantes);
-        }
+        const updateLocalidad = { rutas: arrayRemove(...valoresRuta) };
         await updateDoc(localidadRef, updateLocalidad);
         await borrarSubcoleccion(rutaRef, "RutaRecorrido");
         await deleteDoc(rutaRef);
 
-        await loadRutasPorLocalidad(cliente, localidad);
-        await loadUsuariosPorLocalidad(cliente, localidad);
+        await loadRutasPorLocalidad(cliente, localidad, { showSpinner: false });
+        await loadUsuariosPorLocalidad(cliente, localidad, { showSpinner: false });
     } catch (error) {
         console.error("Error al eliminar la ruta:", error);
-        showPopup("Error al eliminar la ruta.");
+        errorMessage = "Error al eliminar la ruta.";
+    } finally {
+        hideLoading();
+    }
+
+    if (errorMessage) {
+        showPopup(errorMessage);
     }
 }
 
 async function eliminarUsuario(cliente, localidad, userId) {
-    try {
-        const confirmacion = await showPopup(`\u00bfEliminar el usuario ${userId}?`, { confirm: true });
-        if (!confirmacion) return;
+    const confirmacion = await showPopup(`\u00bfEliminar el usuario ${userId}?`, { confirm: true });
+    if (!confirmacion) return;
 
+    let errorMessage = null;
+    showLoading(`Eliminando usuario ${userId}...`);
+    try {
         const usuarioRef = doc(db, "Usuarios", userId);
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
 
         await updateDoc(localidadRef, { usuarios: arrayRemove(usuarioRef) });
         await deleteDoc(usuarioRef);
 
-        await loadUsuariosPorLocalidad(cliente, localidad);
+        await loadUsuariosPorLocalidad(cliente, localidad, { showSpinner: false });
     } catch (error) {
         console.error("Error al eliminar el usuario:", error);
-        showPopup("Error al eliminar el usuario.");
+        errorMessage = "Error al eliminar el usuario.";
+    } finally {
+        hideLoading();
+    }
+
+    if (errorMessage) {
+        showPopup(errorMessage);
     }
 }
 
@@ -933,12 +969,14 @@ async function eliminarLocalidad(cliente, localidad) {
     );
     if (!confirm2) return;
 
+    let errorMessage = null;
+    showLoading(`Eliminando localidad ${localidad}...`);
     try {
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
         const localidadDoc = await getDoc(localidadRef);
 
         if (!localidadDoc.exists()) {
-            showPopup("La localidad no existe.");
+            errorMessage = "La localidad no existe.";
             return;
         }
 
@@ -960,6 +998,12 @@ async function eliminarLocalidad(cliente, localidad) {
         window.location.reload();
     } catch (error) {
         console.error("Error al eliminar la localidad:", error);
-        showPopup("Error al eliminar la localidad.");
+        errorMessage = "Error al eliminar la localidad.";
+    } finally {
+        hideLoading();
+    }
+
+    if (errorMessage) {
+        showPopup(errorMessage);
     }
 }
