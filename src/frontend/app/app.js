@@ -880,11 +880,21 @@ async function eliminarRuta(cliente, localidad, rutaId) {
         }
 
         const usuariosRefs = localidadDoc.data().usuarios || [];
+        const usuariosFaltantes = [];
         for (const usuarioRef of usuariosRefs) {
+            const usuarioDoc = await getDoc(usuarioRef);
+            if (!usuarioDoc.exists()) {
+                usuariosFaltantes.push(usuarioRef);
+                continue;
+            }
             await updateDoc(usuarioRef, { rutas: arrayRemove(rutaRef) });
         }
 
-        await updateDoc(localidadRef, { rutas: arrayRemove(rutaRef) });
+        const updateLocalidad = { rutas: arrayRemove(rutaRef) };
+        if (usuariosFaltantes.length) {
+            updateLocalidad.usuarios = arrayRemove(...usuariosFaltantes);
+        }
+        await updateDoc(localidadRef, updateLocalidad);
         await borrarSubcoleccion(rutaRef, "RutaRecorrido");
         await deleteDoc(rutaRef);
 
