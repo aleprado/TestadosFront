@@ -786,13 +786,7 @@ async function subirRutas() {
         resaltarTemporal(item);
     }
 
-    if (procesadas) {
-        showPopup(
-            rutasEsperadas.length === 1
-                ? "Ruta cargada y lista."
-                : "Rutas cargadas y listas."
-        );
-    } else {
+    if (!procesadas) {
         showPopup("Las rutas se subieron, pero aun estan en proceso. Revisa en unos segundos.");
     }
 }
