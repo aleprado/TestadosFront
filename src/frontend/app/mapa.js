@@ -140,7 +140,7 @@ function crearTooltip(punto) {
     let contenido = `
         <div class="mapa-info">
             <div class="mapa-info__header">
-                <div class="mapa-info__title">Detalle del punto</div>
+                <div class="mapa-info__title">Detalle de lectura</div>
                 <span class="mapa-info__badge ${estado.className}">${estado.label}</span>
                 <button class="mapa-info__close" type="button" aria-label="Cerrar">&times;</button>
             </div>
