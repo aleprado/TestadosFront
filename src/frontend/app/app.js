@@ -638,8 +638,11 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
                     const nuevoEstado = estado.dataset.asignado !== "true";
                     const estadoOriginal = estado.textContent;
                     const colorOriginal = estado.style.color;
-                    estado.textContent = "⏳";
-                    estado.style.color = "#ff9800";
+                    estado.textContent = "";
+                    const spinner = document.createElement("span");
+                    spinner.classList.add("spinner", "spinner--inline");
+                    estado.appendChild(spinner);
+                    estado.style.color = "#d32f2f";
                     estado.disabled = true;
                     estado.setAttribute("data-loading", "true");
                     

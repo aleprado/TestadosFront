@@ -842,6 +842,13 @@ input[type="checkbox"] {
     animation: spin 1s linear infinite;
 }
 
+.spinner--inline {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+    display: inline-block;
+}
+
 .loading-text { color: #333; font-weight: 500; }
 
 @keyframes spin {
