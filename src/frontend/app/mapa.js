@@ -24,10 +24,8 @@ function initMapFromModule() {
             mapTypeId: google.maps.MapTypeId.ROADMAP
         });
 
-        const leyenda = document.getElementById('leyenda-colores');
-        if (leyenda) {
-            mapa.controls[google.maps.ControlPosition.TOP_LEFT].push(leyenda);
-        }
+        adjuntarLeyendaAlMapa();
+        google.maps.event.addListenerOnce(mapa, 'idle', adjuntarLeyendaAlMapa);
         
         // Iniciar la carga de datos una vez que el mapa esté listo
         dibujar();
@@ -122,6 +120,15 @@ function obtenerEstadoPunto(punto) {
     return { label: 'Sin novedad', className: 'mapa-info__badge--ok' }
 }
 
+function adjuntarLeyendaAlMapa() {
+    const leyenda = document.getElementById('leyenda-colores')
+    if (!leyenda || leyenda.dataset.attached === 'true') return
+    leyenda.style.display = 'block'
+    leyenda.style.visibility = 'visible'
+    mapa.controls[google.maps.ControlPosition.TOP_LEFT].push(leyenda)
+    leyenda.dataset.attached = 'true'
+}
+
 function crearTooltip(punto) {
     const estado = obtenerEstadoPunto(punto)
     const fecha = punto.fecha || 'N/A'
@@ -135,6 +142,7 @@ function crearTooltip(punto) {
             <div class="mapa-info__header">
                 <div class="mapa-info__title">Detalle del punto</div>
                 <span class="mapa-info__badge ${estado.className}">${estado.label}</span>
+                <button class="mapa-info__close" type="button" aria-label="Cerrar">&times;</button>
             </div>
             <div class="mapa-info__body">
                 <div class="mapa-info__row">
@@ -217,24 +225,25 @@ function crearMarcadores(puntos) {
             content: tooltip
         });
         
-        // Mostrar InfoWindow al hacer click
-        marker.addListener('click', () => {
-            // Cerrar otras InfoWindows abiertas
+        const abrirInfoWindow = () => {
             if (window.currentInfoWindow) {
                 window.currentInfoWindow.close();
             }
             infoWindow.open(mapa, marker);
             window.currentInfoWindow = infoWindow;
-        });
+            google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
+                const closeBtn = document.querySelector('.mapa-info__close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => infoWindow.close(), { once: true });
+                }
+            });
+        };
+
+        // Mostrar InfoWindow al hacer click
+        marker.addListener('click', abrirInfoWindow);
         
         // Opcional: Mostrar al hacer hover
-        marker.addListener('mouseover', () => {
-            if (window.currentInfoWindow) {
-                window.currentInfoWindow.close();
-            }
-            infoWindow.open(mapa, marker);
-            window.currentInfoWindow = infoWindow;
-        });
+        marker.addListener('mouseover', abrirInfoWindow);
     });
 }
 
