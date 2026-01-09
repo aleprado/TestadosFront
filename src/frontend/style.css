@@ -680,6 +680,7 @@ input[type="checkbox"] {
 .gm-style .gm-style-iw-d {
     overflow: hidden !important;
     max-height: none !important;
+    padding: 0 !important;
 }
 
 .gm-style .gm-style-iw-t::after {
@@ -687,8 +688,8 @@ input[type="checkbox"] {
 }
 
 .gm-style .gm-ui-hover-effect {
-    top: 8px !important;
-    right: 8px !important;
+    top: 12px !important;
+    right: 12px !important;
     width: 28px !important;
     height: 28px !important;
     border-radius: 50%;
@@ -706,7 +707,7 @@ input[type="checkbox"] {
 .mapa-info {
     min-width: 230px;
     max-width: 280px;
-    padding: 12px 14px 14px;
+    padding: 10px 14px 12px;
     color: #2f2f2f;
     font-size: 0.9rem;
 }
@@ -718,7 +719,7 @@ input[type="checkbox"] {
     gap: 8px;
     padding-bottom: 8px;
     margin-bottom: 8px;
-    padding-right: 30px;
+    padding-right: 34px;
     border-bottom: 1px solid #eee;
 }
 
