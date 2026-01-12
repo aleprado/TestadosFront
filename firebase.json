@@ -11,6 +11,7 @@
       { "source": "/localidades", "destination": "/html/localidades.html" },
       { "source": "/login", "destination": "/html/login.html" },
       { "source": "/contacto", "destination": "/html/contacto.html" },
+      { "source": "/politica", "destination": "/html/politica.html" },
       { "source": "/mapa", "destination": "/html/mapa.html" },
       { "source": "/", "destination": "/html/index.html" }
     ],

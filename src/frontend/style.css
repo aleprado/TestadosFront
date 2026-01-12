@@ -1314,8 +1314,15 @@ body[data-page='login'] .page-main {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
     padding: 16px 0;
     color: #666;
+}
+
+.site-footer__links {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .footer-store {
@@ -1340,6 +1347,13 @@ body[data-page='login'] .page-main {
 
 @media (max-width: 600px) {
     .features-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+    .site-footer__inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 /* ====== Sección "Conoce nuestra app" ====== */
@@ -1451,5 +1465,14 @@ body[data-page='contacto'] .contact-page { padding-top: 56px; padding-bottom: 11
 /* Separación visual del hero gris en la página de contacto */
 body[data-page='contacto'] .hero { margin-bottom: 16px; }
 body[data-page='contacto'] .contact-page { padding-top: 32px; }
+
+/* ====== Política de privacidad ====== */
+.policy { padding: 40px 0 110px; background: #fff; }
+.policy__content { width: min(920px, 92%); margin: 0 auto; color: #444; }
+.policy__content h2 { margin: 32px 0 12px; color: #333; font-size: 1.2rem; }
+.policy__content p { margin: 0 0 14px; }
+.policy__content ul { margin: 0 0 14px 20px; padding: 0; }
+.policy__content li { margin-bottom: 8px; }
+.policy__meta { color: #666; font-size: 0.95rem; }
 /* Reset básico para evitar márgenes del navegador */
 html, body { margin: 0; padding: 0; }

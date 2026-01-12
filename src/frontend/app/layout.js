@@ -19,6 +19,9 @@ const authNavTemplate = `
 const footerTemplate = `
   <div class="site-footer__inner">
     <span>© <span id="year"></span> Testados</span>
+    <div class="site-footer__links">
+      <a class="footer-link" href="/politica">Política de privacidad</a>
+    </div>
     <a class="footer-store" href="https://play.google.com/store/apps/details?id=pd.testados" target="_blank" rel="noopener noreferrer">
       <img src="/content/icons/disponible-en-google-play-badge.png" alt="Disponible en Google Play" class="footer-store__img" />
     </a>
