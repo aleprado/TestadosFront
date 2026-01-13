@@ -393,7 +393,7 @@ function resaltarTemporal(item, duracion = 2400) {
 }
 
 async function esperarActualizacionRutas(cliente, localidad, rutasEsperadas = []) {
-    if (rutasEsperadas.length === 0) return true;
+    if (rutasEsperadas.length === 0) return { completadas: true, fallidas: [] };
 
     const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
 
@@ -401,14 +401,38 @@ async function esperarActualizacionRutas(cliente, localidad, rutasEsperadas = []
         const localidadDoc = await getDoc(localidadRef);
         if (localidadDoc.exists()) {
             const rutasRefs = localidadDoc.data().rutas || [];
-            const idsDisponibles = new Set(rutasRefs.map((ref) => ref.id || ref.path.split("/").pop()));
-            const pendientes = rutasEsperadas.filter((id) => !idsDisponibles.has(id));
-            if (pendientes.length === 0) return true;
+            const refsPorId = new Map(
+                rutasRefs
+                    .map((ref) => [ref.id || ref.path.split("/").pop(), ref])
+                    .filter(([id]) => id)
+            );
+            const pendientes = rutasEsperadas.filter((id) => !refsPorId.has(id));
+            if (pendientes.length === 0) {
+                const rutasDocs = await Promise.all(
+                    rutasEsperadas.map((id) => getDoc(refsPorId.get(id)))
+                );
+                const fallidas = [];
+                const enProceso = [];
+
+                rutasDocs.forEach((rutaDoc) => {
+                    if (!rutaDoc.exists()) return;
+                    const data = rutaDoc.data() || {};
+                    const estado = data.procesamiento?.estado || data.procesamiento_estado;
+                    if (estado === "error") {
+                        fallidas.push(rutaDoc.id);
+                    } else if (estado === "procesando") {
+                        enProceso.push(rutaDoc.id);
+                    }
+                });
+
+                if (fallidas.length > 0) return { completadas: false, fallidas };
+                if (enProceso.length === 0) return { completadas: true, fallidas: [] };
+            }
         }
         await new Promise((r) => setTimeout(r, 2000));
     }
 
-    return false;
+    return { completadas: false, fallidas: [] };
 }
 
 export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = true } = {}) {
@@ -853,7 +877,7 @@ async function subirRutas() {
             ? "Procesando ruta..."
             : `Procesando ${rutasEsperadas.length} rutas...`
     );
-    const procesadas = await esperarActualizacionRutas(cliente, localidad, rutasEsperadas);
+    const resultado = await esperarActualizacionRutas(cliente, localidad, rutasEsperadas);
     await loadRutasPorLocalidad(cliente, localidad, { showSpinner: false });
     hideLoading();
 
@@ -866,7 +890,13 @@ async function subirRutas() {
         resaltarTemporal(item);
     }
 
-    if (!procesadas) {
+    if (resultado.fallidas.length > 0) {
+        const mensaje =
+            resultado.fallidas.length === 1
+                ? `El procesamiento de la ruta ${resultado.fallidas[0]} falló.`
+                : `El procesamiento de ${resultado.fallidas.length} rutas falló.`;
+        showPopup(mensaje);
+    } else if (!resultado.completadas) {
         showPopup("Las rutas se subieron, pero aun estan en proceso. Revisa en unos segundos.");
     }
 

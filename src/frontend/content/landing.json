@@ -16,7 +16,7 @@
     { "icon": "/content/icons/usuarios.svg", "title": "Usuarios asignados", "description": "Registra usuarios y asígnalos a rutas específicas para un seguimiento claro." },
     { "icon": "/content/icons/carga.svg", "title": "Carga de archivos", "description": "Importa rutas desde archivos .csv o .txt para acelerar la puesta en marcha." },
     { "icon": "/content/icons/mapa.svg", "title": "Mapa en tiempo real", "description": "Visualiza las rutas y su estado en un mapa con una leyenda clara." },
-    { "icon": "/content/icons/export.svg", "title": "Exportación a CSV", "description": "Genera y descarga reportes en CSV bajo demanda para análisis y control." },
+    { "icon": "/content/icons/export.svg", "title": "Exportación a .csv", "description": "Genera y descarga reportes en .csv bajo demanda para análisis y control." },
     { "icon": "/content/icons/seguridad.svg", "title": "Acceso seguro", "description": "Inicio de sesión y persistencia de sesión para mantener tus datos protegidos." }
   ],
   "app": {
