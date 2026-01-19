@@ -1,3 +1,5 @@
+import { trackEvent } from './metrics.js';
+
 const headerTemplate = `
   <div class="site-header__inner">
     <a href="/" id="brand" class="brand"><img src="/header.png" alt="Testados" class="brand-logo"></a>
@@ -79,6 +81,16 @@ function renderNav(page) {
       navKnowApp.href = page === 'landing' ? '#app' : '/#app';
     }
   }
+
+  nav.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      trackEvent('cta_click', {
+        id: link.id || null,
+        label: link.textContent?.trim() || null,
+        href: link.getAttribute('href') || null
+      });
+    });
+  });
 }
 
 function paintFooter() {
@@ -89,6 +101,11 @@ function paintFooter() {
   }
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  const storeLink = footer?.querySelector('.footer-store');
+  storeLink?.addEventListener('click', () => {
+    trackEvent('cta_click', { id: 'footer_store', label: 'google_play', href: storeLink.href });
+  });
 }
 
 function paintWhatsapp(page) {
@@ -106,6 +123,11 @@ function paintWhatsapp(page) {
   } else {
     container.innerHTML = whatsappTemplate;
   }
+
+  const waAnchor = document.getElementById('waFloat');
+  waAnchor?.addEventListener('click', () => {
+    trackEvent('cta_click', { id: 'waFloat', label: 'whatsapp', href: waAnchor.href });
+  });
 }
 
 function highlightActiveNav(page) {
@@ -168,6 +190,7 @@ function applyLayout() {
   highlightActiveNav(page);
   hydrateFromContent();
   updateLayoutMetrics();
+  trackEvent('page_view', { page });
 }
 
 if (document.readyState === 'loading') {

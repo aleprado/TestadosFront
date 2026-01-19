@@ -2,6 +2,7 @@ import { auth, db } from './config.js'; // Importa la configuración de Firebase
 import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { showPopup } from './ui.js';
+import { trackEvent, auditLog } from './metrics.js';
 
 /**
  * Verifica si el usuario está autenticado.
@@ -87,12 +88,16 @@ export async function obtenerNombreCliente(email) {
  */
 export async function login(email, password) {
     console.log("Iniciando login...");
+    const start = performance.now();
     try {
+        trackEvent('login_attempt', { email_present: Boolean(email) });
         // Autenticar al usuario
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
         console.log("Usuario autenticado:", user);
+        trackEvent('login_success', { elapsed_ms: Math.round(performance.now() - start) });
+        auditLog('login_success', { email: user.email });
 
         // Obtener el nombre del cliente
         const clienteNombre = await obtenerNombreCliente(user.email);
@@ -111,6 +116,10 @@ export async function login(email, password) {
         window.location.href = "/localidades";
     } catch (error) {
         console.error("Error de autenticación:", error);
+        trackEvent('login_error', {
+            code: error.code || 'unknown',
+            elapsed_ms: Math.round(performance.now() - start)
+        });
         showPopup("Credenciales incorrectas. Inténtalo de nuevo.");
     }
 }
@@ -128,6 +137,8 @@ export async function logout() {
         localStorage.removeItem("email");
         localStorage.removeItem("cliente");
         
+        trackEvent('logout');
+        auditLog('logout');
         showPopup("Sesión cerrada correctamente.");
         window.location.href = "/login";
     } catch (error) {
@@ -135,6 +146,7 @@ export async function logout() {
         // Limpiar localStorage de todas formas
         localStorage.removeItem("email");
         localStorage.removeItem("cliente");
+        trackEvent('logout_error', { code: error.code || 'unknown' });
         showPopup("Sesión cerrada correctamente.");
         window.location.href = "/login";
     }

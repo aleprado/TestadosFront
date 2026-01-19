@@ -16,6 +16,7 @@ import { ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.
 import { checkLogin, login, logout } from "./auth.js";
 import { showPopup, showUserFormPopup, mostrarMapaPopup, showLoading, hideLoading } from "./ui.js";
 import { db, exportOnDemandEndpoint, auth, storageUpload } from "./config.js";
+import { trackEvent, auditLog } from "./metrics.js";
 
 let rutaSeleccionada = null;
 let usuariosLoadToken = 0;
@@ -86,14 +87,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return;
             }
             try {
+                trackEvent('localidad_create_attempt', { localidad: nombre });
                 await setDoc(doc(db, "Clientes", username, "Localidades", nombre), {
                     rutas: [],
                     usuarios: []
                 });
+                trackEvent('localidad_create_success', { localidad: nombre });
+                auditLog('localidad_create', { localidad: nombre });
                 input.value = "";
                 await loadLocalidades(username);
             } catch (error) {
                 console.error("Error al agregar localidad:", error);
+                trackEvent('localidad_create_error', { localidad: nombre, error: error.message });
                 showPopup("Error al agregar la localidad.");
             }
         });
@@ -185,6 +190,7 @@ function generarUrlDirecta(cliente, localidad, archivo) {
 }
 
 async function exportarYDescargar(cliente, localidad, rutaId) {
+    const start = performance.now();
     try {
         // ✅ DEBUG: Log de los parámetros que se están enviando
         console.log("🔍 DEBUG exportarYDescargar:");
@@ -196,6 +202,7 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
         showLoading(`Generando CSV de ${rutaId}...`);
         
         // ✅ SOLUCIÓN: Enviar parámetros en el body JSON en lugar de en la URL
+        trackEvent('ruta_download_request', { rutaId });
         const response = await fetch(exportOnDemandEndpoint, {
             method: 'POST',
             headers: {
@@ -239,8 +246,18 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
                 link.click();
                 document.body.removeChild(link);
                 showPopup("CSV generado y descargado correctamente");
+                trackEvent('ruta_download_success', {
+                    rutaId,
+                    elapsed_ms: Math.round(performance.now() - start)
+                });
+                auditLog('ruta_download', { rutaId, filename: nombreArchivo });
             } catch (error) {
                 console.error('Error generando URL directa:', error);
+                trackEvent('ruta_download_error', {
+                    rutaId,
+                    error: error.message,
+                    elapsed_ms: Math.round(performance.now() - start)
+                });
                 showPopup("Error al descargar el archivo.");
             }
         } else {
@@ -248,6 +265,11 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
         }
     } catch (error) {
         console.error("Error en la exportación y descarga:", error);
+        trackEvent('ruta_download_error', {
+            rutaId,
+            error: error.message,
+            elapsed_ms: Math.round(performance.now() - start)
+        });
         showPopup(`Error al generar el CSV: ${error.message}`);
     } finally {
         hideLoading();
@@ -257,6 +279,8 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
 export async function loadLocalidades(cliente) {
     const localidadesList = document.getElementById("localidadesList");
     if (!localidadesList) return;
+    const start = performance.now();
+    trackEvent('localidades_load_start');
 
     // Mostrar spinner mientras se cargan las localidades
     localidadesList.classList.add("data-list--loading");
@@ -272,6 +296,10 @@ export async function loadLocalidades(cliente) {
         if (localidadesSnapshot.empty) {
             localidadesList.classList.remove("data-list--loading");
             localidadesList.innerHTML = "No se encontraron localidades.";
+            trackEvent('localidades_load_success', {
+                count: 0,
+                elapsed_ms: Math.round(performance.now() - start)
+            });
             return;
         }
 
@@ -294,6 +322,7 @@ export async function loadLocalidades(cliente) {
             listItem.addEventListener("click", () => {
                 localStorage.setItem("localidad", localidad);
                 console.log("guardada localidad: " + localidad);
+                trackEvent('localidad_select', { localidad });
                 window.location.href = "/gestionar-rutas";
             });
 
@@ -337,10 +366,15 @@ export async function loadLocalidades(cliente) {
         if (progressDiv) {
             progressDiv.remove();
         }
+        trackEvent('localidades_load_success', {
+            count: localidadesSnapshot.size,
+            elapsed_ms: Math.round(performance.now() - start)
+        });
     } catch (error) {
         console.error("Error al obtener localidades:", error);
         localidadesList.classList.remove("data-list--loading");
         localidadesList.innerHTML = "Error al cargar localidades.";
+        trackEvent('localidades_load_error', { error: error.message });
     }
 }
 
@@ -438,6 +472,8 @@ async function esperarActualizacionRutas(cliente, localidad, rutasEsperadas = []
 export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = true } = {}) {
     const rutasList = document.getElementById("rutasList");
     if (!rutasList) return;
+    const start = performance.now();
+    trackEvent('rutas_load_start', { localidad });
 
     let loadingItem = null;
     if (showSpinner) {
@@ -457,6 +493,7 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
         if (!localidadDoc.exists()) {
             rutasList.classList.remove("data-list--loading");
             rutasList.innerHTML = "No se encontró la localidad.";
+            trackEvent('rutas_load_error', { localidad, error: 'localidad_not_found' });
             return;
         }
 
@@ -544,6 +581,8 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
                 mapaBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
                     if (mapaBtn.disabled) return;
+                    trackEvent('ruta_map_open', { rutaId });
+                    auditLog('ruta_map_open', { rutaId });
                     mostrarMapaPopup(rutaId);
                 });
                 actions.appendChild(mapaBtn);
@@ -568,16 +607,24 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
         rutasList.classList.remove("data-list--loading");
         rutasList.innerHTML = '';
         rutasProcesadas.forEach(ruta => rutasList.appendChild(ruta));
+        trackEvent('rutas_load_success', {
+            localidad,
+            count: rutasProcesadas.length,
+            elapsed_ms: Math.round(performance.now() - start)
+        });
     } catch (error) {
         console.error("Error al cargar rutas:", error);
         rutasList.classList.remove("data-list--loading");
         rutasList.innerHTML = "Error al cargar rutas.";
+        trackEvent('rutas_load_error', { localidad, error: error.message });
     }
 }
 
 export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner = true } = {}) {
     const usuariosList = document.getElementById("usuariosList");
     if (!usuariosList) return;
+    const start = performance.now();
+    trackEvent('usuarios_load_start', { localidad });
 
     const token = ++usuariosLoadToken;
     if (showSpinner) {
@@ -593,6 +640,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
             if (token === usuariosLoadToken) {
                 usuariosList.classList.remove("data-list--loading");
                 usuariosList.innerHTML = "No se encontró la localidad.";
+                trackEvent('usuarios_load_error', { localidad, error: 'localidad_not_found' });
             }
             return;
         }
@@ -702,6 +750,11 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
             listItem.appendChild(fila);
             usuariosList.appendChild(listItem);
         }
+        trackEvent('usuarios_load_success', {
+            localidad,
+            count: usuarios.length,
+            elapsed_ms: Math.round(performance.now() - start)
+        });
 
 
     } catch (error) {
@@ -710,6 +763,7 @@ export async function loadUsuariosPorLocalidad(cliente, localidad, { showSpinner
             usuariosList.classList.remove("data-list--loading");
             usuariosList.innerHTML = "Error al cargar usuarios.";
         }
+        trackEvent('usuarios_load_error', { localidad, error: error.message });
     } finally {
         if (showSpinner && token === usuariosLoadToken) {
             const progressDiv = document.getElementById('usuarios-progress');
@@ -801,8 +855,17 @@ export async function handleUserAssignment(userId, asignar) {
             renderRutaAsignaciones(item, usuariosAsignados);
         }
         console.log(`${asignar ? "Asignada" : "Eliminada"} la ruta ${rutaId} al usuario ${userId}`);
+        trackEvent(asignar ? 'usuario_assign_route' : 'usuario_unassign_route', {
+            rutaId,
+            userId
+        });
+        auditLog(asignar ? 'usuario_assign_route' : 'usuario_unassign_route', {
+            rutaId,
+            userId
+        });
     } catch (error) {
         console.error("Error al actualizar la asignación de usuarios:", error);
+        trackEvent('usuario_assign_error', { rutaId, userId, error: error.message });
     }
 }
 
@@ -829,10 +892,13 @@ async function subirRutas() {
 
     const extensionesValidas = [".txt", ".csv"];
     const rutasEsperadas = [];
+    const totalSize = Array.from(archivos).reduce((acc, file) => acc + file.size, 0);
+    trackEvent('ruta_upload_start', { file_count: archivos.length, total_size: totalSize });
     showLoading("Subiendo rutas...");
     for (const archivo of archivos) {
         if (!extensionesValidas.some((ext) => archivo.name.endsWith(ext))) {
             showPopup("Solo se permiten archivos .txt o .csv.");
+            trackEvent('ruta_upload_invalid', { file_name: archivo.name });
             continue;
         }
 
@@ -851,6 +917,7 @@ async function subirRutas() {
                     (error) => {
                         console.error("Error durante la subida del archivo:", error);
                         showPopup("Error al subir el archivo.");
+                        trackEvent('ruta_upload_error', { file_name: archivo.name, error: error.message });
                         resolve(false);
                     },
                     () => resolve(true)
@@ -858,9 +925,12 @@ async function subirRutas() {
             });
             if (subidaExitosa) {
                 rutasEsperadas.push(obtenerNombreRutaDesdeArchivo(archivo));
+                trackEvent('ruta_upload_success', { file_name: archivo.name, file_size: archivo.size });
+                auditLog('ruta_upload', { file_name: archivo.name });
             }
         } catch (error) {
             console.error("Error general al subir el archivo:", error);
+            trackEvent('ruta_upload_error', { file_name: archivo.name, error: error.message });
         }
     }
 
@@ -877,6 +947,7 @@ async function subirRutas() {
             ? "Procesando ruta..."
             : `Procesando ${rutasEsperadas.length} rutas...`
     );
+    trackEvent('ruta_processing_wait', { count: rutasEsperadas.length });
     const resultado = await esperarActualizacionRutas(cliente, localidad, rutasEsperadas);
     await loadRutasPorLocalidad(cliente, localidad, { showSpinner: false });
     hideLoading();
@@ -899,6 +970,11 @@ async function subirRutas() {
     } else if (!resultado.completadas) {
         showPopup("Las rutas se subieron, pero aun estan en proceso. Revisa en unos segundos.");
     }
+    trackEvent('ruta_processing_complete', {
+        count: rutasEsperadas.length,
+        failed_count: resultado.fallidas.length,
+        completed: resultado.completadas
+    });
 
     if (archivoInput) {
         archivoInput.value = "";
@@ -912,6 +988,7 @@ async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario)
     }
 
     try {
+        trackEvent('usuario_create_attempt', { userId: nombreUsuario });
         // Crear un nuevo documento para el usuario en la colección 'Usuarios'
         const usuarioRef = doc(collection(db, "Usuarios"), nombreUsuario);
         await setDoc(usuarioRef, {
@@ -927,6 +1004,8 @@ async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario)
         });
 
         await loadUsuariosPorLocalidad(cliente, localidad);
+        trackEvent('usuario_create_success', { userId: nombreUsuario });
+        auditLog('usuario_create', { userId: nombreUsuario, email: emailUsuario });
         const item = buscarItemPorDataset('li[data-user-id]', 'userId', nombreUsuario);
         if (item) {
             item.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -934,6 +1013,7 @@ async function registrarUsuario(cliente, localidad, nombreUsuario, emailUsuario)
         }
     } catch (error) {
         console.error("Error al registrar el usuario:", error);
+        trackEvent('usuario_create_error', { userId: nombreUsuario, error: error.message });
         showPopup("Error al registrar el usuario.");
     }
 }
@@ -977,6 +1057,7 @@ async function eliminarRuta(cliente, localidad, rutaId) {
     if (!confirmacion) return;
 
     let errorMessage = null;
+    trackEvent('ruta_delete_attempt', { rutaId });
     showLoading(`Eliminando ruta ${rutaId}...`);
     try {
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
@@ -1007,9 +1088,12 @@ async function eliminarRuta(cliente, localidad, rutaId) {
 
         await loadRutasPorLocalidad(cliente, localidad, { showSpinner: false });
         await loadUsuariosPorLocalidad(cliente, localidad, { showSpinner: false });
+        trackEvent('ruta_delete_success', { rutaId });
+        auditLog('ruta_delete', { rutaId });
     } catch (error) {
         console.error("Error al eliminar la ruta:", error);
         errorMessage = "Error al eliminar la ruta.";
+        trackEvent('ruta_delete_error', { rutaId, error: error.message });
     } finally {
         hideLoading();
     }
@@ -1024,6 +1108,7 @@ async function eliminarUsuario(cliente, localidad, userId) {
     if (!confirmacion) return;
 
     let errorMessage = null;
+    trackEvent('usuario_delete_attempt', { userId });
     showLoading(`Eliminando usuario ${userId}...`);
     try {
         const usuarioRef = doc(db, "Usuarios", userId);
@@ -1033,9 +1118,12 @@ async function eliminarUsuario(cliente, localidad, userId) {
         await deleteDoc(usuarioRef);
 
         await loadUsuariosPorLocalidad(cliente, localidad, { showSpinner: false });
+        trackEvent('usuario_delete_success', { userId });
+        auditLog('usuario_delete', { userId });
     } catch (error) {
         console.error("Error al eliminar el usuario:", error);
         errorMessage = "Error al eliminar el usuario.";
+        trackEvent('usuario_delete_error', { userId, error: error.message });
     } finally {
         hideLoading();
     }
@@ -1055,6 +1143,7 @@ async function eliminarLocalidad(cliente, localidad) {
     if (!confirm2) return;
 
     let errorMessage = null;
+    trackEvent('localidad_delete_attempt', { localidad });
     showLoading(`Eliminando localidad ${localidad}...`);
     try {
         const localidadRef = doc(db, "Clientes", cliente, "Localidades", localidad);
@@ -1080,10 +1169,13 @@ async function eliminarLocalidad(cliente, localidad) {
         await deleteDoc(localidadRef);
 
         showPopup("Localidad eliminada correctamente.");
+        trackEvent('localidad_delete_success', { localidad });
+        auditLog('localidad_delete', { localidad });
         window.location.reload();
     } catch (error) {
         console.error("Error al eliminar la localidad:", error);
         errorMessage = "Error al eliminar la localidad.";
+        trackEvent('localidad_delete_error', { localidad, error: error.message });
     } finally {
         hideLoading();
     }

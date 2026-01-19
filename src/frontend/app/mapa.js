@@ -1,5 +1,6 @@
 import { db } from './config.js'
 import { doc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js'
+import { trackEvent } from './metrics.js'
 
 const parametros = new URLSearchParams(window.location.search)
 const ruta = parametros.get('ruta')
@@ -26,12 +27,15 @@ function initMapFromModule() {
 
         adjuntarLeyendaAlMapa();
         google.maps.event.addListenerOnce(mapa, 'idle', adjuntarLeyendaAlMapa);
+
+        trackEvent('map_init', { ruta });
         
         // Iniciar la carga de datos una vez que el mapa esté listo
         dibujar();
         
     } catch (error) {
         console.error('Error al inicializar Google Maps:', error);
+        trackEvent('map_init_error', { ruta, error: error.message });
         
         // Mostrar mensaje de error al usuario
         const mapaDiv = document.getElementById('mapa');
@@ -204,6 +208,7 @@ function crearMarcadores(puntos) {
     // Crear marcadores individuales
     puntos.forEach(p => {
         const color = determinarColor(p);
+        const estado = obtenerEstadoPunto(p);
         const tooltip = crearTooltip(p);
         
         // Crear marcador circular personalizado
@@ -231,6 +236,7 @@ function crearMarcadores(puntos) {
             }
             infoWindow.open(mapa, marker);
             window.currentInfoWindow = infoWindow;
+            trackEvent('map_marker_open', { estado: estado.label });
             google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
                 const closeBtn = document.querySelector('.mapa-info__close');
                 if (closeBtn) {
@@ -249,10 +255,13 @@ function crearMarcadores(puntos) {
 
 async function dibujar(){
     try {
+        const start = performance.now();
         if (!ruta) {
             console.error('No se proporcionó ID de ruta')
+            trackEvent('map_data_load_error', { error: 'missing_ruta' })
             return
         }
+        trackEvent('map_data_load_start', { ruta })
         
         console.log('Consultando ruta:', ruta)
         const refRuta = doc(db, 'Rutas', ruta)
@@ -264,11 +273,21 @@ async function dibujar(){
         
         if (resultado.docs.length === 0) {
             console.log('No se encontraron documentos en RutaRecorrido')
+            trackEvent('map_data_load_success', {
+                ruta,
+                puntos: 0,
+                elapsed_ms: Math.round(performance.now() - start)
+            })
             return
         }
         
         const puntos = procesarDatos(resultado.docs)
         console.log('Documentos con coordenadas válidas:', puntos.length)
+        trackEvent('map_data_load_success', {
+            ruta,
+            puntos: puntos.length,
+            elapsed_ms: Math.round(performance.now() - start)
+        })
         
         // Solo intentar dibujar en el mapa si está disponible
         if (mapa && puntos.length > 0) {
@@ -291,6 +310,7 @@ async function dibujar(){
         
     } catch (error) {
         console.error('Error al consultar la base de datos:', error)
+        trackEvent('map_data_load_error', { ruta, error: error.message })
         
         // Mostrar error al usuario
         const mapaDiv = document.getElementById('mapa');
