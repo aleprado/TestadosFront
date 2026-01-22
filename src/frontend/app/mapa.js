@@ -77,11 +77,8 @@ if (window.google && window.google.maps) {
 
 // Funciones auxiliares
 function validarCoordenadas(documento) {
-    const lat = documento.data().latitud
-    const lng = documento.data().longitud
-    const isValid = lat && lng && lat !== '' && lng !== '' && 
-           !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng)) &&
-           parseFloat(lat) !== 0 && parseFloat(lng) !== 0
+    const { lat, lng } = obtenerCoordenadas(documento.data())
+    const isValid = Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0
     
     if (!isValid) {
         console.log('Coordenada inválida encontrada:', { id: documento.id, lat, lng, data: documento.data() })
@@ -89,13 +86,40 @@ function validarCoordenadas(documento) {
     return isValid
 }
 
+function normalizarCoordenada(valor) {
+    if (valor === null || valor === undefined) return null
+    if (typeof valor === 'number') return Number.isFinite(valor) ? valor : null
+    if (typeof valor === 'string') {
+        const limpio = valor.trim().replace(',', '.')
+        if (!limpio) return null
+        const num = Number(limpio)
+        return Number.isFinite(num) ? num : null
+    }
+    return null
+}
+
+function obtenerCoordenadas(data) {
+    const lat = normalizarCoordenada(data.latitud)
+    const lng = normalizarCoordenada(data.longitud)
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        return { lat, lng }
+    }
+
+    const geo = data.coordenadas || data.ubicacion
+    if (geo && typeof geo.latitude === 'number' && typeof geo.longitude === 'number') {
+        return { lat: geo.latitude, lng: geo.longitude }
+    }
+
+    return { lat: null, lng: null }
+}
+
 function procesarDatos(documentos) {
     return documentos
         .sort((a,b) => parseInt(a.id) - parseInt(b.id))
         .filter(validarCoordenadas)
         .map(d => ({
-            latitud: parseFloat(d.data().latitud),
-            longitud: parseFloat(d.data().longitud),
+            latitud: obtenerCoordenadas(d.data()).lat,
+            longitud: obtenerCoordenadas(d.data()).lng,
             fecha: d.data().fecha_hora_lectura,
             fecha_edicion: d.data().fecha_hora_edicion,
             titular: d.data().titular,
