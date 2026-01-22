@@ -97,6 +97,8 @@ function procesarDatos(documentos) {
             latitud: parseFloat(d.data().latitud),
             longitud: parseFloat(d.data().longitud),
             fecha: d.data().fecha_hora_lectura,
+            fecha_edicion: d.data().fecha_hora_edicion,
+            titular: d.data().titular,
             medidor: d.data().medidor,
             novedad: d.data().novedades,
             lectura_actual: d.data().lectura_actual,
@@ -136,6 +138,8 @@ function adjuntarLeyendaAlMapa() {
 function crearTooltip(punto) {
     const estado = obtenerEstadoPunto(punto)
     const fecha = punto.fecha || 'N/A'
+    const fechaEdicion = punto.fecha_edicion && punto.fecha_edicion.trim() !== '' ? punto.fecha_edicion : ''
+    const titular = punto.titular && punto.titular.trim() !== '' ? punto.titular : ''
     const medidor = punto.medidor || 'N/A'
     const lectura = punto.lectura_actual && punto.lectura_actual.trim() !== '' ? punto.lectura_actual : 'N/A'
     const novedad = punto.novedad && punto.novedad.trim() !== '' ? punto.novedad : ''
@@ -153,6 +157,27 @@ function crearTooltip(punto) {
                     <span class="mapa-info__label">Fecha</span>
                     <span class="mapa-info__value">${fecha}</span>
                 </div>
+    `
+
+    if (fechaEdicion) {
+        contenido += `
+                <div class="mapa-info__row">
+                    <span class="mapa-info__label">Fecha edicion</span>
+                    <span class="mapa-info__value">${fechaEdicion}</span>
+                </div>
+        `
+    }
+
+    if (titular) {
+        contenido += `
+                <div class="mapa-info__row">
+                    <span class="mapa-info__label">Titular</span>
+                    <span class="mapa-info__value">${titular}</span>
+                </div>
+        `
+    }
+
+    contenido += `
                 <div class="mapa-info__row">
                     <span class="mapa-info__label">Medidor</span>
                     <span class="mapa-info__value">${medidor}</span>

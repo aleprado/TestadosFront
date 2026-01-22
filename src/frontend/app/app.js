@@ -47,12 +47,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         const loginButton = document.getElementById("loginButton");
         const usernameInput = document.getElementById("usernameInput");
         const passwordInput = document.getElementById("passwordInput");
-        const submitLogin = () => {
+        const submitLogin = async () => {
             const username = usernameInput?.value;
             const password = passwordInput?.value;
 
             if (username && password) {
-                login(username, password);
+                showLoading("Validando contraseña...");
+                try {
+                    await login(username, password);
+                } finally {
+                    hideLoading();
+                }
             } else {
                 showPopup("Por favor, ingrese usuario y contraseña.");
             }
