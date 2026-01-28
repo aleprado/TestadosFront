@@ -2,6 +2,7 @@ import {
     collection,
     getDocs,
     getDoc,
+    getCountFromServer,
     doc,
     updateDoc,
     arrayUnion,
@@ -9,6 +10,7 @@ import {
     setDoc,
     query,
     where,
+    orderBy,
     deleteDoc,
     writeBatch
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
@@ -21,6 +23,7 @@ import { trackEvent, auditLog } from "./metrics.js";
 let rutaSeleccionada = null;
 let usuariosLoadToken = 0;
 let downloadMenuListenerAttached = false;
+const RUTAS_LOAD_CONCURRENCY = 6;
 
 function closeDownloadMenus(except = null) {
     document.querySelectorAll('.ruta-download').forEach((wrapper) => {
@@ -43,6 +46,252 @@ function attachDownloadMenuListener() {
         }
     });
     downloadMenuListenerAttached = true;
+}
+
+async function mapWithConcurrency(items, limit, mapper) {
+    if (!items.length) return [];
+    const results = new Array(items.length);
+    let index = 0;
+    const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (index < items.length) {
+            const current = index++;
+            results[current] = await mapper(items[current], current);
+        }
+    });
+    await Promise.all(workers);
+    return results;
+}
+
+function extractRutaIdFromValue(value) {
+    if (!value) return null;
+    if (typeof value === 'string') {
+        const parts = value.split('/');
+        return parts[parts.length - 1] || null;
+    }
+    if (value.id) return value.id;
+    if (value.path) {
+        const parts = value.path.split('/');
+        return parts[parts.length - 1] || null;
+    }
+    return null;
+}
+
+async function buildUsuariosAsignadosMap(usuariosRefs = []) {
+    if (!usuariosRefs.length) return new Map();
+    const usuariosDocs = await Promise.all(
+        usuariosRefs.map(async (usuarioRef) => {
+            try {
+                const usuarioDoc = await getDoc(usuarioRef);
+                return usuarioDoc.exists() ? usuarioDoc : null;
+            } catch (error) {
+                console.error(`Error al cargar usuario ${usuarioRef?.id || ''}:`, error);
+                return null;
+            }
+        })
+    );
+
+    const asignadosPorRuta = new Map();
+    usuariosDocs.forEach((usuarioDoc) => {
+        if (!usuarioDoc) return;
+        const data = usuarioDoc.data() || {};
+        const usuario = {
+            id: usuarioDoc.id,
+            nombre: data.nombre || usuarioDoc.id,
+            email: data.email || '',
+        };
+        const rutas = Array.isArray(data.rutas) ? data.rutas : [];
+        const seen = new Set();
+        rutas.forEach((rutaValue) => {
+            const rutaId = extractRutaIdFromValue(rutaValue);
+            if (!rutaId || seen.has(rutaId)) return;
+            seen.add(rutaId);
+            const lista = asignadosPorRuta.get(rutaId) || [];
+            lista.push(usuario);
+            asignadosPorRuta.set(rutaId, lista);
+        });
+    });
+
+    return asignadosPorRuta;
+}
+
+async function calcularCompletadoConConteo(rutaRef) {
+    const refLecturas = collection(rutaRef, 'RutaRecorrido');
+    const totalSnap = await getCountFromServer(refLecturas);
+    const total = totalSnap.data().count || 0;
+    if (!total) return 0;
+    const completadasQuery = query(refLecturas, where('lectura_actual', '!=', ''), orderBy('lectura_actual'));
+    const completadasSnap = await getCountFromServer(completadasQuery);
+    const completadas = completadasSnap.data().count || 0;
+    return total ? (completadas / total) * 100 : 0;
+}
+
+async function calcularCompletadoConLecturas(rutaRef) {
+    const refLecturas = collection(rutaRef, 'RutaRecorrido');
+    const lecturas = await getDocs(refLecturas);
+    const total = lecturas.size;
+    const conMedicion = lecturas.docs.filter((d) => d.data().lectura_actual).length;
+    return total ? (conMedicion / total) * 100 : 0;
+}
+
+async function obtenerCompletadoRuta(rutaRef, rutaData) {
+    const completadoDoc = Number(rutaData?.completado);
+    if (!Number.isNaN(completadoDoc)) return completadoDoc;
+    try {
+        return await calcularCompletadoConConteo(rutaRef);
+    } catch (error) {
+        console.warn('No se pudo calcular completado con conteo:', error);
+        try {
+            return await calcularCompletadoConLecturas(rutaRef);
+        } catch (fallbackError) {
+            console.warn('No se pudo calcular completado con lecturas:', fallbackError);
+            return 0;
+        }
+    }
+}
+
+function crearRutaListItem({
+    cliente,
+    localidad,
+    rutaId,
+    completado,
+    usuariosAsignados
+}) {
+    const listItem = document.createElement("li");
+    listItem.classList.add("data-list__item", "ruta-item", "list-item-clickable");
+    listItem.setAttribute("data-ruta-id", rutaId);
+
+    const heading = document.createElement('div');
+    heading.classList.add('ruta-heading');
+    heading.textContent = rutaId;
+    listItem.appendChild(heading);
+
+    const metaRow = document.createElement('div');
+    metaRow.classList.add('ruta-meta-row');
+
+    const metrics = document.createElement('div');
+    metrics.classList.add('ruta-metrics');
+
+    const progressLink = document.createElement("span");
+    progressLink.classList.add("ruta-progress");
+    progressLink.textContent = `${completado.toFixed(2)}%`;
+    metrics.appendChild(progressLink);
+
+    const assigneeCount = document.createElement('span');
+    assigneeCount.classList.add('ruta-meta-count');
+    if (usuariosAsignados.length) {
+        assigneeCount.textContent = `${usuariosAsignados.length} usuari${usuariosAsignados.length === 1 ? 'o' : 'os'} asignad${usuariosAsignados.length === 1 ? 'o' : 'os'}`;
+        assigneeCount.classList.add('has-assignees');
+    } else {
+        assigneeCount.textContent = 'Sin asignar';
+    }
+    metrics.appendChild(assigneeCount);
+
+    metaRow.appendChild(metrics);
+
+    const actions = document.createElement('div');
+    actions.classList.add('ruta-actions');
+
+    const downloadWrap = document.createElement('div');
+    downloadWrap.classList.add('ruta-download');
+
+    const downloadBtn = document.createElement("button");
+    downloadBtn.classList.add("map-btn", "download-btn");
+    downloadBtn.textContent = '⬇';
+    downloadBtn.setAttribute('aria-haspopup', 'menu');
+    downloadBtn.setAttribute('aria-expanded', 'false');
+    if (completado === 0) {
+        downloadBtn.disabled = true;
+        downloadBtn.title = "Descarga disponible al completar la ruta";
+    } else {
+        downloadBtn.title = "Descargar CSV (elige si incluir lecturas en 0)";
+    }
+    const downloadMenu = document.createElement('div');
+    downloadMenu.classList.add('ruta-download__menu');
+    downloadMenu.setAttribute('role', 'menu');
+    downloadMenu.setAttribute('hidden', 'true');
+
+    const downloadIgnore = document.createElement('button');
+    downloadIgnore.type = 'button';
+    downloadIgnore.classList.add('ruta-download__option');
+    downloadIgnore.setAttribute('role', 'menuitem');
+    downloadIgnore.textContent = 'Descargar (ignorar registros no modificados)';
+    downloadIgnore.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeDownloadMenus();
+        exportarYDescargar(cliente, localidad, rutaId, { includeZero: false });
+    });
+
+    const downloadInclude = document.createElement('button');
+    downloadInclude.type = 'button';
+    downloadInclude.classList.add('ruta-download__option');
+    downloadInclude.setAttribute('role', 'menuitem');
+    downloadInclude.textContent = 'Descargar (Todos los registros)';
+    downloadInclude.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeDownloadMenus();
+        exportarYDescargar(cliente, localidad, rutaId, { includeZero: true });
+    });
+
+    downloadMenu.appendChild(downloadIgnore);
+    downloadMenu.appendChild(downloadInclude);
+
+    downloadBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (downloadBtn.disabled) return;
+        attachDownloadMenuListener();
+        const isOpen = downloadMenu.classList.contains('is-open');
+        closeDownloadMenus(downloadWrap);
+        if (isOpen) {
+            downloadMenu.classList.remove('is-open');
+            downloadMenu.setAttribute('hidden', 'true');
+            downloadBtn.setAttribute('aria-expanded', 'false');
+        } else {
+            downloadMenu.classList.add('is-open');
+            downloadMenu.removeAttribute('hidden');
+            downloadBtn.setAttribute('aria-expanded', 'true');
+        }
+    });
+
+    downloadWrap.appendChild(downloadBtn);
+    downloadWrap.appendChild(downloadMenu);
+    actions.appendChild(downloadWrap);
+
+    const mapaBtn = document.createElement("button");
+    mapaBtn.innerHTML =
+        '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"></path></svg>';
+    mapaBtn.classList.add("map-btn");
+    if (completado === 0) {
+        mapaBtn.disabled = true;
+        mapaBtn.title = "Mapa disponible al completar la ruta";
+    } else {
+        mapaBtn.title = "Ver mapa";
+    }
+    mapaBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (mapaBtn.disabled) return;
+        trackEvent('ruta_map_open', { rutaId });
+        auditLog('ruta_map_open', { rutaId });
+        mostrarMapaPopup(rutaId);
+    });
+    actions.appendChild(mapaBtn);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "\u2716";
+    deleteBtn.classList.add("delete-btn");
+    deleteBtn.title = "Eliminar ruta";
+    deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        eliminarRuta(cliente, localidad, rutaId);
+    });
+    actions.appendChild(deleteBtn);
+
+    metaRow.appendChild(actions);
+    listItem.appendChild(metaRow);
+    renderRutaAsignaciones(listItem, usuariosAsignados);
+    return listItem;
 }
 
 document.addEventListener('layout:logout', () => {
@@ -531,168 +780,46 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
             return;
         }
 
-        // Obtener las referencias de las rutas
+        // Obtener las referencias de las rutas y usuarios
         const rutasRefs = localidadDoc.data().rutas || [];
+        const usuariosRefs = localidadDoc.data().usuarios || [];
 
         if (loadingItem && rutasRefs.length > 5) {
             loadingItem.textContent = `Procesando ${rutasRefs.length} rutas...`;
         }
 
-        const rutasProcesadas = [];
-        for (const rutaRef of rutasRefs) {
-            const rutaDoc = await getDoc(rutaRef);
+        const usuariosAsignadosMapPromise = buildUsuariosAsignadosMap(usuariosRefs);
 
-            if (rutaDoc.exists()) {
+        const rutasData = await mapWithConcurrency(rutasRefs, RUTAS_LOAD_CONCURRENCY, async (rutaRef) => {
+            try {
+                const rutaDoc = await getDoc(rutaRef);
+                if (!rutaDoc.exists()) return null;
                 const rutaId = rutaDoc.id;
-                const refLecturas = collection(rutaRef,'RutaRecorrido');
-                const lecturas = await getDocs(refLecturas);
-                const total = lecturas.size;
-                const conMedicion = lecturas.docs.filter(d=>d.data().lectura_actual).length;
-                const completado = total ? conMedicion/total*100 : 0;
-
-                const usuariosAsignados = await obtenerUsuariosAsignados(rutaRef);
-                const listItem = document.createElement("li");
-                listItem.classList.add("data-list__item", "ruta-item", "list-item-clickable");
-                listItem.setAttribute("data-ruta-id", rutaId);
-
-                const heading = document.createElement('div');
-                heading.classList.add('ruta-heading');
-                heading.textContent = rutaId;
-                listItem.appendChild(heading);
-
-                const metaRow = document.createElement('div');
-                metaRow.classList.add('ruta-meta-row');
-
-                const metrics = document.createElement('div');
-                metrics.classList.add('ruta-metrics');
-
-                const progressLink = document.createElement("span");
-                progressLink.classList.add("ruta-progress");
-                progressLink.textContent = `${completado.toFixed(2)}%`;
-                metrics.appendChild(progressLink);
-
-                const assigneeCount = document.createElement('span');
-                assigneeCount.classList.add('ruta-meta-count');
-                if (usuariosAsignados.length) {
-                    assigneeCount.textContent = `${usuariosAsignados.length} usuari${usuariosAsignados.length === 1 ? 'o' : 'os'} asignad${usuariosAsignados.length === 1 ? 'o' : 'os'}`;
-                    assigneeCount.classList.add('has-assignees');
-                } else {
-                    assigneeCount.textContent = 'Sin asignar';
-                }
-                metrics.appendChild(assigneeCount);
-
-                metaRow.appendChild(metrics);
-
-                const actions = document.createElement('div');
-                actions.classList.add('ruta-actions');
-
-                const downloadWrap = document.createElement('div');
-                downloadWrap.classList.add('ruta-download');
-
-                const downloadBtn = document.createElement("button");
-                downloadBtn.classList.add("map-btn", "download-btn");
-                downloadBtn.textContent = '⬇';
-                downloadBtn.setAttribute('aria-haspopup', 'menu');
-                downloadBtn.setAttribute('aria-expanded', 'false');
-                if (completado === 0) {
-                    downloadBtn.disabled = true;
-                    downloadBtn.title = "Descarga disponible al completar la ruta";
-                } else {
-                    downloadBtn.title = "Descargar CSV (elige si incluir lecturas en 0)";
-                }
-                const downloadMenu = document.createElement('div');
-                downloadMenu.classList.add('ruta-download__menu');
-                downloadMenu.setAttribute('role', 'menu');
-                downloadMenu.setAttribute('hidden', 'true');
-
-                const downloadIgnore = document.createElement('button');
-                downloadIgnore.type = 'button';
-                downloadIgnore.classList.add('ruta-download__option');
-                downloadIgnore.setAttribute('role', 'menuitem');
-                downloadIgnore.textContent = 'Descargar (ignorar registros no modificados)';
-                downloadIgnore.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    closeDownloadMenus();
-                    exportarYDescargar(cliente, localidad, rutaId, { includeZero: false });
-                });
-
-                const downloadInclude = document.createElement('button');
-                downloadInclude.type = 'button';
-                downloadInclude.classList.add('ruta-download__option');
-                downloadInclude.setAttribute('role', 'menuitem');
-                downloadInclude.textContent = 'Descargar (Todos los registros)';
-                downloadInclude.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    closeDownloadMenus();
-                    exportarYDescargar(cliente, localidad, rutaId, { includeZero: true });
-                });
-
-                downloadMenu.appendChild(downloadIgnore);
-                downloadMenu.appendChild(downloadInclude);
-
-                downloadBtn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (downloadBtn.disabled) return;
-                    attachDownloadMenuListener();
-                    const isOpen = downloadMenu.classList.contains('is-open');
-                    closeDownloadMenus(downloadWrap);
-                    if (isOpen) {
-                        downloadMenu.classList.remove('is-open');
-                        downloadMenu.setAttribute('hidden', 'true');
-                        downloadBtn.setAttribute('aria-expanded', 'false');
-                    } else {
-                        downloadMenu.classList.add('is-open');
-                        downloadMenu.removeAttribute('hidden');
-                        downloadBtn.setAttribute('aria-expanded', 'true');
-                    }
-                });
-
-                downloadWrap.appendChild(downloadBtn);
-                downloadWrap.appendChild(downloadMenu);
-                actions.appendChild(downloadWrap);
-
-                const mapaBtn = document.createElement("button");
-                mapaBtn.innerHTML =
-                    '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"></path></svg>';
-                mapaBtn.classList.add("map-btn");
-                if (completado === 0) {
-                    mapaBtn.disabled = true;
-                    mapaBtn.title = "Mapa disponible al completar la ruta";
-                } else {
-                    mapaBtn.title = "Ver mapa";
-                }
-                mapaBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    if (mapaBtn.disabled) return;
-                    trackEvent('ruta_map_open', { rutaId });
-                    auditLog('ruta_map_open', { rutaId });
-                    mostrarMapaPopup(rutaId);
-                });
-                actions.appendChild(mapaBtn);
-
-                const deleteBtn = document.createElement("button");
-                deleteBtn.textContent = "\u2716";
-                deleteBtn.classList.add("delete-btn");
-                deleteBtn.title = "Eliminar ruta";
-                deleteBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    eliminarRuta(cliente, localidad, rutaId);
-                });
-                actions.appendChild(deleteBtn);
-
-                metaRow.appendChild(actions);
-                listItem.appendChild(metaRow);
-                renderRutaAsignaciones(listItem, usuariosAsignados);
-                rutasProcesadas.push(listItem);
+                const completado = await obtenerCompletadoRuta(rutaRef, rutaDoc.data());
+                return { rutaId, completado };
+            } catch (error) {
+                console.error("Error al cargar ruta:", error);
+                return null;
             }
-        }
+        });
+
+        const usuariosAsignadosMap = await usuariosAsignadosMapPromise;
+        const rutasProcesadas = rutasData
+            .filter(Boolean)
+            .map(({ rutaId, completado }) => {
+                const usuariosAsignados = usuariosAsignadosMap.get(rutaId) || [];
+                return crearRutaListItem({
+                    cliente,
+                    localidad,
+                    rutaId,
+                    completado,
+                    usuariosAsignados
+                });
+            });
 
         rutasList.classList.remove("data-list--loading");
         rutasList.innerHTML = '';
-        rutasProcesadas.forEach(ruta => rutasList.appendChild(ruta));
+        rutasProcesadas.forEach((ruta) => rutasList.appendChild(ruta));
         trackEvent('rutas_load_success', {
             localidad,
             count: rutasProcesadas.length,
