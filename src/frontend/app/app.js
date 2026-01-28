@@ -609,7 +609,7 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
                 downloadIgnore.type = 'button';
                 downloadIgnore.classList.add('ruta-download__option');
                 downloadIgnore.setAttribute('role', 'menuitem');
-                downloadIgnore.textContent = 'Descargar (ignorar lectura 0)';
+                downloadIgnore.textContent = 'Descargar (ignorar registros no modificados)';
                 downloadIgnore.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -621,7 +621,7 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
                 downloadInclude.type = 'button';
                 downloadInclude.classList.add('ruta-download__option');
                 downloadInclude.setAttribute('role', 'menuitem');
-                downloadInclude.textContent = 'Descargar (incluir lectura 0)';
+                downloadInclude.textContent = 'Descargar (Todos los registros)';
                 downloadInclude.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
