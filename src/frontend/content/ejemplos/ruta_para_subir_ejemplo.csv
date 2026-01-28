@@ -1,2 +1,2 @@
 zona;orden;servicio;estado;usuario;direccion;localidad;medidor;digitos;frecuencia;categoria;lectura_anterior;controles;novedades;lectura_actual;consumo_aa;porcentaje_control_aa;consumo_promedio_aa;porcentaje_control_promedio_aa;observacionlecturista;fecha_hora_lectura;esta_cortado;latitud;longitud;altura;titular
-;;Electricidad;;;Calle Falsa 123;Morse;2151920;;;;;;;66702;;;;;;2026-01-23 11:43;;-34.6249211;-60.9310551;;RONCHI MIGUEL ANGEL
+;;Electricidad;;;Calle 123;Localidad;2151920;;;;;;;66702;;;;;;2026-01-23 11:43;;-34.6249211;-60.9310551;;Nombre Titular
