@@ -10,6 +10,13 @@ const headerTemplate = `
 const publicNavTemplate = `
   <a href="#app" id="navKnowApp" class="nav-link">Conoce la app</a>
   <a href="/contacto" id="navContact" class="nav-link">Contacto</a>
+  <div class="nav-download">
+    <button id="navDownloads" class="nav-link nav-link--ghost nav-download__toggle" type="button" aria-haspopup="menu" aria-expanded="false">Descargas</button>
+    <div class="nav-download__menu" role="menu" hidden>
+      <a class="nav-download__option" role="menuitem" data-download-id="ruta_subida" href="/content/ejemplos/ruta_para_subir_ejemplo.csv" download>Ejemplo de ruta para subir</a>
+      <a class="nav-download__option" role="menuitem" data-download-id="ruta_procesada" href="/content/ejemplos/ruta_procesada_ejemplo.csv" download>Ejemplo de ruta procesada</a>
+    </div>
+  </div>
   <a href="/login" id="navLogin" class="nav-link nav-link--primary">Acceso a clientes</a>
 `;
 
@@ -37,6 +44,7 @@ const whatsappTemplate = `
 `;
 
 const AUTH_PAGES = new Set(['gestionar-rutas', 'localidades', 'mapa']);
+let downloadsMenuListenerAttached = false;
 
 function updateLayoutMetrics() {
   const header = document.querySelector('.site-header');
@@ -80,6 +88,9 @@ function renderNav(page) {
     if (navKnowApp) {
       navKnowApp.href = page === 'landing' ? '#app' : '/#app';
     }
+    if (page !== 'landing') {
+      document.querySelector('.nav-download')?.remove();
+    }
   }
 
   nav.querySelectorAll('a').forEach((link) => {
@@ -91,6 +102,73 @@ function renderNav(page) {
       });
     });
   });
+
+  if (!requiresAuth && page === 'landing') {
+    setupDownloadsMenu();
+  }
+}
+
+function closeDownloadsMenu(except = null) {
+  document.querySelectorAll('.nav-download').forEach((wrapper) => {
+    const menu = wrapper.querySelector('.nav-download__menu');
+    const toggle = wrapper.querySelector('.nav-download__toggle');
+    if (!menu || !toggle || wrapper === except) return;
+    menu.classList.remove('is-open');
+    menu.setAttribute('hidden', 'true');
+    toggle.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function setupDownloadsMenu() {
+  const wrapper = document.querySelector('.nav-download');
+  if (!wrapper || wrapper.dataset.bound === 'true') return;
+  const toggle = wrapper.querySelector('.nav-download__toggle');
+  const menu = wrapper.querySelector('.nav-download__menu');
+  if (!toggle || !menu) return;
+
+  wrapper.dataset.bound = 'true';
+
+  toggle.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const isOpen = menu.classList.contains('is-open');
+    closeDownloadsMenu(wrapper);
+    if (isOpen) {
+      menu.classList.remove('is-open');
+      menu.setAttribute('hidden', 'true');
+      toggle.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    menu.classList.add('is-open');
+    menu.removeAttribute('hidden');
+    toggle.setAttribute('aria-expanded', 'true');
+  });
+
+  menu.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      closeDownloadsMenu();
+      trackEvent('download_example', {
+        id: link.dataset.downloadId || null,
+        href: link.getAttribute('href')
+      });
+    });
+  });
+
+  if (!downloadsMenuListenerAttached) {
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest('.nav-download')) {
+        closeDownloadsMenu();
+      }
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeDownloadsMenu();
+      }
+    });
+    downloadsMenuListenerAttached = true;
+  }
 }
 
 function paintFooter() {

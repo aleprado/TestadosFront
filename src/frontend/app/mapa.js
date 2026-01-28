@@ -150,6 +150,52 @@ function obtenerEstadoPunto(punto) {
     return { label: 'Sin novedad', className: 'mapa-info__badge--ok' }
 }
 
+function normalizarNombreArchivo(valor, fallback = 'medidor') {
+    const texto = String(valor || '').trim()
+    const limpio = texto.replace(/[^a-zA-Z0-9_-]/g, '')
+    return limpio !== '' ? limpio : fallback
+}
+
+function resolverExtensionImagen(mimeType, url) {
+    if (mimeType) {
+        const normalizado = mimeType.toLowerCase()
+        if (normalizado.includes('png')) return 'png'
+        if (normalizado.includes('jpeg') || normalizado.includes('jpg')) return 'jpg'
+        if (normalizado.includes('webp')) return 'webp'
+        if (normalizado.includes('gif')) return 'gif'
+    }
+    if (url) {
+        const sinQuery = url.split('?')[0]
+        const ext = sinQuery.split('.').pop()
+        if (ext && ext.length <= 4) return ext
+    }
+    return 'jpg'
+}
+
+async function descargarImagen(url, medidor) {
+    if (!url) return
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+    try {
+        const response = await fetch(url)
+        if (!response.ok) throw new Error('download_failed')
+        const blob = await response.blob()
+        const ext = resolverExtensionImagen(blob.type, url)
+        const nombre = `${normalizarNombreArchivo(medidor)}_${timestamp}.${ext}`
+        const objectUrl = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = objectUrl
+        link.download = nombre
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
+        trackEvent('map_image_download', { medidor })
+    } catch (error) {
+        console.warn('No se pudo descargar la imagen, abriendo en otra pestaña.', error)
+        window.open(url, '_blank', 'noopener')
+    }
+}
+
 function adjuntarLeyendaAlMapa() {
     const leyenda = document.getElementById('leyenda-colores')
     if (!leyenda || leyenda.dataset.attached === 'true') return
@@ -223,9 +269,14 @@ function crearTooltip(punto) {
 
     if (imagen) {
         contenido += `
-                <a class="mapa-info__image" href="${imagen}" target="_blank" rel="noopener noreferrer" title="Ver imagen completa">
-                    <img src="${imagen}" alt="Imagen del punto" onerror="this.style.display='none'">
-                </a>
+                <div class="mapa-info__media">
+                    <a class="mapa-info__image" href="${imagen}" target="_blank" rel="noopener noreferrer" title="Ver imagen completa">
+                        <img src="${imagen}" alt="Imagen del punto" onerror="this.style.display='none'">
+                    </a>
+                    <button class="mapa-info__download" type="button" data-image-url="${imagen}" data-medidor="${medidor}" title="Descargar imagen">
+                        Descargar imagen
+                    </button>
+                </div>
         `
     }
 
@@ -290,6 +341,14 @@ function crearMarcadores(puntos) {
                 const closeBtn = document.querySelector('.mapa-info__close');
                 if (closeBtn) {
                     closeBtn.addEventListener('click', () => infoWindow.close(), { once: true });
+                }
+                const downloadBtn = document.querySelector('.mapa-info__download');
+                if (downloadBtn) {
+                    downloadBtn.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        descargarImagen(downloadBtn.dataset.imageUrl, downloadBtn.dataset.medidor);
+                    }, { once: true });
                 }
             });
         };

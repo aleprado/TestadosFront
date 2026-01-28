@@ -20,6 +20,30 @@ import { trackEvent, auditLog } from "./metrics.js";
 
 let rutaSeleccionada = null;
 let usuariosLoadToken = 0;
+let downloadMenuListenerAttached = false;
+
+function closeDownloadMenus(except = null) {
+    document.querySelectorAll('.ruta-download').forEach((wrapper) => {
+        const menu = wrapper.querySelector('.ruta-download__menu');
+        const button = wrapper.querySelector('.download-btn');
+        if (!menu || !button || wrapper === except) return;
+        menu.classList.remove('is-open');
+        menu.setAttribute('hidden', 'true');
+        button.setAttribute('aria-expanded', 'false');
+    });
+}
+
+function attachDownloadMenuListener() {
+    if (downloadMenuListenerAttached) return;
+    document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (!target.closest('.ruta-download')) {
+            closeDownloadMenus();
+        }
+    });
+    downloadMenuListenerAttached = true;
+}
 
 document.addEventListener('layout:logout', () => {
     logout();
@@ -194,7 +218,7 @@ function generarUrlDirecta(cliente, localidad, archivo) {
     return url;
 }
 
-async function exportarYDescargar(cliente, localidad, rutaId) {
+async function exportarYDescargar(cliente, localidad, rutaId, { includeZero = false } = {}) {
     const start = performance.now();
     try {
         // ✅ DEBUG: Log de los parámetros que se están enviando
@@ -202,12 +226,13 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
         console.log("  - cliente:", cliente);
         console.log("  - localidad:", localidad);
         console.log("  - rutaId:", rutaId);
+        console.log("  - includeZero:", includeZero);
         console.log("  - tipos:", typeof cliente, typeof localidad, typeof rutaId);
         
         showLoading(`Generando CSV de ${rutaId}...`);
         
         // ✅ SOLUCIÓN: Enviar parámetros en el body JSON en lugar de en la URL
-        trackEvent('ruta_download_request', { rutaId });
+        trackEvent('ruta_download_request', { rutaId, includeZero });
         const response = await fetch(exportOnDemandEndpoint, {
             method: 'POST',
             headers: {
@@ -217,6 +242,7 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
                 cliente: cliente,
                 localidad: localidad,
                 ruta_id: rutaId,
+                include_zero: includeZero,
                 timestamp: new Date().getTime() // Para asegurar archivo fresco
             })
         });
@@ -253,6 +279,7 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
                 showPopup("CSV generado y descargado correctamente");
                 trackEvent('ruta_download_success', {
                     rutaId,
+                    includeZero,
                     elapsed_ms: Math.round(performance.now() - start)
                 });
                 auditLog('ruta_download', { rutaId, filename: nombreArchivo });
@@ -260,6 +287,7 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
                 console.error('Error generando URL directa:', error);
                 trackEvent('ruta_download_error', {
                     rutaId,
+                    includeZero,
                     error: error.message,
                     elapsed_ms: Math.round(performance.now() - start)
                 });
@@ -272,6 +300,7 @@ async function exportarYDescargar(cliente, localidad, rutaId) {
         console.error("Error en la exportación y descarga:", error);
         trackEvent('ruta_download_error', {
             rutaId,
+            includeZero,
             error: error.message,
             elapsed_ms: Math.round(performance.now() - start)
         });
@@ -557,21 +586,73 @@ export async function loadRutasPorLocalidad(cliente, localidad, { showSpinner = 
                 const actions = document.createElement('div');
                 actions.classList.add('ruta-actions');
 
+                const downloadWrap = document.createElement('div');
+                downloadWrap.classList.add('ruta-download');
+
                 const downloadBtn = document.createElement("button");
                 downloadBtn.classList.add("map-btn", "download-btn");
                 downloadBtn.textContent = '⬇';
+                downloadBtn.setAttribute('aria-haspopup', 'menu');
+                downloadBtn.setAttribute('aria-expanded', 'false');
                 if (completado === 0) {
                     downloadBtn.disabled = true;
                     downloadBtn.title = "Descarga disponible al completar la ruta";
                 } else {
-                    downloadBtn.title = "Descargar CSV";
+                    downloadBtn.title = "Descargar CSV (elige si incluir lecturas en 0)";
                 }
+                const downloadMenu = document.createElement('div');
+                downloadMenu.classList.add('ruta-download__menu');
+                downloadMenu.setAttribute('role', 'menu');
+                downloadMenu.setAttribute('hidden', 'true');
+
+                const downloadIgnore = document.createElement('button');
+                downloadIgnore.type = 'button';
+                downloadIgnore.classList.add('ruta-download__option');
+                downloadIgnore.setAttribute('role', 'menuitem');
+                downloadIgnore.textContent = 'Descargar (ignorar lectura 0)';
+                downloadIgnore.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeDownloadMenus();
+                    exportarYDescargar(cliente, localidad, rutaId, { includeZero: false });
+                });
+
+                const downloadInclude = document.createElement('button');
+                downloadInclude.type = 'button';
+                downloadInclude.classList.add('ruta-download__option');
+                downloadInclude.setAttribute('role', 'menuitem');
+                downloadInclude.textContent = 'Descargar (incluir lectura 0)';
+                downloadInclude.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeDownloadMenus();
+                    exportarYDescargar(cliente, localidad, rutaId, { includeZero: true });
+                });
+
+                downloadMenu.appendChild(downloadIgnore);
+                downloadMenu.appendChild(downloadInclude);
+
                 downloadBtn.addEventListener("click", (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     if (downloadBtn.disabled) return;
-                    exportarYDescargar(cliente, localidad, rutaId);
+                    attachDownloadMenuListener();
+                    const isOpen = downloadMenu.classList.contains('is-open');
+                    closeDownloadMenus(downloadWrap);
+                    if (isOpen) {
+                        downloadMenu.classList.remove('is-open');
+                        downloadMenu.setAttribute('hidden', 'true');
+                        downloadBtn.setAttribute('aria-expanded', 'false');
+                    } else {
+                        downloadMenu.classList.add('is-open');
+                        downloadMenu.removeAttribute('hidden');
+                        downloadBtn.setAttribute('aria-expanded', 'true');
+                    }
                 });
-                actions.appendChild(downloadBtn);
+
+                downloadWrap.appendChild(downloadBtn);
+                downloadWrap.appendChild(downloadMenu);
+                actions.appendChild(downloadWrap);
 
                 const mapaBtn = document.createElement("button");
                 mapaBtn.innerHTML =

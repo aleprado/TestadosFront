@@ -468,6 +468,54 @@ input[type="checkbox"] {
     flex-shrink: 0;
 }
 
+.ruta-download {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ruta-download__menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 230px;
+    z-index: 20;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.ruta-download__menu.is-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.ruta-download__option {
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--color-text);
+}
+
+.ruta-download__option:hover {
+    background-color: rgba(211, 47, 47, 0.1);
+    color: var(--color-primary-dark);
+}
+
 .ruta-actions .badge {
     font-weight: 600;
     color: var(--color-primary);
@@ -703,6 +751,28 @@ input[type="checkbox"] {
     padding: 6px 14px 12px;
     color: #2f2f2f;
     font-size: 0.9rem;
+}
+
+.mapa-info__media {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.mapa-info__download {
+    border: none;
+    background: rgba(211, 47, 47, 0.1);
+    color: #b71c1c;
+    font-size: 0.85rem;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.mapa-info__download:hover {
+    background: rgba(211, 47, 47, 0.18);
 }
 
 .mapa-info__header {
@@ -1109,6 +1179,58 @@ input[type="checkbox"] {
     display: flex;
     align-items: center;
     gap: 16px;
+}
+
+.nav-download {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.nav-download__toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+}
+
+.nav-download__menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 240px;
+    z-index: 20;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.nav-download__menu.is-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.nav-download__option {
+    text-decoration: none;
+    color: var(--color-text);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.nav-download__option:hover {
+    background-color: rgba(211, 47, 47, 0.1);
+    color: var(--color-primary-dark);
 }
 
 .brand {
