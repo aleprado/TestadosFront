@@ -1424,6 +1424,43 @@ body[data-page='login'] .page-main {
 .feature-card h3 { margin: 0 0 6px; color: #333; font-size: 18px; }
 .feature-card p { margin: 0; color: #555; line-height: 1.45; }
 
+/* Formato de carga de rutas */
+.csv-sample { padding: 0 0 160px; background: #fff; }
+.csv-sample__inner { width: min(1100px, 92%); margin: 0 auto; }
+.csv-sample h2 { text-align: center; color: #333; font-weight: 600; margin: 0 0 16px; }
+.csv-sample__layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: start;
+}
+.csv-sample__preview-card {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 20px;
+}
+.csv-sample__image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 10px;
+    border: 1px solid #e6e6e6;
+    background: #fff;
+}
+.csv-sample__image[hidden],
+.csv-sample__preview[hidden] {
+    display: none;
+}
+.csv-sample__preview {
+    margin: 0;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    white-space: pre;
+    overflow-x: auto;
+    color: #333;
+}
 /* Footer */
 .site-footer {
     border-top: 1px solid #eee;

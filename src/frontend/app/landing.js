@@ -89,6 +89,29 @@ async function loadContent() {
       data.features.forEach((f, i) => fg.appendChild(makeFeatureCard(f, i)));
     }
 
+    // Formato de archivo para subir rutas
+    setText('#sampleTitle', data.uploadSample?.title);
+    setText('#sampleSubtitle', data.uploadSample?.subtitle);
+    const sampleImage = document.getElementById('sampleImage');
+    const samplePreview = document.getElementById('samplePreview');
+    if (sampleImage) {
+      if (data.uploadSample?.image) {
+        sampleImage.src = data.uploadSample.image;
+        sampleImage.alt = data.uploadSample.imageAlt || data.uploadSample.title || '';
+        sampleImage.hidden = false;
+      } else {
+        sampleImage.hidden = true;
+      }
+    }
+    if (samplePreview) {
+      if (data.uploadSample?.image) {
+        samplePreview.hidden = true;
+      } else {
+        samplePreview.textContent = data.uploadSample?.preview || '';
+        samplePreview.hidden = !data.uploadSample?.preview;
+      }
+    }
+
     // App overview
     setText('#appTitle', data.app?.title);
     setText('#appSubtitle', data.app?.subtitle);
