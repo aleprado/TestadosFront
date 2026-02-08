@@ -23,7 +23,7 @@
   "uploadSample": {
     "title": "Formato del archivo para subir rutas",
     "subtitle": "Usa punto y coma (;) como separador. Encontrarás un archivo listo para descargar en el menú Descargas. Se guarda en tu carpeta Descargas.",
-    "image": "/content/ejemplos/ruta_para_subir_ejemplo.png",
+    "image": "/content/ejemplos/ruta_subida_ejemplo.png",
     "imageAlt": "Ejemplo de archivo CSV con separador punto y coma para subir una ruta",
     "preview": "orden;servicio;estado;usuario;direccion;titular;medidor;digitos;frecuencia;categoria;lectura_anterior;consumo_aa;porcentaje_control_aa;consumo_promedio_aa;porcentaje_control_promedio_aa;observacionlecturista\n1;GAS;Activo;1234;calle1 123;Nombre Titular;4141387;5;M;Comercial;69326;150;10;100;20;Mensaje para el lecturista\n2;GAS;Cortado;1235;calle2 123;Razon Social;4141388;5;M;Residencial;69326;150;10;100;20;"
   },
