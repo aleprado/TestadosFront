@@ -31,6 +31,7 @@ const contentTypes = {
   '.ico': 'image/x-icon',
   '.txt': 'text/plain; charset=UTF-8',
   '.csv': 'text/csv; charset=UTF-8',
+  '.pdf': 'application/pdf',
 };
 
 function getType(filePath) {

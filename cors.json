@@ -1,0 +1,11 @@
+[
+  {
+    "origin": [
+      "http://localhost:5173",
+      "https://pdtomaestados.com.ar"
+    ],
+    "method": ["GET", "HEAD"],
+    "responseHeader": ["Content-Type", "Content-Disposition"],
+    "maxAgeSeconds": 3600
+  }
+]

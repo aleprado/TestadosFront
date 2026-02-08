@@ -14,7 +14,9 @@ const publicNavTemplate = `
     <button id="navDownloads" class="nav-link nav-link--ghost nav-download__toggle" type="button" aria-haspopup="menu" aria-expanded="false">Descargas</button>
     <div class="nav-download__menu" role="menu" hidden>
       <a class="nav-download__option" role="menuitem" data-download-id="ruta_subida" href="/content/ejemplos/ruta_para_subir_ejemplo.csv" download>Ejemplo de ruta para subir</a>
+      <a class="nav-download__option" role="menuitem" data-download-id="guia_subida_pdf" href="/content/ejemplos/Archivo%20de%20Subida.pdf" download>Guía PDF de archivo de subida</a>
       <a class="nav-download__option" role="menuitem" data-download-id="ruta_procesada" href="/content/ejemplos/ruta_procesada_ejemplo.csv" download>Ejemplo de ruta procesada</a>
+      <a class="nav-download__option" role="menuitem" data-download-id="guia_bajada_pdf" href="/content/ejemplos/Archivo%20de%20Bajada.pdf" download>Guía PDF de archivo de bajada</a>
     </div>
   </div>
   <a href="/login" id="navLogin" class="nav-link nav-link--primary">Acceso a clientes</a>
