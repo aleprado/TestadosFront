@@ -49,6 +49,19 @@ body[data-page='localidades'] h1 {
     border-radius: var(--radius-sm);
 }
 
+.help-text--context {
+    margin-top: -18px;
+    margin-bottom: 0;
+    padding: 10px 16px;
+    background: rgba(211, 47, 47, 0.06);
+    border-left-color: rgba(211, 47, 47, 0.6);
+    color: var(--color-muted);
+}
+
+.help-text--context strong {
+    color: var(--color-text);
+}
+
 /* Ajuste del contenedor principal */
 
 .container {

@@ -404,6 +404,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
+        const localidadActualNombre = document.getElementById("localidadActualNombre");
+        if (localidadActualNombre) {
+            localidadActualNombre.textContent = localidad;
+        }
+
         try {
             rutaSeleccionada = null;
             await loadRutasPorLocalidad(cliente, localidad);
