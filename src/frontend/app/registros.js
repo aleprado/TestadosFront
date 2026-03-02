@@ -5,16 +5,22 @@ import { trackEvent } from "./metrics.js";
 
 const parametros = new URLSearchParams(window.location.search);
 const rutaId = parametros.get("ruta");
-const registrosList = document.getElementById("registrosList");
+const registrosListCon = document.getElementById("registrosListCon");
+const registrosListSin = document.getElementById("registrosListSin");
 const resumenCon = document.getElementById("registrosConLectura");
 const resumenSin = document.getElementById("registrosSinLectura");
 const resumenTotal = document.getElementById("registrosTotal");
 const rutaLabel = document.getElementById("rutaIdLabel");
 const registrosEmpty = document.getElementById("registrosEmpty");
+const resumenConColumn = document.getElementById("registrosConLecturaColumn");
+const resumenSinColumn = document.getElementById("registrosSinLecturaColumn");
 
 function limpiarLista() {
-    if (registrosList) {
-        registrosList.innerHTML = "";
+    if (registrosListCon) {
+        registrosListCon.innerHTML = "";
+    }
+    if (registrosListSin) {
+        registrosListSin.innerHTML = "";
     }
 }
 
@@ -23,6 +29,8 @@ function actualizarResumen({ con, sin }) {
     if (resumenCon) resumenCon.textContent = String(con);
     if (resumenSin) resumenSin.textContent = String(sin);
     if (resumenTotal) resumenTotal.textContent = String(total);
+    if (resumenConColumn) resumenConColumn.textContent = String(con);
+    if (resumenSinColumn) resumenSinColumn.textContent = String(sin);
 }
 
 function mostrarMensajeVacio(mostrar) {
@@ -78,8 +86,11 @@ async function cargarRegistros() {
 
     limpiarLista();
     mostrarMensajeVacio(false);
-    if (registrosList) {
-        registrosList.innerHTML = '<li class="loading-spinner">Cargando registros...</li>';
+    if (registrosListCon) {
+        registrosListCon.innerHTML = '<li class="loading-spinner">Cargando registros...</li>';
+    }
+    if (registrosListSin) {
+        registrosListSin.innerHTML = '<li class="loading-spinner">Cargando registros...</li>';
     }
 
     trackEvent("ruta_records_load_start", { rutaId });
@@ -106,8 +117,14 @@ async function cargarRegistros() {
                     sinLectura += 1;
                 }
                 const card = crearRegistroCard(datos);
-                if (registrosList) {
-                    registrosList.appendChild(card);
+                if (tieneLectura) {
+                    if (registrosListCon) {
+                        registrosListCon.appendChild(card);
+                    }
+                } else {
+                    if (registrosListSin) {
+                        registrosListSin.appendChild(card);
+                    }
                 }
             });
             mostrarMensajeVacio(false);

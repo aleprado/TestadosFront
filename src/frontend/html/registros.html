@@ -11,13 +11,13 @@
 
 <main class="page-main">
     <div class="container">
-        <h1>Lista de Registros</h1>
-        <p class="help-text">Consulta rápida con nombre y medidor. Verde indica lectura registrada, amarillo sin lectura.</p>
+        <h1>Estado de la ruta por medidor</h1>
+        <p class="help-text">Revisá el estado de cada medidor: verde si ya recibió lectura y amarillo si falta.</p>
         <div class="registros-intro">
             <span>Ruta:</span>
             <strong id="rutaIdLabel">-</strong>
         </div>
-        <div class="registros-summary" id="registrosSummary">
+        <div class="registros-summary registros-summary--center" id="registrosSummary">
             <div class="registros-summary__item">
                 <span class="registros-summary__label">Con lectura</span>
                 <span class="registros-summary__value" id="registrosConLectura">0</span>
@@ -31,7 +31,22 @@
                 <span class="registros-summary__value" id="registrosTotal">0</span>
             </div>
         </div>
-        <ul id="registrosList" class="registros-list"></ul>
+        <section class="registros-columns">
+            <div class="registros-column registros-column--left">
+                <div class="registros-column__header">
+                    <span>Con lectura</span>
+                    <span id="registrosConLecturaColumn">0</span>
+                </div>
+                <ul id="registrosListCon" class="registros-list"></ul>
+            </div>
+            <div class="registros-column registros-column--right">
+                <div class="registros-column__header">
+                    <span>Sin lectura</span>
+                    <span id="registrosSinLecturaColumn">0</span>
+                </div>
+                <ul id="registrosListSin" class="registros-list"></ul>
+            </div>
+        </section>
         <div id="registrosEmpty" class="registros-empty" hidden>
             <p>No se encontraron registros para esta ruta.</p>
         </div>

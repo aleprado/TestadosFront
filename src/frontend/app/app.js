@@ -335,6 +335,8 @@ document.addEventListener('layout:back', () => {
         window.location.href = '/localidades';
     } else if (page === 'mapa') {
         window.location.href = '/gestionar-rutas';
+    } else if (page === 'registros') {
+        window.location.href = '/gestionar-rutas';
     } else if (window.history.length > 1) {
         window.history.back();
     } else {
