@@ -329,21 +329,6 @@ document.addEventListener('layout:logout', () => {
     logout();
 });
 
-document.addEventListener('layout:back', () => {
-    const page = document.body.dataset.page;
-    if (page === 'gestionar-rutas') {
-        window.location.href = '/localidades';
-    } else if (page === 'mapa') {
-        window.location.href = '/gestionar-rutas';
-    } else if (page === 'registros') {
-        window.location.href = '/gestionar-rutas';
-    } else if (window.history.length > 1) {
-        window.history.back();
-    } else {
-        window.location.href = '/';
-    }
-});
-
 // ####################### LOGIN #######################
 
 document.addEventListener("DOMContentLoaded", async () => {

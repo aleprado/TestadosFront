@@ -48,6 +48,29 @@ const whatsappTemplate = `
 const AUTH_PAGES = new Set(['gestionar-rutas', 'localidades', 'mapa', 'registros']);
 let downloadsMenuListenerAttached = false;
 
+function resolveBackTargetForPage(page) {
+  if (page === 'gestionar-rutas') return '/localidades';
+  if (page === 'mapa' || page === 'registros') return '/gestionar-rutas';
+  return null;
+}
+
+function handleLayoutBack(page) {
+  const target = resolveBackTargetForPage(page);
+  document.dispatchEvent(new CustomEvent('layout:back', { detail: { page, target } }));
+
+  if (target) {
+    window.location.href = target;
+    return;
+  }
+
+  if (window.history.length > 1) {
+    window.history.back();
+    return;
+  }
+
+  window.location.href = '/';
+}
+
 function updateLayoutMetrics() {
   const header = document.querySelector('.site-header');
   const footer = document.querySelector('.site-footer');
@@ -79,7 +102,7 @@ function renderNav(page) {
     const navLogout = document.getElementById('navLogout');
     navBack?.addEventListener('click', (event) => {
       event.preventDefault();
-      document.dispatchEvent(new CustomEvent('layout:back'));
+      handleLayoutBack(page);
     });
     navLogout?.addEventListener('click', (event) => {
       event.preventDefault();
