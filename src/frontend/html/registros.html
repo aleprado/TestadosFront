@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registros de Ruta</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body data-page="registros">
+<header class="site-header" data-component="site-header"></header>
+
+<main class="page-main">
+    <div class="container">
+        <h1>Lista de Registros</h1>
+        <p class="help-text">Consulta rápida con nombre y medidor. Verde indica lectura registrada, amarillo sin lectura.</p>
+        <div class="registros-intro">
+            <span>Ruta:</span>
+            <strong id="rutaIdLabel">-</strong>
+        </div>
+        <div class="registros-summary" id="registrosSummary">
+            <div class="registros-summary__item">
+                <span class="registros-summary__label">Con lectura</span>
+                <span class="registros-summary__value" id="registrosConLectura">0</span>
+            </div>
+            <div class="registros-summary__item">
+                <span class="registros-summary__label">Sin lectura</span>
+                <span class="registros-summary__value" id="registrosSinLectura">0</span>
+            </div>
+            <div class="registros-summary__item">
+                <span class="registros-summary__label">Total</span>
+                <span class="registros-summary__value" id="registrosTotal">0</span>
+            </div>
+        </div>
+        <ul id="registrosList" class="registros-list"></ul>
+        <div id="registrosEmpty" class="registros-empty" hidden>
+            <p>No se encontraron registros para esta ruta.</p>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer" data-component="site-footer"></footer>
+<div data-component="floating-whatsapp"></div>
+
+<script type="module" src="../app/layout.js"></script>
+<script type="module" src="../app/registros.js"></script>
+</body>
+</html>

@@ -16,7 +16,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 import { checkLogin, login, logout } from "./auth.js";
-import { showPopup, showUserFormPopup, mostrarMapaPopup, showLoading, hideLoading } from "./ui.js";
+import { showPopup, showUserFormPopup, mostrarMapaPopup, mostrarRegistrosPopup, showLoading, hideLoading } from "./ui.js";
 import { db, exportOnDemandEndpoint, auth, storageUpload } from "./config.js";
 import { trackEvent, auditLog } from "./metrics.js";
 
@@ -24,6 +24,7 @@ let rutaSeleccionada = null;
 let usuariosLoadToken = 0;
 let downloadMenuListenerAttached = false;
 const RUTAS_LOAD_CONCURRENCY = 6;
+const IMAGENES_DOWNLOAD_CONCURRENCY = 4;
 
 function closeDownloadMenus(except = null) {
     document.querySelectorAll('.ruta-download').forEach((wrapper) => {
@@ -259,6 +260,21 @@ function crearRutaListItem({
     downloadWrap.appendChild(downloadMenu);
     actions.appendChild(downloadWrap);
 
+    const imagenesBtn = document.createElement("button");
+    imagenesBtn.classList.add("map-btn");
+    imagenesBtn.innerHTML =
+        '<svg viewBox="0 0 24 24"><path d="M21 5h-3.17l-1.84-2H7.01L5.18 5H2c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h19c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zM11 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm6-5c0 1.1-.9 2-2 2h-1v-4h1c1.1 0 2 .9 2 2z"></path></svg>';
+    imagenesBtn.title = "Descargar todas las imagenes";
+    imagenesBtn.setAttribute("aria-label", "Descargar todas las imágenes");
+    imagenesBtn.type = "button";
+    imagenesBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        trackEvent("ruta_images_zip_click", { rutaId });
+        auditLog("ruta_images_zip_click", { rutaId });
+        descargarTodasLasImagenesRuta(cliente, localidad, rutaId);
+    });
+    actions.appendChild(imagenesBtn);
+
     const mapaBtn = document.createElement("button");
     mapaBtn.innerHTML =
         '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"></path></svg>';
@@ -277,6 +293,21 @@ function crearRutaListItem({
         mostrarMapaPopup(rutaId);
     });
     actions.appendChild(mapaBtn);
+
+    const registrosBtn = document.createElement("button");
+    registrosBtn.classList.add("map-btn");
+    registrosBtn.innerHTML =
+        '<svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zM4 11h12v2H4zM4 16h16v2H4zM4 21h12v2H4z"></path></svg>';
+    registrosBtn.title = "Ver registros";
+    registrosBtn.setAttribute("aria-label", "Ver registros de la ruta");
+    registrosBtn.type = "button";
+    registrosBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        trackEvent("ruta_records_open", { rutaId });
+        auditLog("ruta_records_open", { rutaId });
+        mostrarRegistrosPopup(rutaId);
+    });
+    actions.appendChild(registrosBtn);
 
     const deleteBtn = document.createElement("button");
     deleteBtn.textContent = "\u2716";
@@ -559,6 +590,140 @@ async function exportarYDescargar(cliente, localidad, rutaId, { includeZero = fa
             elapsed_ms: Math.round(performance.now() - start)
         });
         showPopup(`Error al generar el CSV: ${error.message}`);
+    } finally {
+        hideLoading();
+    }
+}
+
+function normalizarNombreArchivoRegistro(valor, fallback = "imagen") {
+    const texto = String(valor || "").trim();
+    const limpio = texto.replace(/[^a-zA-Z0-9_-]/g, "");
+    return limpio !== "" ? limpio : fallback;
+}
+
+function resolverExtensionImagen(mimeType, url) {
+    if (mimeType) {
+        const normalizado = mimeType.toLowerCase();
+        if (normalizado.includes("png")) return "png";
+        if (normalizado.includes("jpeg") || normalizado.includes("jpg")) return "jpg";
+        if (normalizado.includes("webp")) return "webp";
+        if (normalizado.includes("gif")) return "gif";
+    }
+    if (url) {
+        const sinQuery = url.split("?")[0];
+        const segmentos = sinQuery.split(".");
+        const ext = segmentos.length > 1 ? segmentos.pop() : "";
+        if (ext && ext.length <= 4) {
+            return ext;
+        }
+    }
+    return "jpg";
+}
+
+function generarTimestampLegible() {
+    return new Date().toISOString().replace(/[:.]/g, "-");
+}
+
+function construirNombreZipImagenes(rutaNombre) {
+    const nombreSeguro = normalizarNombreArchivoRegistro(rutaNombre, "ruta");
+    return `imagenes-${nombreSeguro}-${generarTimestampLegible()}.zip`;
+}
+
+async function descargarTodasLasImagenesRuta(cliente, localidad, rutaId) {
+    if (!window.JSZip) {
+        showPopup("La biblioteca de compresión no está disponible.");
+        return;
+    }
+
+    showLoading("Reuniendo imágenes...");
+    trackEvent("ruta_images_zip_request", { rutaId, cliente, localidad });
+
+    try {
+        const rutaRef = doc(db, "Rutas", rutaId);
+        const recorridoRef = collection(rutaRef, "RutaRecorrido");
+        const rutaDoc = await getDoc(rutaRef);
+        const nombreRuta = rutaDoc.exists() ? rutaDoc.data()?.nombre || rutaDoc.id : rutaId;
+        const recorridoSnap = await getDocs(recorridoRef);
+
+        const imagenes = recorridoSnap.docs
+            .map((documento) => {
+                const datos = documento.data() || {};
+                const url = datos.imagenUrl ? String(datos.imagenUrl).trim() : "";
+                return {
+                    url,
+                    medidor: datos.medidor || datos.titular || documento.id,
+                    id: documento.id
+                };
+            })
+            .filter((item) => item.url);
+
+        if (imagenes.length === 0) {
+            showPopup("No se encontraron imágenes para esta ruta.");
+            return;
+        }
+
+        const nombreZip = construirNombreZipImagenes(nombreRuta);
+        const zip = new JSZip();
+        const fallidas = [];
+
+        await mapWithConcurrency(
+            imagenes,
+            IMAGENES_DOWNLOAD_CONCURRENCY,
+            async (imagen) => {
+                try {
+                    const response = await fetch(imagen.url);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const blob = await response.blob();
+                    const extension = resolverExtensionImagen(blob.type, imagen.url);
+                    const nombreArchivo = normalizarNombreArchivoRegistro(
+                        imagen.medidor || imagen.id,
+                        imagen.id
+                    );
+                    zip.file(`${nombreArchivo}.${extension}`, blob);
+                } catch (error) {
+                    fallidas.push({ ...imagen, error: error.message });
+                    console.error(`Error al descargar la imagen ${imagen.medidor || imagen.id}:`, error);
+                }
+            }
+        );
+
+        const archivosZip = Object.keys(zip.files || {});
+        if (archivosZip.length === 0) {
+            throw new Error("No se pudieron descargar imágenes válidas para comprimir.");
+        }
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        const enlace = document.createElement("a");
+        enlace.href = URL.createObjectURL(zipBlob);
+        enlace.download = nombreZip;
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
+        URL.revokeObjectURL(enlace.href);
+
+        const exitosas = archivosZip.length;
+        const mensaje =
+            fallidas.length === 0
+                ? `Descarga iniciada para ${exitosas} imágenes.`
+                : `Preparadas ${exitosas} imágenes, fallaron ${fallidas.length}.`;
+
+        showPopup(mensaje);
+        trackEvent("ruta_images_zip_ready", {
+            rutaId,
+            total: imagenes.length,
+            exitosas,
+            fallidas: fallidas.length
+        });
+        auditLog("ruta_images_zip_download", {
+            rutaId,
+            total: imagenes.length,
+            exitosas,
+            fallidas: fallidas.length
+        });
+    } catch (error) {
+        console.error("Error al preparar imágenes:", error);
+        trackEvent("ruta_images_zip_error", { rutaId, error: error.message });
+        showPopup("No se pudieron descargar las imágenes de la ruta.");
     } finally {
         hideLoading();
     }

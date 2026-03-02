@@ -15,6 +15,7 @@ const routeMap = {
   '/contacto': '/html/contacto.html',
   '/localidades': '/html/localidades.html',
   '/gestionar-rutas': '/html/gestionar-rutas.html',
+  '/registros': '/html/registros.html',
   '/mapa': '/html/mapa.html',
 };
 

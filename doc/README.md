@@ -20,6 +20,7 @@ Paginas y rutas
 - `/login`: login con email/password.
 - `/localidades`: lista y CRUD de localidades.
 - `/gestionar-rutas`: rutas, asignacion de usuarios, export, mapa.
+- `/registros`: listado de registros (nombre + medidor) para una ruta, con colores por estado de lectura.
 - `/mapa?ruta=...`: mapa full screen para una ruta.
 
 Flujos principales

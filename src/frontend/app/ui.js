@@ -83,6 +83,11 @@ export function mostrarMapaPopup(ruta) {
     window.location.href = `/mapa${rutaParam}`;
 }
 
+export function mostrarRegistrosPopup(ruta) {
+    const rutaParam = ruta ? `?ruta=${encodeURIComponent(ruta)}` : '';
+    window.location.href = `/registros${rutaParam}`;
+}
+
 export function showLoading(message = 'Procesando...') {
     let overlay = document.getElementById('loadingOverlay');
     if (!overlay) {

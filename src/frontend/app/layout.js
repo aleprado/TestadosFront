@@ -45,7 +45,7 @@ const whatsappTemplate = `
   </a>
 `;
 
-const AUTH_PAGES = new Set(['gestionar-rutas', 'localidades', 'mapa']);
+const AUTH_PAGES = new Set(['gestionar-rutas', 'localidades', 'mapa', 'registros']);
 let downloadsMenuListenerAttached = false;
 
 function updateLayoutMetrics() {

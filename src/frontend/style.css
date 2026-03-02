@@ -62,6 +62,111 @@ body[data-page='localidades'] h1 {
     color: var(--color-text);
 }
 
+.registros-intro {
+    margin-bottom: 16px;
+    font-size: 1rem;
+    color: var(--color-muted);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.registros-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.registros-summary__item {
+    background: #f5f5f5;
+    border-radius: 10px;
+    padding: 12px 16px;
+    text-align: center;
+    min-width: 120px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.registros-summary__label {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-muted);
+}
+
+.registros-summary__value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.registros-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.registro-card {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-panel);
+}
+
+.registro-card--completado {
+    background: #e8f5e9;
+    border-left: 5px solid #4caf50;
+}
+
+.registro-card--pendiente {
+    background: #fffde7;
+    border-left: 5px solid #fbc02d;
+}
+
+.registro-card__nombre {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text);
+}
+
+.registro-card__medidor {
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+.registro-card__status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.registro-card__status--completado {
+    color: #2e7d32;
+}
+
+.registro-card__status--pendiente {
+    color: #f57c00;
+}
+
+.registros-empty {
+    padding: 24px;
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--color-border);
+    text-align: center;
+    color: var(--color-muted);
+    background: #fffdf8;
+    font-weight: 600;
+}
+
 /* Ajuste del contenedor principal */
 
 .container {
