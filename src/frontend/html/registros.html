@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registros de Ruta</title>
     <link rel="stylesheet" href="../style.css">
+    <link rel="icon" href="../favicon.png" type="image/png">
 </head>
 <body data-page="registros">
 <header class="site-header" data-component="site-header"></header>
@@ -12,14 +13,11 @@
 <main class="page-main">
     <div class="container">
         <h1>Estado de la ruta por medidor</h1>
-        <p class="help-text">Revisá el estado de cada medidor: verde si ya recibió lectura y amarillo si falta.</p>
         <div class="registros-intro">
             <span>Ruta:</span>
             <strong id="rutaIdLabel">-</strong>
         </div>
-        <div class="registros-busqueda">
-            <input id="registrosBusquedaInput" class="input-field" type="search" placeholder="Buscar por titular o medidor" autocomplete="off">
-        </div>
+        <p class="help-text">Revisá el estado de cada medidor: verde si ya recibió lectura y amarillo si falta. También podés agregar una nota al lecturista y descargar las fotos tomadas.</p>
         <div class="registros-summary registros-summary--center" id="registrosSummary">
             <div class="registros-summary__item">
                 <span class="registros-summary__label">Con lectura</span>
@@ -33,6 +31,9 @@
                 <span class="registros-summary__label">Total</span>
                 <span class="registros-summary__value" id="registrosTotal">0</span>
             </div>
+        </div>
+        <div class="registros-busqueda">
+            <input id="registrosBusquedaInput" class="input-field" type="search" placeholder="Buscar por titular o medidor" autocomplete="off">
         </div>
         <section class="registros-columns">
             <div class="registros-column registros-column--left">
