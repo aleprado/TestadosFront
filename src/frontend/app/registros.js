@@ -192,13 +192,13 @@ function crearRegistroCard(registro) {
         const botonNota = document.createElement("button");
         botonNota.type = "button";
         botonNota.className = "btn registro-card__boton";
-        botonNota.textContent = registro.nota_lecturista ? "Editar nota" : "Agregar nota";
+        botonNota.textContent = registro.observacionlecturista ? "Editar nota" : "Agregar nota";
         botonNota.onclick = async () => {
-            const nota = await abrirModalNota(registro.nota_lecturista || "");
+            const nota = await abrirModalNota(registro.observacionlecturista || "");
             if (nota === null) return;
             try {
-                await updateDoc(registro.ref, { nota_lecturista: nota });
-                registro.nota_lecturista = nota;
+                await updateDoc(registro.ref, { observacionlecturista: nota });
+                registro.observacionlecturista = nota;
                 botonNota.textContent = nota ? "Editar nota" : "Agregar nota";
                 const notaVisible = card.querySelector(".registro-card__nota");
                 if (notaVisible) {
@@ -224,10 +224,10 @@ function crearRegistroCard(registro) {
         card.appendChild(acciones);
     }
 
-    if (registro.nota_lecturista) {
+    if (registro.observacionlecturista) {
         const nota = document.createElement("span");
         nota.className = "registro-card__nota";
-        nota.textContent = `Nota: ${registro.nota_lecturista}`;
+        nota.textContent = `Nota: ${registro.observacionlecturista}`;
         card.appendChild(nota);
     }
 
@@ -329,7 +329,7 @@ async function cargarRegistros() {
                 medidor: datos.medidor || "",
                 lectura_actual: datos.lectura_actual || "",
                 imagenUrl: datos.imagenUrl || "",
-                nota_lecturista: datos.nota_lecturista || ""
+                observacionlecturista: datos.observacionlecturista || datos.nota_lecturista || ""
             };
         });
 
