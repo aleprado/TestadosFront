@@ -85,6 +85,7 @@ function abrirModalNota(textoInicial = "") {
     const overlay = document.createElement("div");
     overlay.className = "popup-overlay";
     overlay.dataset.modalNota = "true";
+    overlay.style.display = "flex";
 
     const caja = document.createElement("div");
     caja.className = "popup-box popup-box--nota";
