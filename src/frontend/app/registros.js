@@ -77,26 +77,54 @@ async function descargarImagen(url, medidor) {
 }
 
 function abrirModalNota(textoInicial = "") {
+    const modalExistente = document.querySelector('[data-modal-nota="true"]');
+    if (modalExistente) {
+        modalExistente.remove();
+    }
+
     const overlay = document.createElement("div");
     overlay.className = "popup-overlay";
-    overlay.innerHTML = `
-        <div class="popup-box popup-box--nota">
-            <h2 class="popup-titulo">Nota para lecturista</h2>
-            <div class="popup-content">
-                <textarea id="popupNotaLecturista" class="input-field nota-textarea" placeholder="Escribí una nota para el usuario">${textoInicial}</textarea>
-            </div>
-            <div class="popup-buttons">
-                <button id="popupGuardarNota" class="btn">Guardar</button>
-                <button id="popupCancelarNota" class="btn btn-secondary">Cancelar</button>
-            </div>
-        </div>`;
+    overlay.dataset.modalNota = "true";
 
+    const caja = document.createElement("div");
+    caja.className = "popup-box popup-box--nota";
+
+    const titulo = document.createElement("h2");
+    titulo.className = "popup-titulo";
+    titulo.textContent = "Nota para lecturista";
+
+    const contenido = document.createElement("div");
+    contenido.className = "popup-content";
+
+    const textarea = document.createElement("textarea");
+    textarea.className = "input-field nota-textarea";
+    textarea.placeholder = "Escribí una nota para el usuario";
+    textarea.value = String(textoInicial || "");
+
+    const botones = document.createElement("div");
+    botones.className = "popup-buttons";
+
+    const botonGuardar = document.createElement("button");
+    botonGuardar.type = "button";
+    botonGuardar.className = "btn";
+    botonGuardar.textContent = "Guardar";
+
+    const botonCancelar = document.createElement("button");
+    botonCancelar.type = "button";
+    botonCancelar.className = "btn btn-secondary";
+    botonCancelar.textContent = "Cancelar";
+
+    contenido.appendChild(textarea);
+    botones.appendChild(botonGuardar);
+    botones.appendChild(botonCancelar);
+    caja.appendChild(titulo);
+    caja.appendChild(contenido);
+    caja.appendChild(botones);
+    overlay.appendChild(caja);
     document.body.appendChild(overlay);
 
     return new Promise((resolve) => {
-        const textarea = overlay.querySelector("#popupNotaLecturista");
-        const botonGuardar = overlay.querySelector("#popupGuardarNota");
-        const botonCancelar = overlay.querySelector("#popupCancelarNota");
+        textarea.focus();
 
         botonGuardar.onclick = () => {
             const texto = textarea.value.trim();
@@ -108,6 +136,13 @@ function abrirModalNota(textoInicial = "") {
             overlay.remove();
             resolve(null);
         };
+
+        overlay.addEventListener("click", (evento) => {
+            if (evento.target === overlay) {
+                overlay.remove();
+                resolve(null);
+            }
+        });
     });
 }
 

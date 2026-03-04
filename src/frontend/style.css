@@ -138,7 +138,15 @@ body[data-page='localidades'] h1 {
 }
 
 .registros-column--right {
-    background: #fff7eb;
+    background: #ffffff;
+}
+
+.registros-busqueda {
+    width: min(520px, 100%);
+}
+
+.registros-busqueda .input-field {
+    width: 100%;
 }
 
 .registros-busqueda {
@@ -175,7 +183,7 @@ body[data-page='localidades'] h1 {
 }
 
 .registro-card--pendiente {
-    background: #fffde7;
+    background: #ffffff;
     border-left: 5px solid #fbc02d;
 }
 
