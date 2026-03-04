@@ -157,13 +157,16 @@ function crearRegistroCard(registro) {
     const nombre = registro.titular || "Sin titular";
     const medidor = registro.medidor || "Sin medidor";
 
-    card.innerHTML = `
+    const contenido = document.createElement("div");
+    contenido.className = "registro-card__contenido";
+    contenido.innerHTML = `
         <span class="registro-card__nombre">${nombre}</span>
         <span class="registro-card__medidor">Medidor: ${medidor}</span>
         <span class="registro-card__status ${tieneLectura ? "registro-card__status--completado" : "registro-card__status--pendiente"}">
             ${tieneLectura ? "Lectura registrada" : "Sin lectura"}
         </span>
     `;
+    card.appendChild(contenido);
 
     const acciones = document.createElement("div");
     acciones.className = "registro-card__acciones";
@@ -184,9 +187,7 @@ function crearRegistroCard(registro) {
             }
         };
         acciones.appendChild(botonDescargar);
-    }
-
-    if (!tieneLectura) {
+    } else if (!tieneLectura) {
         const botonNota = document.createElement("button");
         botonNota.type = "button";
         botonNota.className = "btn registro-card__boton";
