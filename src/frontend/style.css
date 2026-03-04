@@ -149,6 +149,14 @@ body[data-page='localidades'] h1 {
     width: 100%;
 }
 
+.registros-busqueda {
+    width: min(520px, 100%);
+}
+
+.registros-busqueda .input-field {
+    width: 100%;
+}
+
 .registros-list {
     list-style: none;
     margin: 0;
