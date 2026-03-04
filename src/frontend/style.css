@@ -141,6 +141,14 @@ body[data-page='localidades'] h1 {
     background: #fff7eb;
 }
 
+.registros-busqueda {
+    width: min(520px, 100%);
+}
+
+.registros-busqueda .input-field {
+    width: 100%;
+}
+
 .registros-list {
     list-style: none;
     margin: 0;
@@ -195,6 +203,37 @@ body[data-page='localidades'] h1 {
 
 .registro-card__status--pendiente {
     color: #f57c00;
+}
+
+.registro-card__acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.registro-card__boton {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+}
+
+.registro-card__nota {
+    font-size: 0.85rem;
+    color: var(--color-text);
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 4px;
+}
+
+.popup-box--nota {
+    width: min(520px, 92vw);
+}
+
+.nota-textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
 }
 
 .registros-empty {
