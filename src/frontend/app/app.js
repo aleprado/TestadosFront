@@ -824,6 +824,17 @@ function obtenerNombreRutaDesdeArchivo(archivo) {
     return punto === -1 ? nombre : nombre.slice(0, punto);
 }
 
+function obtenerTimestampArchivo() {
+    return new Date().toISOString().replace(/[-:.TZ]/g, "");
+}
+
+function construirNombreArchivoConTimestamp(nombreArchivo) {
+    const punto = nombreArchivo.lastIndexOf(".");
+    const nombreBase = punto === -1 ? nombreArchivo : nombreArchivo.slice(0, punto);
+    const extension = punto === -1 ? "" : nombreArchivo.slice(punto);
+    return `${nombreBase}_${obtenerTimestampArchivo()}${extension}`;
+}
+
 function obtenerValoresRutaParaRemover(rutaRef) {
     const rutaPath = rutaRef?.path;
     if (!rutaPath) return [rutaRef];
@@ -1274,9 +1285,10 @@ async function subirRutas() {
 
         try {
             showLoading(`Subiendo ${archivo.name}...`);
+            const nombreArchivoSubida = construirNombreArchivoConTimestamp(archivo.name);
             const referenciaArchivo = ref(
                 storageUpload,
-                `/${cliente}/${localidad}/${archivo.name}`
+                `/${cliente}/${localidad}/${nombreArchivoSubida}`
             );
             const tareaSubida = uploadBytesResumable(referenciaArchivo, archivo);
 
@@ -1294,7 +1306,7 @@ async function subirRutas() {
                 );
             });
             if (subidaExitosa) {
-                rutasEsperadas.push(obtenerNombreRutaDesdeArchivo(archivo));
+                rutasEsperadas.push(obtenerNombreRutaDesdeArchivo({ name: nombreArchivoSubida }));
                 trackEvent('ruta_upload_success', { file_name: archivo.name, file_size: archivo.size });
                 auditLog('ruta_upload', { file_name: archivo.name });
             }
